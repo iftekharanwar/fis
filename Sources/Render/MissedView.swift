@@ -8,8 +8,6 @@ struct MissedView: View {
     let onTryAgain: () -> Void
     let onSolution: () -> Void
 
-    @State private var verbVisible: Bool = false
-    @State private var dwellTask: Task<Void, Never>?
     @State private var ruleWidth: CGFloat = 24
 
     var body: some View {
@@ -18,24 +16,19 @@ struct MissedView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 Spacer().frame(height: Spacing.lg)
-                // Gated by .opacity (not `if`) — `if` would defer layout and cause paint flicker.
-                Group {
-                    topRow
-                    Spacer().frame(height: Spacing.sm)
-                    verb
+                topRow
+                Spacer().frame(height: Spacing.sm)
+                verb
+                Spacer().frame(height: Spacing.md)
+                rule
+                Spacer().frame(height: Spacing.sm)
+                subhead
+                if let diag = diagnosticLine {
                     Spacer().frame(height: Spacing.md)
-                    rule
-                    Spacer().frame(height: Spacing.sm)
-                    subhead
-                    if let diag = diagnosticLine {
-                        Spacer().frame(height: Spacing.md)
-                        Text(diag)
-                            .font(.barlowCondensed(size: 14, italic: true))
-                            .foregroundColor(.arclabMidGrey)
-                    }
+                    Text(diag)
+                        .font(.barlowCondensed(size: 14, italic: true))
+                        .foregroundColor(.arclabMidGrey)
                 }
-                .opacity(verbVisible ? 1.0 : 0.0)
-                .animation(.easeIn(duration: 0.3), value: verbVisible)
                 Spacer()
                 buttonRow
                 Spacer().frame(height: Spacing.xxl)
@@ -43,33 +36,12 @@ struct MissedView: View {
             .padding(.horizontal, Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            // Tap-to-skip dwell from attempt 3 onward.
-            if !verbVisible && attempt >= 3 {
-                dwellTask?.cancel()
-                verbVisible = true
-            }
-        }
-        .onAppear { startDefeatDwell() }
-        .onDisappear { dwellTask?.cancel() }
-    }
-
-    private func startDefeatDwell() {
-        verbVisible = false
-        ruleWidth = 24
-        dwellTask = Task {
-            try? await Task.sleep(for: .milliseconds(1200))
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                verbVisible = true
-                animateRuleBleed()
-            }
-        }
+        .onAppear { animateRuleBleed() }
     }
 
     private func animateRuleBleed() {
         guard !UIAccessibility.isReduceMotionEnabled else { return }
+        ruleWidth = 24
         withAnimation(.easeOut(duration: 0.2)) {
             ruleWidth = 48
         }

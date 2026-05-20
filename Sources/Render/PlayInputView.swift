@@ -19,20 +19,16 @@ struct PlayInputView: View {
     @Binding var isNumpadVisible: Bool
 
     var body: some View {
-        VStack(spacing: Spacing.sm) {
+        VStack(spacing: Spacing.xs) {
             inputCardsRow
             if isNumpadVisible {
                 Numpad(onDigit: handleDigit, onBackspace: handleBackspace)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
-            HStack {
-                spotterChip
-                Spacer()
-            }
             shootButton
         }
         .padding(.horizontal, Spacing.md)
-        .padding(.bottom, Spacing.sm)
+        .padding(.bottom, Spacing.xs)
         .animation(.easeOut(duration: 0.25), value: isNumpadVisible)
     }
 
@@ -139,18 +135,6 @@ struct PlayInputView: View {
         }
     }
 
-    private var spotterChip: some View {
-        Button {
-            // SPOTTER overlay ships in a later task.
-        } label: {
-            Text("✎ SPOTTER")
-                .font(.sfMono(size: 11))
-                .foregroundColor(.arclabMidGrey)
-                .tracking(1.1)
-                .padding(.vertical, Spacing.xxs)
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 private struct InputCard: View {
@@ -169,16 +153,16 @@ private struct InputCard: View {
                 if value.isEmpty {
                     if isActive {
                         Text("|")
-                            .font(.sfMono(size: 28, weight: .medium))
+                            .font(.sfMono(size: 22, weight: .medium))
                             .foregroundColor(.arclabWhite)
                     } else {
                         // Reserve vertical space so empty inactive card matches active height.
                         Text(" ")
-                            .font(.sfMono(size: 28, weight: .medium))
+                            .font(.sfMono(size: 22, weight: .medium))
                     }
                 } else {
                     Text(value)
-                        .font(.sfMono(size: 28, weight: .medium))
+                        .font(.sfMono(size: 22, weight: .medium))
                         .foregroundColor(.arclabWhite)
                     Text(field.unit)
                         .font(.sfMono(size: 11))
@@ -260,7 +244,7 @@ private struct NumpadButton: View {
         } label: {
             label
                 .frame(maxWidth: .infinity)
-                .frame(height: 48)
+                .frame(height: 40)
                 .overlay(borderOverlay)
         }
         .buttonStyle(.plain)
@@ -284,7 +268,7 @@ private struct NumpadButton: View {
         switch key {
         case .digit(let d):
             Text(d)
-                .font(.sfMono(size: 24, weight: .medium))
+                .font(.sfMono(size: 20, weight: .medium))
                 .foregroundColor(.arclabWhite)
         case .backspace:
             Image(systemName: "delete.left")

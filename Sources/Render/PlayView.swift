@@ -56,22 +56,37 @@ struct PlayView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
-                Color.arclabBlack.ignoresSafeArea()
+            let metrics = PlayLayoutMetrics.compute(
+                for: geometry.size,
+                safeArea: geometry.safeAreaInsets
+            )
 
+            ZStack(alignment: .top) {
+                // Z0 — full-bleed court canvas.
+                Color.arclabBlack.ignoresSafeArea()
+                SpriteView(scene: scene, preferredFramesPerSecond: 60)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)  // input overlays own taps
+
+                // HUD overlay (top). Spacer is non-hit-testing so it doesn't
+                // swallow taps belonging to the bottom overlay or the scene.
                 VStack(spacing: 0) {
                     PlayHUDView(
                         scenario: scenario,
-                        onClose: phase == .idle ? onClose : nil
+                        // CLOSE on IDLE+OUTCOME; hidden in ACTION (no escape mid-flight).
+                        onClose: phase == .action ? nil : onClose
                     )
-                        .frame(height: 140)
-                        .opacity(phase == .action ? 0.5 : 1.0)
-                        .animation(.easeOut(duration: 0.25), value: phase)
+                    .frame(height: 140)
+                    .opacity(phase == .action ? 0.5 : 1.0)
+                    Spacer()
+                        .allowsHitTesting(false)
+                }
+                .animation(.easeOut(duration: 0.25), value: phase)
 
-                    SpriteView(scene: scene, preferredFramesPerSecond: 60)
-                        .frame(maxHeight: .infinity)
-                        .ignoresSafeArea(.all, edges: .horizontal)
-
+                // Bottom overlay — input dock (.idle) or outcome (.outcome).
+                VStack(spacing: 0) {
+                    Spacer()
+                        .allowsHitTesting(false)
                     if case .idle = phase {
                         PlayInputView(
                             scenario: scenario,
@@ -81,28 +96,42 @@ struct PlayView: View {
                             onShoot: handleShoot,
                             isNumpadVisible: $isNumpadVisible
                         )
-                        .frame(height: 410)
+                        .frame(height: 330)
+                        .background(Color.arclabBlack)
                         .transition(.opacity)
                     } else if case let .outcome(resolution) = phase {
                         outcomeView(resolution: resolution)
                             .frame(height: 480)
+                            .background(Color.arclabBlack)
                             .transition(.opacity)
-                    } else {
-                        Color.clear.frame(height: 0)
                     }
                 }
                 .animation(.easeOut(duration: 0.25), value: phase)
+            }
+            .onAppear {
+                propagateLayout(metrics: metrics, phase: phase)
+            }
+            .onChange(of: phase) { _, newPhase in
+                propagateLayout(metrics: metrics, phase: newPhase)
+            }
+            .onChange(of: geometry.size) { _, _ in
+                propagateLayout(metrics: metrics, phase: phase)
             }
         }
         .statusBarHidden(true)
         .onChange(of: thetaValue) { _, newValue in
             scene.updateAngleIndicator(degrees: Double(newValue))
+            updateDribbleForInputState()
+        }
+        .onChange(of: velocityValue) { _, _ in
+            updateDribbleForInputState()
         }
         .onAppear {
             // Diagnostic env-preset path needs the indicator pushed once.
             if !thetaValue.isEmpty {
                 scene.updateAngleIndicator(degrees: Double(thetaValue))
             }
+            updateDribbleForInputState()
             // Scene fires audio events adjacent to physics; outcome SFX fire here adjacent to the phase transition.
             scene.audio = audio
             audio.startLoop(.dribbleLoop)
@@ -163,6 +192,34 @@ struct PlayView: View {
         guard let theta = Double(thetaValue), let v = Double(velocityValue) else { return }
         phase = .action
         scene.startSimulation(answer: ProjectileAnswer(thetaDegrees: theta, velocity: v))
+    }
+
+    /// Hold the ball once the player starts typing (free-throw shooters
+    /// don't keep bouncing during the math). Resume only on full clear.
+    private func updateDribbleForInputState() {
+        guard case .idle = phase else { return }
+        if thetaValue.isEmpty && velocityValue.isEmpty {
+            scene.resumeIdleDribble()
+        } else {
+            scene.pauseIdleDribble()
+        }
+    }
+
+    /// Push current UI reserves to the scene so the world transform frames
+    /// inside the unoccluded vertical band.
+    private func propagateLayout(metrics: PlayLayoutMetrics, phase: Phase) {
+        let bottom: CGFloat
+        switch phase {
+        case .idle:                bottom = metrics.bottomReserveIdle
+        case .action:              bottom = metrics.bottomReserveAction
+        case .outcome:             bottom = metrics.bottomReserveOutcome
+        }
+        scene.applyUIReserve(
+            top: metrics.topReserve,
+            bottom: bottom,
+            safeTop: metrics.topReserve,        // top reserve already includes safe-area
+            safeBottom: bottom
+        )
     }
 
     @ViewBuilder

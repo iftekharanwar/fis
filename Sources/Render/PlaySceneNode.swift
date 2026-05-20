@@ -8,6 +8,9 @@ final class PlaySceneNode: SKScene {
     private let projectileParams: Projectile2DParams
     private var transform: CourtCoordinateTransform!
 
+    /// UI bands occluding the scene; pushed from SwiftUI via applyUIReserve.
+    private(set) var uiReserve: SceneInsets = .zero
+
     private var ballNode: SKShapeNode!
     private var playerSilhouette: SKShapeNode!
     private var playerHeadNode: SKShapeNode?
@@ -18,7 +21,6 @@ final class PlaySceneNode: SKScene {
 
     private var dribbleArmNode: SKShapeNode?
     private var dribbleBallShadowNode: SKShapeNode?
-    private var isIdleDribbling: Bool = false
 
     private var netNode: SKShapeNode?
     private var netRimHalfWidth: CGFloat = 0
@@ -52,6 +54,9 @@ final class PlaySceneNode: SKScene {
     private(set) var snapshotHistory: [ProjectileSnapshot] = []
 
     private var isSimulating: Bool = false
+
+    /// Suppresses IDLE dribble during OUTCOME (player just shot — no bounce).
+    private var isShowingOutcome: Bool = false
 
     /// Held-breath rule: keep simulating until physical settle OR 400ms after seal.
     private var outcomeSealedAt: Double?
@@ -90,14 +95,30 @@ final class PlaySceneNode: SKScene {
 
     private func rebuildTransform(for size: CGSize) {
         let world = projectileParams.world
-        // Use full world yMax — cropping clips feet at bottom and floats the floor accent.
+        // Cap visible y at 4.5m — simulation uses real yMax for out-of-bounds,
+        // but rendering crops here so the hoop (at 3.05m) sits ~68% up the
+        // unoccluded band rather than getting squeezed at the top of a 6m world.
+        let visualYMax = min(world.yMax, 4.5)
         transform = CourtCoordinateTransform(
             sceneSize: size,
             worldXMin: world.xMin,
             worldXMax: world.xMax,
             worldFloorY: world.floorY,
-            worldYMax: world.yMax
+            worldYMax: visualYMax,
+            uiReserve: uiReserve
         )
+    }
+
+    /// Push reserved UI bands from SwiftUI. Deferred mid-simulation —
+    /// repositionNodes() would tear down the in-flight scene graph.
+    func applyUIReserve(top: CGFloat, bottom: CGFloat, safeTop: CGFloat, safeBottom: CGFloat) {
+        let new = SceneInsets(top: top, bottom: bottom, safeTop: safeTop, safeBottom: safeBottom)
+        guard new != uiReserve else { return }
+        if isSimulating { return }
+        uiReserve = new
+        guard size != .zero else { return }
+        rebuildTransform(for: size)
+        repositionNodes()
     }
 
     private func buildSceneGraph() {
@@ -106,7 +127,12 @@ final class PlaySceneNode: SKScene {
         addHoopAndBackboard()
         addPlayerSilhouette()
         addBall()
-        startIdleDribbleIfNeeded()
+        if isShowingOutcome {
+            // OUTCOME — player has just shot; no dribble ball at the hand.
+            dribbleBallShadowNode?.isHidden = true
+        } else {
+            startIdleDribbleIfNeeded()
+        }
     }
 
     private func addAtmosphericBackground() {
@@ -176,38 +202,57 @@ final class PlaySceneNode: SKScene {
     }
 
     private func addCourtFloor() {
-        let leftPoint = transform.scenePoint(world: CGPoint(x: CGFloat(projectileParams.world.xMin), y: CGFloat(projectileParams.world.floorY)))
-        let rightPoint = transform.scenePoint(world: CGPoint(x: CGFloat(projectileParams.world.xMax), y: CGFloat(projectileParams.world.floorY)))
+        // Floor stretches edge-to-edge of the visible scene so the player and
+        // hoop read as standing on the same court — not the world's xMin→xMax
+        // (which would leave gaps to the screen edges).
+        let floorY = transform.scenePoint(world: CGPoint(x: 0, y: CGFloat(projectileParams.world.floorY))).y
 
         let floor = SKShapeNode()
         let path = CGMutablePath()
-        path.move(to: leftPoint)
-        path.addLine(to: rightPoint)
+        path.move(to: CGPoint(x: 0, y: floorY))
+        path.addLine(to: CGPoint(x: size.width, y: floorY))
         floor.path = path
-        floor.strokeColor = UIColor(white: 1.0, alpha: 0.3)
-        floor.lineWidth = 1
+        floor.strokeColor = UIColor(white: 1.0, alpha: 0.55)
+        floor.lineWidth = 1.5
         addChild(floor)
 
+        // Orange free-throw accent under the player's release position only.
         let release = projectileParams.releasePosition
         let releaseX = transform.scenePoint(world: CGPoint(x: CGFloat(release[0]), y: 0)).x
         let accent = SKShapeNode()
         let accentPath = CGMutablePath()
-        accentPath.move(to: CGPoint(x: releaseX - 40, y: leftPoint.y))
-        accentPath.addLine(to: CGPoint(x: releaseX + 40, y: leftPoint.y))
+        accentPath.move(to: CGPoint(x: releaseX - 40, y: floorY))
+        accentPath.addLine(to: CGPoint(x: releaseX + 40, y: floorY))
         accent.path = accentPath
-        accent.strokeColor = teamAccent.withAlphaComponent(0.55)
-        accent.lineWidth = 2
+        accent.strokeColor = teamAccent.withAlphaComponent(0.75)
+        accent.lineWidth = 3
         addChild(accent)
     }
 
     private func addHoopAndBackboard() {
         let hoop = projectileParams.target
+        let floorY = transform.scenePoint(world: CGPoint(x: 0, y: CGFloat(projectileParams.world.floorY))).y
 
         if let backboard = hoop.backboard {
             let bbCenter = transform.scenePoint(world: CGPoint(x: CGFloat(backboard.position[0]), y: CGFloat(backboard.position[1])))
             // JSON.height is physical vertical extent; we use it as the visual board width.
             let visualBoardWidth = transform.sceneDistance(world: backboard.height)
             let visualBoardHeight = transform.sceneDistance(world: 0.60)
+
+            // Mounting pole — thin vertical line from floor to bottom of board.
+            // Sits behind the board (lower zPosition) so the board overlaps the
+            // pole's top cleanly. Anchored at bbCenter.x (back of the hoop).
+            let poleBottom = CGPoint(x: bbCenter.x, y: floorY)
+            let poleTop = CGPoint(x: bbCenter.x, y: bbCenter.y - visualBoardHeight / 2)
+            let pole = SKShapeNode()
+            let polePath = CGMutablePath()
+            polePath.move(to: poleBottom)
+            polePath.addLine(to: poleTop)
+            pole.path = polePath
+            pole.strokeColor = UIColor(white: 1.0, alpha: 0.45)
+            pole.lineWidth = 3
+            pole.zPosition = -0.1
+            addChild(pole)
 
             let outerNode = SKShapeNode(rectOf: CGSize(width: visualBoardWidth, height: visualBoardHeight))
             outerNode.position = bbCenter
@@ -386,11 +431,12 @@ final class PlaySceneNode: SKScene {
         ])), withKey: "idleBreathing")
     }
 
-    /// Idempotent — auto-pauses during ACTION via pauseIdleDribble().
+    /// Re-runnable — strips stale actions and attaches fresh ones.
     private func startIdleDribbleIfNeeded() {
-        guard !isIdleDribbling,
-              let arm = dribbleArmNode,
+        guard let arm = dribbleArmNode,
               let dribbleBall = dribbleBallShadowNode else { return }
+        arm.removeAction(forKey: "dribbleArm")
+        dribbleBall.removeAction(forKey: "dribbleBall")
 
         let halfCycle = 0.333
 
@@ -411,18 +457,27 @@ final class PlaySceneNode: SKScene {
         bounceUp.timingMode = .easeOut
         let bounceCycle = SKAction.sequence([bounceDown, bounceUp])
         dribbleBall.run(SKAction.repeatForever(bounceCycle), withKey: "dribbleBall")
-
-        isIdleDribbling = true
     }
 
-    private func pauseIdleDribble() {
+    /// Pause IDLE dribble; hold the ball at the player's hand.
+    func pauseIdleDribble() {
         dribbleArmNode?.removeAction(forKey: "dribbleArm")
         dribbleBallShadowNode?.removeAction(forKey: "dribbleBall")
-        dribbleBallShadowNode?.isHidden = true
-        isIdleDribbling = false
+        // Snap ball back to hand y (not whatever mid-bounce y it had).
+        if let dribbleBall = dribbleBallShadowNode, let arm = dribbleArmNode {
+            let armLength = transform.sceneDistance(world: 0.62)
+            dribbleBall.position = CGPoint(x: arm.position.x, y: arm.position.y - armLength)
+            dribbleBall.isHidden = false
+        }
+        dribbleArmNode?.zRotation = 0
     }
 
-    private func resumeIdleDribble() {
+    /// Hide the ball entirely. Used when ACTION starts (real shooting ball replaces it).
+    func hideDribbleBall() {
+        dribbleBallShadowNode?.isHidden = true
+    }
+
+    func resumeIdleDribble() {
         dribbleBallShadowNode?.isHidden = false
         startIdleDribbleIfNeeded()
     }
@@ -495,6 +550,7 @@ final class PlaySceneNode: SKScene {
 
         ballNode?.isHidden = false
         pauseIdleDribble()
+        hideDribbleBall()  // ACTION started — real shooting ball replaces the dribble ball
         audio?.stopLoop(.dribbleLoop)
         audio?.play(.shoot)
         ballNode?.run(
@@ -522,6 +578,7 @@ final class PlaySceneNode: SKScene {
 
     func freezeForOutcome() {
         isSimulating = false
+        isShowingOutcome = true
         updateAngleIndicator(degrees: nil)
         ballNode?.removeAction(forKey: "ballSpin")
     }
@@ -581,6 +638,7 @@ final class PlaySceneNode: SKScene {
 
     func resetForNewShot() {
         isSimulating = false
+        isShowingOutcome = false
         currentState = nil
         snapshotHistory.removeAll(keepingCapacity: true)
         accumulator = 0

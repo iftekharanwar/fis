@@ -15,6 +15,12 @@ struct SwishView: View {
 
     @State private var verbScale: CGFloat = UIAccessibility.isReduceMotionEnabled ? 1.0 : 0.85
 
+    /// Count-up progress per stat cell (0...1). Drives the interpolation from
+    /// 0 to the cell's final value on appear. Staggered for celebration rhythm.
+    @State private var thetaCount: Double = UIAccessibility.isReduceMotionEnabled ? 1 : 0
+    @State private var velocityCount: Double = UIAccessibility.isReduceMotionEnabled ? 1 : 0
+    @State private var scoreCount: Double = UIAccessibility.isReduceMotionEnabled ? 1 : 0
+
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             VStack(alignment: .leading, spacing: 0) {
@@ -50,6 +56,10 @@ struct SwishView: View {
             withAnimation(.spring(response: 0.42, dampingFraction: 0.62)) {
                 verbScale = 1.0
             }
+            // Stat count-up — staggered so they don't all hit final at once.
+            withAnimation(.easeOut(duration: 0.7).delay(0.0)) { thetaCount = 1 }
+            withAnimation(.easeOut(duration: 0.7).delay(0.15)) { velocityCount = 1 }
+            withAnimation(.easeOut(duration: 0.7).delay(0.3)) { scoreCount = 1 }
         }
     }
 
@@ -85,13 +95,13 @@ struct SwishView: View {
 
     private var statStrip: some View {
         HStack(spacing: 0) {
-            statCell(value: "\(Int(theta.rounded()))°",
+            statCell(value: "\(Int((theta * thetaCount).rounded()))°",
                      label: scenario.voice.success.statLabels.theta)
             divider
-            statCell(value: String(format: "%.2f", velocity),
+            statCell(value: String(format: "%.2f", velocity * velocityCount),
                      label: scenario.voice.success.statLabels.v)
             divider
-            statCell(value: "+\(score)",
+            statCell(value: "+\(Int((Double(score) * scoreCount).rounded()))",
                      label: scenario.voice.success.statLabels.score)
         }
         .frame(height: 64)

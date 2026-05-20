@@ -51,6 +51,7 @@
 		9880E276D98F5414A0D375A3 /* AnimationsDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 396DE9EA2962ACF13E476F99 /* AnimationsDefinition.swift */; };
 		9B5C200ADDB78EBCC3C87827 /* dribble-loop.wav in Resources */ = {isa = PBXBuildFile; fileRef = BFF506D6F1A792B76FB0816D /* dribble-loop.wav */; };
 		A50A6EC19CA4C118E4EA195D /* SituationDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC0365E997ADDB9388C7A28 /* SituationDefinition.swift */; };
+		B1533C3DAC8E1B72A07FA2BA /* PlayLayoutMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C23C70E3942EDABBECD3F8 /* PlayLayoutMetrics.swift */; };
 		B37DE08E75378F1D454EE4A3 /* glass-bounce.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6BC8F61703BCD9389E7C4F26 /* glass-bounce.wav */; };
 		B5602FC9868846E4BF52FA4A /* SoundID.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED49D4031D10DAF2A453E41 /* SoundID.swift */; };
 		B7FE2111780869E842FDA339 /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C801ABCF740236A464FF766F /* IntroView.swift */; };
@@ -110,7 +111,7 @@
 		2D02EF98AD8477BD0CE70809 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		31D95294BFFD55218FCC5D71 /* SpotterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotterService.swift; sourceTree = "<group>"; };
 		33CBC61BF6F5D7B7EB6C594C /* HintDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HintDefinition.swift; sourceTree = "<group>"; };
-		37376D982861679D8C01BD9A /* PhysicsGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PhysicsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		37376D982861679D8C01BD9A /* PhysicsGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhysicsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		396DE9EA2962ACF13E476F99 /* AnimationsDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationsDefinition.swift; sourceTree = "<group>"; };
 		3C4BFA89135A12CC98258CD1 /* PlayHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayHUDView.swift; sourceTree = "<group>"; };
 		3D4E4862EDE6A9C4FB6FD79B /* ScenarioContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioContainerView.swift; sourceTree = "<group>"; };
@@ -147,6 +148,7 @@
 		933DBF40155D5D21E717871F /* ScenarioRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioRecord.swift; sourceTree = "<group>"; };
 		950762B9300C1A37D87CD83C /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
 		96D108D523580546B342728C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		A1C23C70E3942EDABBECD3F8 /* PlayLayoutMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayLayoutMetrics.swift; sourceTree = "<group>"; };
 		A5887B34B2CC453BE544852F /* ScenarioLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioLoader.swift; sourceTree = "<group>"; };
 		B2219A2AB8FEF7741B36D01B /* SolutionDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolutionDefinition.swift; sourceTree = "<group>"; };
 		B56B5C1B3A9978E9FDD773CB /* MetaDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaDefinition.swift; sourceTree = "<group>"; };
@@ -258,6 +260,7 @@
 				100673C986D912EFEBC0F5F9 /* OnboardingView.swift */,
 				3C4BFA89135A12CC98258CD1 /* PlayHUDView.swift */,
 				015DA48DF98011DFBA83D806 /* PlayInputView.swift */,
+				A1C23C70E3942EDABBECD3F8 /* PlayLayoutMetrics.swift */,
 				07EF9C90BFBFEEC9EE121655 /* PlaySceneNode.swift */,
 				D809C6C8FE75C3FEFFFC81C4 /* PlayView.swift */,
 				7A6EEBEA5AE6782EFF0F876A /* PostSplashRouterView.swift */,
@@ -461,7 +464,6 @@
 						ProvisioningStyle = Automatic;
 					};
 					86875897627E9CD73CA2F4BC = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -563,6 +565,7 @@
 				255AD4BD76D76ACC8419414A /* PhysicsGameApp.swift in Sources */,
 				E7E6B89CADBEC9575B567648 /* PlayHUDView.swift in Sources */,
 				28BC1105C13C6CFAAAE1C94C /* PlayInputView.swift in Sources */,
+				B1533C3DAC8E1B72A07FA2BA /* PlayLayoutMetrics.swift in Sources */,
 				EED8294D5F7AFAB0608576F2 /* PlaySceneNode.swift in Sources */,
 				86D53428E359A02D83382995 /* PlayView.swift in Sources */,
 				58BC89208219985DCBF66E68 /* PlayerProfile.swift in Sources */,
@@ -682,6 +685,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = R54QH2958C;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -780,6 +784,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = R54QH2958C;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
