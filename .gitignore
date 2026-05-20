@@ -1,0 +1,58 @@
+# Xcode
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Packages/
+Package.pins
+Package.resolved
+
+# CocoaPods (not using, but defensive)
+Pods/
+Podfile.lock
+
+# Carthage (not using)
+Carthage/Build/
+Carthage/Checkouts/
+
+# fastlane (not using yet)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# macOS noise
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# IDE noise
+.vscode/
+.idea/
+
+# Local secrets / signing
+*.p12
+*.cer
+*.mobileprovision
+ExportOptions.plist
