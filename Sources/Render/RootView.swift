@@ -44,6 +44,31 @@ struct RootView: View {
             } else {
                 Color.arclabBlack
             }
+        case "home":
+            HomeView(
+                onPickDailyScenario: {},
+                onOpenSportPicker: {},
+                onOpenProfile: {}
+            )
+        case "chapter":
+            ChapterView(
+                chapter: BasketballCurriculum.chapters[0],
+                onOpenLesson: { _ in },
+                onOpenScenario: { _ in }
+            )
+        case "lesson":
+            LessonView(
+                lesson: BasketballCurriculum.chapters[0].lesson,
+                onCompleted: {}
+            )
+        case "callplay":
+            if let scenario = try? ScenarioLoader.load("bb-freethrow-001") {
+                CallPlayView(scenario: scenario, onClose: {})
+            } else {
+                Color.arclabBlack
+            }
+        case "profile":
+            ProfileView()
         default:
             AppOpenView()
         }

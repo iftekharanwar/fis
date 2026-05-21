@@ -31,7 +31,7 @@ struct LevelSelectView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(ScenarioBackgroundView(opacity: 0.40))
+            .background(Color.arclabBlack)
         }
         .statusBarHidden(false)
         .fullScreenCover(item: $presentedScenario) { scenario in
@@ -40,24 +40,10 @@ struct LevelSelectView: View {
     }
 
     private var topBar: some View {
-        HStack(alignment: .center) {
-            Button(action: { dismiss() }) {
-                Text("← \(sport.displayName)")
-                    .font(.sfMono(size: 11))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(1.1)
-                    .frame(minHeight: 44, alignment: .leading)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Back to Sport Picker")
-
-            Spacer()
-
-            Text(profile.profile.rankRung.description)
-                .font(.sfMono(size: 14))
-                .foregroundColor(.arclabWhite)
-        }
+        TopBar(
+            leading: .back(label: sport.displayName, action: { dismiss() }),
+            trailing: .label(profile.profile.rankRung.description)
+        )
     }
 
     private var sectionHeading: some View {
@@ -70,10 +56,6 @@ struct LevelSelectView: View {
             Text(sectionTitle)
                 .font(.anton(size: 32))
                 .foregroundColor(.arclabWhite)
-
-            Rectangle()
-                .fill(Color.arclabWhite)
-                .frame(width: 24, height: 1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
