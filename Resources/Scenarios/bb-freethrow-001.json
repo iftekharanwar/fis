@@ -1,1 +1,295 @@
-../../../scenarios/bb-freethrow-001.json
+{
+  "$comment": "REFERENCE SCENARIO — every future scenario is cargo-culted from this one. If you change the schema, update SCENARIO_ENGINE_SPEC.md first, then this file, then run the headless solver smoke test in CI. All player-facing copy in `voice.*` must satisfy CONCEPT.md Voice constraints.",
+
+  "schemaVersion": "1.1.0",
+  "scenarioId": "bb-freethrow-001",
+
+  "meta": {
+    "title": "MAKE THE SHOT.",
+    "subtitle": "FREE THROW — LEVEL 01",
+    "topic": "projectile_motion",
+    "type": "SCENARIO",
+    "difficulty": 1,
+    "rankTier": "ROOKIE",
+    "season": null,
+    "tags": ["intro", "projectile", "no-wind"],
+    "authorIntent": "First exposure to projectile motion. Must feel friendly. The textbook-classical answer at θ=52° (solving y(t) = h_h via t = d/(v·cos θ) substitution) is v ≈ 7.52 m/s — this is what the student derives if they apply the equations in `hints[2].body`. The simulation accepts this answer as SWISH because the rim geometry is calibrated to match the textbook math: rim contact only registers when the ball center is at the rim plane (within rimThickness), not for fly-over proximity. **The pedagogical rule is sacred: scenario answers come from real physics formulae.** If you change ball/hoop/release geometry, re-derive the textbook answer and update smokeTest.answer + ghostArc.answer."
+  },
+
+  "situation": {
+    "outcome": "Make the shot.",
+    "questionRevealed": "Find an angle θ and velocity v that lands the ball through the hoop.",
+    "variables": [
+      { "symbol": "d",   "value": 4.6,  "unit": "m",    "label": "DIST" },
+      { "symbol": "h_h", "value": 3.05, "unit": "m",    "label": "HOOP" },
+      { "symbol": "h_r", "value": 2.0,  "unit": "m",    "label": "REL H" },
+      { "symbol": "g",   "value": 9.8,  "unit": "m/s²", "label": "G" }
+    ]
+  },
+
+  "input": {
+    "mode": "NUMPAD_DUAL",
+    "fields": [
+      {
+        "name": "theta",
+        "label": "ANGLE θ",
+        "unit": "°",
+        "min": 0,
+        "max": 90,
+        "decimals": 1,
+        "placeholder": null
+      },
+      {
+        "name": "v",
+        "label": "VELOCITY V",
+        "unit": "m/s",
+        "min": 0,
+        "max": 20,
+        "decimals": 2,
+        "placeholder": null
+      }
+    ],
+    "submitLabel": "↑ SHOOT"
+  },
+
+  "simulation": {
+    "module": "PROJECTILE_2D",
+    "moduleVersion": "1.0.0",
+    "params": {
+      "gravity": 9.8,
+      "airResistance": 0.0,
+      "releasePosition": [0.0, 2.0],
+      "ball": {
+        "radius": 0.12,
+        "mass": 0.625
+      },
+      "target": {
+        "kind": "HOOP",
+        "center": [4.6, 3.05],
+        "innerRadius": 0.225,
+        "rimThickness": 0.02,
+        "backboard": {
+          "position": [4.78, 3.05],
+          "width": 0.05,
+          "height": 1.05
+        }
+      },
+      "world": {
+        "floorY": 0.0,
+        "xMin": -0.5,
+        "xMax": 6.0,
+        "yMax": 6.0
+      },
+      "integrator": "SEMI_IMPLICIT_EULER",
+      "fixedDtSeconds": 0.00833333
+    }
+  },
+
+  "outcome": {
+    "successPredicate": "BALL_INTO_HOOP",
+    "scoreFunction": "EFFICIENCY_DECAY",
+    "baseScore": 100,
+
+    "successFlavors": [
+      {
+        "id": "SWISH",
+        "when": "rimContacts == 0 && ball.passedThroughHoopCenter",
+        "scoreMultiplier": 1.0
+      },
+      {
+        "id": "GLASS",
+        "when": "rimContacts == 0 && backboardContacts >= 1",
+        "scoreMultiplier": 0.9
+      },
+      {
+        "id": "RIM_DROP",
+        "when": "rimContacts >= 1",
+        "scoreMultiplier": 0.75
+      }
+    ],
+
+    "missCategories": [
+      {
+        "id": "SHORT",
+        "when": "ball.maxHeight < hoop.center.y",
+        "subheadVariants": {
+          "1": "Came up short. Not enough lift.",
+          "2": "Still short. Push the arc higher.",
+          "3+": "Short again. Velocity below threshold."
+        }
+      },
+      {
+        "id": "FRONT_RIM",
+        "when": "firstRimContact.x < hoop.center.x - 0.05",
+        "subheadVariants": {
+          "1": "Front rim. Angle too low. Arc was too flat.",
+          "2": "Still front rim. Push the arc higher.",
+          "3+": "Front rim again. Lift the trajectory."
+        }
+      },
+      {
+        "id": "BACK_RIM",
+        "when": "firstRimContact.x > hoop.center.x + 0.05",
+        "subheadVariants": {
+          "1": "Back rim. Velocity too high.",
+          "2": "Still back rim. Cut the velocity.",
+          "3+": "Back rim again. Less power."
+        }
+      },
+      {
+        "id": "OVERSHOOT",
+        "when": "ball.exitX > hoop.center.x + 0.5",
+        "subheadVariants": {
+          "1": "Overshot the rim. Too much velocity.",
+          "2": "Overshot again. Cut the velocity.",
+          "3+": "Far overshoot. Velocity well above threshold."
+        }
+      },
+      {
+        "id": "AIRBALL",
+        "when": "rimContacts == 0 && backboardContacts == 0 && !ball.passedThroughHoopCenter",
+        "subheadVariants": {
+          "1": "Air ball. Nothing but court.",
+          "2": "Air ball again. Aim for the rim.",
+          "3+": "Still air ball. Check the angle and velocity."
+        }
+      }
+    ],
+
+    "ghostArc": {
+      "source": "authored",
+      "answer": { "theta": 52.0, "v": 7.52 },
+      "description": "The textbook-classical answer at θ=52°. Derived from y(t) = h_h equation: with h_r=2.0, h_h=3.05, d=4.6, g=9.8, substituting t = d/(v·cos θ) gives v ≈ 7.52 m/s. The simulation accepts this as a clean SWISH. Visually obvious as 'the right shape' even to a player who doesn't know the math."
+    }
+  },
+
+  "hints": [
+    {
+      "tier": 1,
+      "costPct": 10,
+      "body": "Topic: projectile motion. The ball is in free fall the moment it leaves your hand."
+    },
+    {
+      "tier": 2,
+      "costPct": 25,
+      "body": "Two equations, two unknowns:\n  x(t) = v·cos(θ)·t\n  y(t) = h_r + v·sin(θ)·t − ½·g·t²\nThe ball reaches the hoop when x(t) = d and y(t) = h_h."
+    },
+    {
+      "tier": 3,
+      "costPct": 50,
+      "body": "Eliminate t: substitute t = d / (v·cos θ) into the y equation.\nYou'll get one equation in θ and v — pick any θ between 45°–60° and solve for v."
+    }
+  ],
+
+  "solution": {
+    "equations": [
+      "x(t) = v·cos(θ)·t",
+      "y(t) = h_r + v·sin(θ)·t − ½·g·t²"
+    ],
+    "workedSteps": [
+      "Given: d = 4.6, h_h = 3.05, h_r = 2.0, g = 9.8.",
+      "At θ = 52°: t = d / (v·cos(52°)).",
+      "Solve y(t) = h_h for v → v ≈ 7.52 m/s."
+    ]
+  },
+
+  "animations": {
+    "idle": {
+      "id": "bb_player_dribble",
+      "loop": true,
+      "framesPerSecond": 12,
+      "anchor": "releasePosition"
+    },
+    "action": {
+      "id": "bb_shoot_then_arc",
+      "driver": "simulation",
+      "phases": [
+        { "id": "bb_player_shoot_motion", "duration": 0.35, "trigger": "submit" },
+        { "id": "bb_ball_in_flight",      "driver": "simulation" }
+      ]
+    },
+    "outcome": {
+      "success": {
+        "byFlavor": {
+          "SWISH":    "bb_swish_clean_glow",
+          "GLASS":    "bb_swish_backboard",
+          "RIM_DROP": "bb_swish_rim_roll"
+        },
+        "default": "bb_swish_clean_glow"
+      },
+      "miss": {
+        "id": "bb_miss_freeze_with_ghost_arc",
+        "tintBackgroundHex": "#0C0404",
+        "tintBackgroundHexAirball": "#180404",
+        "showGhostArc": true,
+        "showFailedArc": true,
+        "failedArcColor": "#FF3037",
+        "ghostArcColor": "#FFFFFF"
+      }
+    }
+  },
+
+  "voice": {
+    "intro": {
+      "headline": "MAKE THE SHOT.",
+      "subhead": "Find the angle. Find the velocity."
+    },
+    "success": {
+      "headlineByFlavor": {
+        "SWISH":    "SWISH",
+        "GLASS":    "OFF THE GLASS",
+        "RIM_DROP": "ROLLED IN"
+      },
+      "flavorCaption": {
+        "SWISH":    "CLEAN SHOT — NO RIM",
+        "GLASS":    "OFF THE GLASS",
+        "RIM_DROP": "ROLLED IN — RIM ASSIST"
+      },
+      "subheadByFlavor": {
+        "SWISH":    "Clean shot — no rim.",
+        "GLASS":    "Used the backboard. Smart.",
+        "RIM_DROP": "Lucky bounce. The math was close."
+      },
+      "statLabels": {
+        "theta": "ANGLE",
+        "v": "m/s",
+        "score": "PTS"
+      }
+    },
+    "miss": {
+      "headline": "MISSED",
+      "attemptLabel": "ATTEMPT {n}",
+      "retryLabel": "TRY AGAIN",
+      "diagnosticByCategory": {
+        "FRONT_RIM": "Push the arc higher.",
+        "BACK_RIM":  "Cut the velocity.",
+        "SHORT":     "Push the arc higher.",
+        "OVERSHOOT": "Cut the velocity.",
+        "AIRBALL":   "Check the angle and velocity."
+      },
+      "bracketHintByCategory": {
+        "FRONT_RIM": "Geometry: θ near 52°.",
+        "BACK_RIM":  "Geometry: cut v by ~1 m/s.",
+        "SHORT":     "Geometry: θ near 52°, v above 7.5 m/s.",
+        "OVERSHOOT": "Geometry: cut v by ~1.5 m/s.",
+        "AIRBALL":   "Geometry: θ near 52°, v near 7.5 m/s."
+      },
+      "afterAllHintsCopy": "All hints revealed. The math is on the table."
+    },
+    "hintBottomCopy": "Each hint trims the score.",
+    "hintCta": "REVEAL (−{cost}%)",
+    "solutionLabel": "SOLUTION",
+    "nextLabel": "NEXT LEVEL →",
+    "replayLabel": "REPLAY",
+    "tryThisAnswerLabel": "TRY THIS ANSWER →",
+    "closeLabel": "✕ CLOSE",
+    "shootLabel": "↑ SHOOT"
+  },
+
+  "smokeTest": {
+    "$comment": "Required by CI. The engine runs the simulation with this answer and asserts the success predicate fires. Schema-valid scenarios that fail the smoke test fail the build.",
+    "answer": { "theta": 52.0, "v": 7.52 },
+    "expectedOutcome": "success",
+    "expectedFlavor": "SWISH"
+  }
+}
