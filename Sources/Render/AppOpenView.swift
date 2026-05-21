@@ -42,18 +42,12 @@ struct AppOpenView: View {
                 .tracking(2)
                 .dynamicTypeSize(.large ... .accessibility1)
 
-            Spacer().frame(height: Spacing.md)
-
-            Rectangle()
-                .fill(Color.arclabBorderGrey)
-                .frame(width: 1, height: 24)
-
-            Spacer().frame(height: Spacing.sm)
+            Spacer().frame(height: Spacing.lg)
 
             Text(loadFailed ? "NO SIGNAL. TAP TO RETRY." : "LOADING")
-                .font(.sfMono(size: 11, weight: .regular))
-                .foregroundColor(.arclabMidGrey)
-                .tracking(1.1)
+                .font(.sfMono(size: 11, weight: loadFailed ? .medium : .regular))
+                .foregroundColor(loadFailed ? .arclabWhite : .arclabMidGrey)
+                .tracking(2.0)
                 .accessibilityLabel(loadFailed ? "Offline. Tap to retry loading." : "Loading.")
 
             Spacer()

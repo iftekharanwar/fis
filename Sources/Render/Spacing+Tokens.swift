@@ -23,9 +23,16 @@ enum Sizing {
     static let minTapTarget: CGFloat = 44
     /// LEVEL SELECT row height.
     static let listRowHeight: CGFloat = 88
-    /// Corner radius for any bordered container (chip style). Never exceed
-    /// this on dark-bleed surfaces.
+
+    /// Corner radius for small chips + buttons (CTAs, pills, chip badges).
+    /// 4pt = barely-rounded, brand-coded.
     static let cornerRadius: CGFloat = 4
+    /// Pill button radius — for primary CTAs that need to read as
+    /// rounded pills. Buttons feel like buttons; cards feel like cards.
+    static let pillRadius: CGFloat = 12
+    /// Card radius for large containers (hero cards, lesson panels). Slightly
+    /// softer than chips so cards read as surfaces, not buttons.
+    static let cardRadius: CGFloat = 8
     /// Border width for any bordered container.
     static let borderWidth: CGFloat = 1
 }

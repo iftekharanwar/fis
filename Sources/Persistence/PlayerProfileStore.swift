@@ -93,10 +93,12 @@ final class PlayerProfileStore {
             } catch {
                 throw PersistenceError.decodeFailed(reason: String(describing: error))
             }
-        case 1:
-            // Legacy users have already played; default hasSeenOnboarding to true.
+        case 3:
+            // v3 → v4: add currentStreak (0) and lastPlayedDate (nil).
             var migrated = raw
-            migrated["hasSeenOnboarding"] = true
+            migrated["currentStreak"] = 0
+            // lastPlayedDate stays nil (omit key — Codable handles absent
+            // optional)
             migrated["profileSchemaVersion"] = PlayerProfile.currentSchemaVersion
             let migratedData = try JSONSerialization.data(withJSONObject: migrated, options: [.sortedKeys])
             do {
@@ -104,7 +106,36 @@ final class PlayerProfileStore {
                 decoder.dateDecodingStrategy = .iso8601
                 return try decoder.decode(PlayerProfile.self, from: migratedData)
             } catch {
-                throw PersistenceError.decodeFailed(reason: "v1→v2 migration: \(error)")
+                throw PersistenceError.decodeFailed(reason: "v3→v4 migration: \(error)")
+            }
+        case 2:
+            // v2 → v4: add completedLessons + currentStreak + nil lastPlayedDate.
+            var migrated = raw
+            migrated["completedLessons"] = [] as [String]
+            migrated["currentStreak"] = 0
+            migrated["profileSchemaVersion"] = PlayerProfile.currentSchemaVersion
+            let migratedData = try JSONSerialization.data(withJSONObject: migrated, options: [.sortedKeys])
+            do {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                return try decoder.decode(PlayerProfile.self, from: migratedData)
+            } catch {
+                throw PersistenceError.decodeFailed(reason: "v2→v4 migration: \(error)")
+            }
+        case 1:
+            // v1 → v4: hasSeenOnboarding=true, completedLessons=[], streak=0.
+            var migrated = raw
+            migrated["hasSeenOnboarding"] = true
+            migrated["completedLessons"] = [] as [String]
+            migrated["currentStreak"] = 0
+            migrated["profileSchemaVersion"] = PlayerProfile.currentSchemaVersion
+            let migratedData = try JSONSerialization.data(withJSONObject: migrated, options: [.sortedKeys])
+            do {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                return try decoder.decode(PlayerProfile.self, from: migratedData)
+            } catch {
+                throw PersistenceError.decodeFailed(reason: "v1→v4 migration: \(error)")
             }
         case 0:
             throw PersistenceError.profileTooOld(found: version, current: PlayerProfile.currentSchemaVersion)

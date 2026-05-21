@@ -35,6 +35,40 @@ extension Color {
 
     /// `#180404` — deeper tint reserved for AIRBALL category.
     static let arclabMissTintAirball = Color(hex: 0x180404)
+
+    // MARK: - Scene illustration sub-palette
+    //
+    // These tokens are *only* used inside scenario preview illustrations
+    // (Home hero card, lesson diagrams, etc.). They never appear in UI chrome
+    // — that stays on the base palette above. Keeps the main system tight
+    // while letting illustrations have their own internal language.
+
+    /// `#0E0E0E` — card surface background, one notch above pure black so
+    /// cards lift visually from the page.
+    static let arclabCardBlack = Color(hex: 0x0E0E0E)
+
+    /// `#181818` — scene back-panel inside the card; separates the
+    /// illustration zone from the text content zone.
+    static let arclabSceneBg = Color(hex: 0x181818)
+
+    /// `#B57B3F` — amber wood floor inside illustrations.
+    static let arclabFloorWood = Color(hex: 0xB57B3F)
+
+    /// `#F5F1E8` — painted floor lines + backboard surface.
+    static let arclabFloorLine = Color(hex: 0xF5F1E8)
+    static let arclabBackboard = Color(hex: 0xF5F1E8)
+
+    /// `#E8782B` — illustration orange (rim, ball). Distinct from crimson;
+    /// reads as "basketball" not "miss."
+    static let arclabRimOrange = Color(hex: 0xE8782B)
+    static let arclabBallOrange = Color(hex: 0xE8782B)
+
+    /// `#8B3F10` — ball seam shadow.
+    static let arclabBallShadow = Color(hex: 0x8B3F10)
+
+    /// `#000000` — silhouette figure inside illustrations. Pure black
+    /// against the lighter `arclabSceneBg` reads cleanly as a silhouette.
+    static let arclabSilhouette = Color(hex: 0x000000)
 }
 
 // MARK: - Hex initializer

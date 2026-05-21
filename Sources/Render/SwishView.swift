@@ -28,8 +28,6 @@ struct SwishView: View {
                 flavorCaption
                 Spacer().frame(height: Spacing.sm)
                 verb
-                Spacer().frame(height: Spacing.md)
-                rule
                 Spacer().frame(height: Spacing.sm)
                 subhead
                 Spacer()
@@ -79,12 +77,6 @@ struct SwishView: View {
             .dynamicTypeSize(.large ... .accessibility1)
             .scaleEffect(verbScale, anchor: .leading)
             .accessibilityLabel("\(flavor), success.")
-    }
-
-    private var rule: some View {
-        Rectangle()
-            .fill(Color.arclabWhite)
-            .frame(width: 24, height: 1)
     }
 
     private var subhead: some View {

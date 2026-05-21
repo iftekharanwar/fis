@@ -85,16 +85,11 @@ struct SolutionView: View {
     }
 
     private var canonicalArcZone: some View {
-        VStack(spacing: Spacing.xs) {
-            Text("THE ANSWER")
-                .font(.sfMono(size: 11))
-                .foregroundColor(.arclabMidGrey)
-                .tracking(1.1)
-
-            Rectangle()
-                .fill(Color.arclabWhite)
-                .frame(width: 24, height: 1)
-        }
+        Text("THE ANSWER")
+            .font(.sfMono(size: 11))
+            .foregroundColor(.arclabMidGrey)
+            .tracking(2.0)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var solutionZone: some View {

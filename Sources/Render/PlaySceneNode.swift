@@ -64,6 +64,18 @@ final class PlaySceneNode: SKScene {
 
     var onOutcomeResolved: ((ProjectileOutcome, [ProjectileSnapshot]) -> Void)?
 
+    /// Call-first beat hook — fires once when the ball reaches its apex
+    /// (vertical velocity crosses from positive to negative). At that moment
+    /// the simulation pauses; resume with `resumeAfterApex()`.
+    var onReachedApex: (() -> Void)?
+
+    /// When true, simulation halts at apex and waits for `resumeAfterApex()`.
+    /// Default false to preserve v1's "run-to-completion" behavior.
+    private(set) var pauseAtApex: Bool = false
+
+    /// Set after the ball passes apex; prevents re-triggering the freeze.
+    private var didFreezeAtApex: Bool = false
+
     init(projectileParams: Projectile2DParams, size: CGSize) {
         self.projectileParams = projectileParams
         super.init(size: size)
@@ -536,8 +548,13 @@ final class PlaySceneNode: SKScene {
         ballNode?.position = transform.scenePoint(world: CGPoint(x: CGFloat(release[0]), y: CGFloat(release[1])))
     }
 
-    func startSimulation(answer: ProjectileAnswer) {
+    /// Start a shot. `pauseAtApex: true` enables the v2.1 call-first beat —
+    /// the simulation halts at the trajectory's apex and fires
+    /// `onReachedApex`; call `resumeAfterApex()` to play through.
+    func startSimulation(answer: ProjectileAnswer, pauseAtApex: Bool = false) {
         resetForNewShot()
+        self.pauseAtApex = pauseAtApex
+        self.didFreezeAtApex = false
         currentState = module.initState(params: projectileParams, answer: answer)
         if let s = currentState {
             snapshotHistory = [module.snapshot(state: s)]
@@ -558,6 +575,20 @@ final class PlaySceneNode: SKScene {
             withKey: "ballSpin"
         )
         flashSceneForShoot()
+    }
+
+    /// Resume a paused-at-apex simulation. Idempotent: safe to call when
+    /// not currently frozen.
+    func resumeAfterApex() {
+        guard pauseAtApex, didFreezeAtApex, !isSimulating else { return }
+        isSimulating = true
+        accumulator = 0
+        lastUpdateTime = 0
+        // Resume the ball's spin animation.
+        ballNode?.run(
+            SKAction.repeatForever(SKAction.rotate(byAngle: 2 * .pi, duration: 0.4)),
+            withKey: "ballSpin"
+        )
     }
 
     private func flashSceneForShoot() {
@@ -674,11 +705,31 @@ final class PlaySceneNode: SKScene {
         accumulator += min(elapsed, 0.1)
 
         let dt = projectileParams.fixedDtSeconds
+        let baseCount = snapshotHistory.count
         while accumulator >= dt {
             state = module.step(state: state, dt: dt)
             accumulator -= dt
             let snap = module.snapshot(state: state)
             snapshotHistory.append(snap)
+
+            // Call-first beat: freeze at apex on the *step* the ball's
+            // vertical velocity flips sign. Checked inside the inner step
+            // loop because on the first update tick the accumulator can
+            // catch up many steps at once — looking only at the last pair
+            // of snapshots would miss the transition entirely.
+            if pauseAtApex, !didFreezeAtApex, snapshotHistory.count >= 2 {
+                let prev = snapshotHistory[snapshotHistory.count - 2]
+                if prev.ballVelocity.dy > 0, snap.ballVelocity.dy <= 0 {
+                    didFreezeAtApex = true
+                    isSimulating = false
+                    currentState = state
+                    ballNode?.position = transform.scenePoint(world: snap.ballPosition)
+                    renderTrajectoryTrail()
+                    ballNode?.removeAction(forKey: "ballSpin")
+                    onReachedApex?()
+                    return
+                }
+            }
         }
         currentState = state
 
@@ -686,6 +737,7 @@ final class PlaySceneNode: SKScene {
         ballNode?.position = transform.scenePoint(world: latest.ballPosition)
 
         renderTrajectoryTrail()
+        _ = baseCount  // baseCount reserved for future apex-pose tweaks
 
         // Fire rim-hit sound once per shot, not on every overlapping frame.
         if !didFireRimHitThisShot {

@@ -49,16 +49,6 @@ struct OnboardingView: View {
 
                 Spacer().frame(height: Spacing.md)
 
-                Rectangle()
-                    .fill(Color.arclabWhite)
-                    .frame(width: 24, height: 1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, Spacing.md)
-                    .opacity(verbVisible ? 1.0 : 0.0)
-                    .animation(.easeOut(duration: 0.4).delay(0.9), value: verbVisible)
-
-                Spacer().frame(height: Spacing.sm)
-
                 Text("Compute the physics. Watch the world respond.")
                     .font(.barlowCondensed(size: 16, italic: true))
                     .foregroundColor(.arclabMidGrey)
@@ -69,26 +59,12 @@ struct OnboardingView: View {
 
                 Spacer()
 
-                Button(action: handleBegin) {
-                    Text("BEGIN")
-                        .font(.sfMono(size: 16, weight: .medium))
-                        .foregroundColor(.arclabWhite)
-                        .tracking(3.2)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: Sizing.pillButtonHeight)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: Sizing.cornerRadius)
-                                .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
-                        )
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, Spacing.md)
-                .padding(.bottom, Spacing.xxl)
-                .opacity(verbVisible ? 1.0 : 0.0)
-                .animation(.easeOut(duration: 0.4).delay(1.2), value: verbVisible)
-                .sensoryFeedback(.impact(weight: .heavy), trigger: beginTapCount)
-                .accessibilityLabel("Begin. Open the sport picker.")
+                PrimaryButton(label: "Begin", action: handleBegin)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.xxl)
+                    .opacity(verbVisible ? 1.0 : 0.0)
+                    .animation(.easeOut(duration: 0.4).delay(1.2), value: verbVisible)
+                    .accessibilityLabel("Begin. Open the sport picker.")
             }
         }
         .statusBarHidden(false)
@@ -101,7 +77,10 @@ struct OnboardingView: View {
 
     private func handleBegin() {
         beginTapCount += 1
-        profile.mutate { $0.hasSeenOnboarding = true }
+        // Run any caller logic FIRST so it doesn't race the observable
+        // change below, which immediately swaps the view tree in
+        // PostSplashRouterView.
         onBegin()
+        profile.mutate { $0.hasSeenOnboarding = true }
     }
 }

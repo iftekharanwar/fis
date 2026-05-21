@@ -1,78 +1,41 @@
 import SwiftUI
 
-/// Sport picker — root after onboarding.
+/// Sport picker — reached from Home's CONTINUE row. Back goes to Home.
 struct SportPickerView: View {
     @Environment(PlayerProfileStore.self) private var profile
+    @Environment(\.dismiss) private var dismiss
 
     let onSelect: (Sport) -> Void
 
     var body: some View {
-        GeometryReader { geo in
-            VStack(spacing: 0) {
-                Spacer().frame(height: geo.safeAreaInsets.top + Spacing.xs)
+        VStack(spacing: 0) {
+            topBar
 
-                topBar
-                    .padding(.horizontal, Spacing.md)
+            Spacer().frame(height: Spacing.xl)
 
-                Spacer().frame(height: Spacing.xl)
+            pickHeading
 
-                pickHeading
-                    .padding(.horizontal, Spacing.md)
+            Spacer().frame(height: Spacing.lg)
 
-                Spacer().frame(height: Spacing.lg)
-
-                // ScrollView prevents F1 row clipping on iPhone 17 and contains layout bounds.
-                ScrollView(.vertical, showsIndicators: false) {
-                    sportList
-                        .padding(.horizontal, Spacing.md)
-                }
+            // ScrollView prevents F1 row clipping on iPhone 17 and contains layout bounds.
+            ScrollView(.vertical, showsIndicators: false) {
+                sportList
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.arclabBlack.ignoresSafeArea())
         }
+        .padding(.horizontal, Spacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.arclabBlack.ignoresSafeArea())
         .statusBarHidden(false)
     }
 
-    @State private var breathingOpacity: Double = 0.4
-
     private var topBar: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                Text("ARCLAB")
-                    .font(.sfMono(size: 11))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(1.1)
-
-                Rectangle()
-                    .fill(Color.arclabBorderGrey.opacity(breathingOpacity))
-                    .frame(width: 1, height: 24)
-                    .padding(.top, Spacing.xxs)
-            }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: Spacing.xxs) {
-                Text(profile.profile.rankRung.description)
-                    .font(.sfMono(size: 14))
-                    .foregroundColor(.arclabWhite)
-
-                Text(xpProgressLine)
-                    .font(.sfMono(size: 11))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(1.1)
-            }
-        }
-        .onAppear { startBreathing() }
-    }
-
-    private func startBreathing() {
-        if UIAccessibility.isReduceMotionEnabled {
-            breathingOpacity = 0.55
-            return
-        }
-        withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
-            breathingOpacity = 0.7
-        }
+        TopBar(
+            leading: .back(label: "Home", action: { dismiss() }),
+            trailing: .stacked(
+                primary: profile.profile.rankRung.description,
+                secondary: xpProgressLine
+            )
+        )
     }
 
     private var xpProgressLine: String {
@@ -89,10 +52,6 @@ struct SportPickerView: View {
             Text("PICK YOUR SPORT.")
                 .font(.anton(size: 32))
                 .foregroundColor(.arclabWhite)
-
-            Rectangle()
-                .fill(Color.arclabWhite)
-                .frame(width: 24, height: 1)
 
             Text("Each sport is a different physics domain.")
                 .font(.barlowCondensed(size: 14, italic: true))
