@@ -23,6 +23,11 @@ struct RevealOverlay: View {
     /// for this scenario, or already exhausted attempts).
     let onTryCompute: (() -> Void)?
 
+    /// Optional override for the chip's outcome text. nil → fall back to
+    /// "IT WENT IN" / "IT MISSED" driven by `actualWentIn`. Used by paradox
+    /// scenarios (Ch2) to show "IT FLEW CLEAN" / "IT WOBBLED" instead.
+    var outcomeLabelOverride: String? = nil
+
     @State private var visible: Bool = false
 
     var body: some View {
@@ -89,7 +94,7 @@ struct RevealOverlay: View {
             Text("·")
                 .font(.sfMono(size: 11))
                 .foregroundColor(.arclabBorderGrey)
-            Text(actualWentIn ? "IT WENT IN" : "IT MISSED")
+            Text(outcomeLabelOverride ?? (actualWentIn ? "IT WENT IN" : "IT MISSED"))
                 .font(.sfMono(size: 11))
                 .foregroundColor(.arclabMidGrey)
                 .tracking(2.0)
@@ -114,9 +119,11 @@ struct RevealOverlay: View {
     private var continueButton: some View {
         HStack(spacing: Spacing.sm) {
             if let onTryCompute {
-                SecondaryButton(label: "Try It", action: onTryCompute)
+                SecondaryButton(label: "Continue", action: onContinue)
+                AccentButton(label: "See why  →", action: onTryCompute)
+            } else {
+                PrimaryButton(label: "Continue", action: onContinue)
             }
-            PrimaryButton(label: "Continue", action: onContinue)
         }
         .padding(.top, Spacing.xs)
     }

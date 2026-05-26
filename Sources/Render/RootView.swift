@@ -46,13 +46,24 @@ struct RootView: View {
             }
         case "home":
             HomeView(
-                onPickDailyScenario: {},
+                onTapTodayCard: { _, _ in },
                 onOpenSportPicker: {},
                 onOpenProfile: {}
+            )
+        case "chapterlist":
+            ChapterListView(
+                sport: .basketball,
+                onOpenChapter: { _ in }
             )
         case "chapter":
             ChapterView(
                 chapter: BasketballCurriculum.chapters[0],
+                onOpenLesson: { _ in },
+                onOpenScenario: { _ in }
+            )
+        case "archerychapter":
+            ChapterView(
+                chapter: ArcheryCurriculum.chapters[0],
                 onOpenLesson: { _ in },
                 onOpenScenario: { _ in }
             )
@@ -64,6 +75,18 @@ struct RootView: View {
         case "callplay":
             if let scenario = try? ScenarioLoader.load("bb-freethrow-001") {
                 CallPlayView(scenario: scenario, onClose: {})
+            } else {
+                Color.arclabBlack
+            }
+        case "archery":
+            if let scenario = ArcheryScenarioCatalog.scenario(for: "arc-pingap-001") {
+                ArcheryCallPlayView(scenario: scenario, onClose: {})
+            } else {
+                Color.arclabBlack
+            }
+        case "archery2":
+            if let scenario = ArcheryScenarioCatalog.scenario(for: "arc-paradox-001") {
+                ArcheryCallPlayView(scenario: scenario, onClose: {})
             } else {
                 Color.arclabBlack
             }

@@ -14,6 +14,12 @@ struct Chapter: Identifiable, Hashable, Sendable {
     let subtitle: String    // single-sentence framing
     let lesson: LessonStub
     let scenarioIDs: [String]  // ordered scenarios in this chapter; map to JSON ids
+
+    /// Optional poster-style background image asset shown on ChapterView.
+    /// File lives in `Resources/Illustrations/chapters/<name>.png`. Each
+    /// chapter gets its own visual identity here; nil falls back to the
+    /// plain black surface.
+    var backgroundImageName: String? = nil
 }
 
 // LessonStub is a typealias to LessonContent — see LessonContent.swift.
