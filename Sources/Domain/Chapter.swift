@@ -15,17 +15,26 @@ struct Chapter: Identifiable, Hashable, Sendable {
     let lesson: LessonStub
     let scenarioIDs: [String]  // ordered scenarios; v2 convention: index 0 = easy,
                                // 1 = harder, 2 = famous-moment anchor
+
     /// The one-line poster shown when the user earns MASTERY for this chapter.
     /// Per BASKETBALL_JOURNEY v2 §4 — "Flat shots will look flat to you now,"
-    /// "The square is a target. You'll never un-see it," etc.
-    let lensReveal: String
+    /// "The square is a target. You'll never un-see it," etc. Defaulted to
+    /// empty so Parham's Archery v2.2 chapters (which don't define one yet)
+    /// still construct.
+    var lensReveal: String = ""
 
     /// v3 §3.7: per-level-type seed pools. Empty dict for chapters that
     /// haven't been migrated to v3 yet — those fall back to `scenarioIDs`
     /// as a Level D-only pool. Ch 1 has all 4 level types populated; Chs 2-5
     /// ship in v3 with Level D only (their lens-specific level types arrive
-    /// when the simulation gains spin/fade/bank physics).
-    let levelTypeSeeds: [LevelTypeID: [String]]
+    /// when the simulation gains spin/fade/bank physics). Defaulted to empty
+    /// so non-v3 sports (Archery) still construct.
+    var levelTypeSeeds: [LevelTypeID: [String]] = [:]
+
+    /// v2.2 (Parham): optional poster-style background asset shown on
+    /// ChapterView. File lives in `Resources/Illustrations/chapters/<name>.png`.
+    /// nil falls back to the plain black surface.
+    var backgroundImageName: String? = nil
 
     /// Convenience: the seed pool for a given level type, with sensible
     /// fallback to `scenarioIDs` for Level D when not explicitly populated.

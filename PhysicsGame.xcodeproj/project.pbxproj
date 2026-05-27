@@ -37,14 +37,17 @@
 		2775B87C22AC233CDC66D388 /* SwishView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B6B10987B09CE527846D9F /* SwishView.swift */; };
 		27DAD4619272FE3B2FB8B54F /* bb-b-corner-3.json in Resources */ = {isa = PBXBuildFile; fileRef = 8374B82C301C3C8B83D401C6 /* bb-b-corner-3.json */; };
 		28BC1105C13C6CFAAAE1C94C /* PlayInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 015DA48DF98011DFBA83D806 /* PlayInputView.swift */; };
+		2A7CD56111D1BC763C352199 /* target-thud.wav in Resources */ = {isa = PBXBuildFile; fileRef = A41E94A98B384BA64BFB2F8A /* target-thud.wav */; };
 		2E197A1B3A24E858FCB201A2 /* bb-b-floater.json in Resources */ = {isa = PBXBuildFile; fileRef = FB5FF847C0163DEFCB3292B5 /* bb-b-floater.json */; };
 		2FCE7666BF9B3CA22956B917 /* bb-4-wrong-angle.json in Resources */ = {isa = PBXBuildFile; fileRef = 8784D7B135491618522558D7 /* bb-4-wrong-angle.json */; };
 		319C7057D9E37BB3E4D4C473 /* bb-b-top-key.json in Resources */ = {isa = PBXBuildFile; fileRef = 3D891B5E79161F49177A4C66 /* bb-b-top-key.json */; };
 		32B84427C7730F741ED909D7 /* bb-c-freethrow.json in Resources */ = {isa = PBXBuildFile; fileRef = 326174F6D2B76DADCA9CBB0E /* bb-c-freethrow.json */; };
+		34A70CFDF20FB44C6DD87C1E /* target-thud.wav in Resources */ = {isa = PBXBuildFile; fileRef = A41E94A98B384BA64BFB2F8A /* target-thud.wav */; };
 		3504E06BDE871ECEF939E529 /* SportPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D146A709617A400713985CD1 /* SportPickerView.swift */; };
 		3721462579BA6C98995789D6 /* SmokeTestDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EDD39579F7F214B9EA9F12 /* SmokeTestDefinition.swift */; };
 		3B00612D2F6948708D5922A9 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B710ED1104FC20788AF86564 /* Buttons.swift */; };
 		3C530CA3266970F9C2F27A53 /* BarlowCondensed-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 679A2C851B1E7799933A233E /* BarlowCondensed-Italic.ttf */; };
+		3D43A282367C9CF40DE57E7D /* arrow-whoosh.wav in Resources */ = {isa = PBXBuildFile; fileRef = C532B3389C4740D326D4750D /* arrow-whoosh.wav */; };
 		3DC48069EF02FD023BB2277C /* bb-b-stepback.json in Resources */ = {isa = PBXBuildFile; fileRef = 4A0F6C1850BF81644C3F3AE4 /* bb-b-stepback.json */; };
 		3FCFA4CBA20EB8A8166B2139 /* BarlowCondensed-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EB473A0AE7E9BFB96E331F28 /* BarlowCondensed-Regular.ttf */; };
 		401B475EBCCFD846AD2E2160 /* bg-basketball-gym-dusk.png in Resources */ = {isa = PBXBuildFile; fileRef = 6212191AC0336BE6E1AE4D24 /* bg-basketball-gym-dusk.png */; };
@@ -60,12 +63,14 @@
 		4ED268F2C4D3A719DEE399F4 /* bb-b-flat.json in Resources */ = {isa = PBXBuildFile; fileRef = 53D8BAF455E275B61070AC03 /* bb-b-flat.json */; };
 		507576261646C5C2E7455CEA /* bb-b-freethrow.json in Resources */ = {isa = PBXBuildFile; fileRef = B2CCB11654AC0342A4837F5E /* bb-b-freethrow.json */; };
 		509418D72D2F9259CA499861 /* miss-tone.wav in Resources */ = {isa = PBXBuildFile; fileRef = 057D1055BF0763AA15795726 /* miss-tone.wav */; };
+		512D4B5312DC506848EFB94B /* ArcheryCallPlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2BAA226603248EAC26CA2 /* ArcheryCallPlayView.swift */; };
 		547951081C26F2B26320D5B4 /* PlayerProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8423C9B12D61CF29072D71B9 /* PlayerProfileStore.swift */; };
 		54E1B51806DAA22B8F5B442F /* ScenarioEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600FF17AE0E433530E691868 /* ScenarioEngineTests.swift */; };
 		56163DA5B104364F082CCA17 /* rim-hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 55657A3022D7E039A18756F4 /* rim-hit.wav */; };
 		58BC89208219985DCBF66E68 /* PlayerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A53E3D7433F97610E37D8 /* PlayerProfile.swift */; };
 		5A0CE08400826868FBD6DCC6 /* SwipeBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9D61ABAEB4B270D9F96E21 /* SwipeBack.swift */; };
 		5BC360F3E9CCBC0B5B601ED4 /* bb-c-wing-throw.json in Resources */ = {isa = PBXBuildFile; fileRef = 89E0146E05388213721F8F2D /* bb-c-wing-throw.json */; };
+		5BED9E8FF4136E469B82D48F /* arrow-whoosh.wav in Resources */ = {isa = PBXBuildFile; fileRef = C532B3389C4740D326D4750D /* arrow-whoosh.wav */; };
 		5C907242A1C71713A2597EFE /* MasteryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B021F5E63ADCE5F0F48A01 /* MasteryServiceTests.swift */; };
 		5CD3BAD7BDA70191D9A4CEB0 /* bb-3-one-legged.json in Resources */ = {isa = PBXBuildFile; fileRef = 39F47C329819449D28A0239A /* bb-3-one-legged.json */; };
 		601F84B50143F336A5610D2D /* ChapterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F174CF0BA821EEC10A5BBAE9 /* ChapterListView.swift */; };
@@ -76,6 +81,7 @@
 		6332BC52876D5A9B2A0F3755 /* rim-drop.wav in Resources */ = {isa = PBXBuildFile; fileRef = EFE42EFD365B9D8BF4E5E2B9 /* rim-drop.wav */; };
 		647FDE681CB9A8A0118245B8 /* Sport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87314AE5D3120BC1E36A05C9 /* Sport.swift */; };
 		65E682E64534953F6FAA0E68 /* CallHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0827F358B101907C7849CE8 /* CallHUD.swift */; };
+		6AB9D4E7DDE781EB83088665 /* ArcheryCurriculum.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADC86A32163F3391B094CBA2 /* ArcheryCurriculum.swift */; };
 		6C12232BB5DDC90E4A339281 /* bb-a-freethrow.json in Resources */ = {isa = PBXBuildFile; fileRef = D89FF30441E91DC5500F54D8 /* bb-a-freethrow.json */; };
 		6C123224BFCE06852C35C1D8 /* bb-c-elbow.json in Resources */ = {isa = PBXBuildFile; fileRef = 8506F9E112B37E14102862E2 /* bb-c-elbow.json */; };
 		6D7C9EB3F8B605EA8D4789A3 /* SpotterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D95294BFFD55218FCC5D71 /* SpotterService.swift */; };
@@ -108,6 +114,8 @@
 		9668BD735673E4E0B5C138C6 /* bb-a-logo.json in Resources */ = {isa = PBXBuildFile; fileRef = 31ED030B4882D6F73E500D91 /* bb-a-logo.json */; };
 		9880E276D98F5414A0D375A3 /* AnimationsDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 396DE9EA2962ACF13E476F99 /* AnimationsDefinition.swift */; };
 		98D2E93FD2CDF70630757B41 /* bb-b-ugly-2.json in Resources */ = {isa = PBXBuildFile; fileRef = D945DB882BBD3BBB5DD6CB1B /* bb-b-ugly-2.json */; };
+		99FE65387E2AD098626546F6 /* bullseye-hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 12363103E06E8CC3DEBE96EB /* bullseye-hit.wav */; };
+		9B11787AF87F10E9B72DEF6D /* arc-ch1-bg.png in Resources */ = {isa = PBXBuildFile; fileRef = F1A3B2E79F184E943A4E6C92 /* arc-ch1-bg.png */; };
 		9B5C200ADDB78EBCC3C87827 /* dribble-loop.wav in Resources */ = {isa = PBXBuildFile; fileRef = BFF506D6F1A792B76FB0816D /* dribble-loop.wav */; };
 		9C3A17C9C395F6B594B7358E /* bb-a-tall-release.json in Resources */ = {isa = PBXBuildFile; fileRef = 2A5833299255849F9E9838E4 /* bb-a-tall-release.json */; };
 		9DA56A7058FB8821D8706CD7 /* bb-a-ugly-2.json in Resources */ = {isa = PBXBuildFile; fileRef = AA3556E6D831458921B8B52E /* bb-a-ugly-2.json */; };
@@ -126,9 +134,12 @@
 		AFE2269832A071CF72331F0E /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DB4D497A148712CD8D41CF /* HomeView.swift */; };
 		B1533C3DAC8E1B72A07FA2BA /* PlayLayoutMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C23C70E3942EDABBECD3F8 /* PlayLayoutMetrics.swift */; };
 		B1D597D313D7980FDD4BDF43 /* bb-2-no-spin.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C4DF5A374E52813AAB51C62 /* bb-2-no-spin.json */; };
+		B264E0A0009C34E27F3390AF /* NextUpFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1B286B222B5175D551F146 /* NextUpFinder.swift */; };
+		B268A2EE7281E5749DC7E012 /* bullseye-hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 12363103E06E8CC3DEBE96EB /* bullseye-hit.wav */; };
 		B37DE08E75378F1D454EE4A3 /* glass-bounce.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6BC8F61703BCD9389E7C4F26 /* glass-bounce.wav */; };
 		B3F32EBDD3111D5FBFD84EB5 /* bb-c-ugly-1.json in Resources */ = {isa = PBXBuildFile; fileRef = B0A97EAA66EF1E9523C3426D /* bb-c-ugly-1.json */; };
 		B5602FC9868846E4BF52FA4A /* SoundID.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED49D4031D10DAF2A453E41 /* SoundID.swift */; };
+		B64606F323CDC92B1325F9DC /* ArcherySceneNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93392C86606F0BE3E372B42 /* ArcherySceneNode.swift */; };
 		B85FF9AB712B6016807F3758 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61CE2A33E8DD01D1176406D0 /* RootView.swift */; };
 		B97BC88E0638614CB7DE5161 /* Anton-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B8B9DBF43C518D2DC722321 /* Anton-Regular.ttf */; };
 		BBE86BB427B554D52845CDD7 /* bb-a-half-court.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D45C4DDAB9A3833396DEFF9 /* bb-a-half-court.json */; };
@@ -136,6 +147,7 @@
 		BE07AAB32AC82C29B5EBB02D /* rim-hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 55657A3022D7E039A18756F4 /* rim-hit.wav */; };
 		BE2EA15E7C555A41B3FD13CC /* bb-3-slight-fade.json in Resources */ = {isa = PBXBuildFile; fileRef = 94A27A94B3EF7D0667604349 /* bb-3-slight-fade.json */; };
 		C1556CB9FC3EDFD1B1DC6BF8 /* bb-a-half-court.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D45C4DDAB9A3833396DEFF9 /* bb-a-half-court.json */; };
+		C1C82D6E0147F149944D34CF /* ArcheryScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83C03738E0CC6197761A680 /* ArcheryScenario.swift */; };
 		C244798B1C4B42072C5EC70C /* MasteryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 983D6320CA80974913215A19 /* MasteryService.swift */; };
 		C4D65769C9586AFA5A6604EC /* brand-mark.wav in Resources */ = {isa = PBXBuildFile; fileRef = DAC015AA73E8226960B1022D /* brand-mark.wav */; };
 		C5141DF8A7BF4D58920CCD78 /* MotionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C8711045AAF16CDCB2F433 /* MotionController.swift */; };
@@ -155,6 +167,7 @@
 		C9C8F433A8B6080D58604B82 /* bb-b-corner-3.json in Resources */ = {isa = PBXBuildFile; fileRef = 8374B82C301C3C8B83D401C6 /* bb-b-corner-3.json */; };
 		C9F1A1A19D49254EF5E806F5 /* LessonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34869B1BC84C0691328F5BB5 /* LessonView.swift */; };
 		CA31B606324F92B5459402C6 /* bb-a-postup.json in Resources */ = {isa = PBXBuildFile; fileRef = 5455FBB61A5C06098BF7E7E8 /* bb-a-postup.json */; };
+		CA7350E21FC8DB49C1E37791 /* ArcheryScenarioCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC452B0CF9F334B5356C504 /* ArcheryScenarioCatalog.swift */; };
 		CAC940B97E4593A699B295ED /* CallPlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8976CB61A0466434E935514C /* CallPlayView.swift */; };
 		CB055AADD3F9BD442ADFE2F1 /* VoiceDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC75BC73EFAC1C00733BFD2B /* VoiceDefinition.swift */; };
 		CBC56DA182D8A55EF697CCBA /* bb-3-one-legged.json in Resources */ = {isa = PBXBuildFile; fileRef = 39F47C329819449D28A0239A /* bb-3-one-legged.json */; };
@@ -185,6 +198,7 @@
 		E31EA62FDBC7F1DB91F95438 /* InputDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C621D65E074641B4D9EE7D /* InputDefinition.swift */; };
 		E3C3562EC1A35ADF5B59CEFB /* LevelTypePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B542C55649D4DAB4C0160AA /* LevelTypePickerView.swift */; };
 		E65B9D3FDDF6F1E28364A984 /* bb-a-ugly-1.json in Resources */ = {isa = PBXBuildFile; fileRef = F26C3EC4B094E2E5E8A97052 /* bb-a-ugly-1.json */; };
+		E6EED7791BDFBEE5D8AB6450 /* ArcheryCallVerdictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF4BB000793F934837B8B578 /* ArcheryCallVerdictView.swift */; };
 		E7E6B89CADBEC9575B567648 /* PlayHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4BFA89135A12CC98258CD1 /* PlayHUDView.swift */; };
 		E8A06127B2C39F10D07A3D1A /* bb-2-game-six-corner.json in Resources */ = {isa = PBXBuildFile; fileRef = A2BD5B0B4E34FAD8FD235201 /* bb-2-game-six-corner.json */; };
 		E9FAFB27F65BB0B4E1A82A3C /* PlayerProfileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAEA9B3ED5D445AAC1D85138 /* PlayerProfileStoreTests.swift */; };
@@ -208,6 +222,7 @@
 		FF0BDF00C15711329506705D /* Rank.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4135AD3FFE28EC94268834B /* Rank.swift */; };
 		FF44EC4422CF7AC804D15F03 /* bb-a-wing-catch.json in Resources */ = {isa = PBXBuildFile; fileRef = DF1EA282B0724F9FFEF747BF /* bb-a-wing-catch.json */; };
 		FFE6E0A77ACD04D4A43EAB32 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950762B9300C1A37D87CD83C /* SubscriptionService.swift */; };
+		FFEA889B7638710B507F2FE0 /* ChapterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4488B1CF1D7455CF53F9E4CA /* ChapterView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -230,6 +245,7 @@
 		0B8B9DBF43C518D2DC722321 /* Anton-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Anton-Regular.ttf"; sourceTree = "<group>"; };
 		0EFBC84E8A123822C56AC138 /* bb-a-tiptoe-corner.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-tiptoe-corner.json"; sourceTree = "<group>"; };
 		100673C986D912EFEBC0F5F9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		12363103E06E8CC3DEBE96EB /* bullseye-hit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "bullseye-hit.wav"; sourceTree = "<group>"; };
 		123B0CBECBAD82A3457A66F2 /* bb-c-stepback-arc.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-c-stepback-arc.json"; sourceTree = "<group>"; };
 		1375B85DB125A917BD5BC268 /* bb-b-ugly-1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-ugly-1.json"; sourceTree = "<group>"; };
 		1B542C55649D4DAB4C0160AA /* LevelTypePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelTypePickerView.swift; sourceTree = "<group>"; };
@@ -245,7 +261,7 @@
 		33CBC61BF6F5D7B7EB6C594C /* HintDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HintDefinition.swift; sourceTree = "<group>"; };
 		347168285791808919BD9FD1 /* TopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopBar.swift; sourceTree = "<group>"; };
 		34869B1BC84C0691328F5BB5 /* LessonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonView.swift; sourceTree = "<group>"; };
-		37376D982861679D8C01BD9A /* PhysicsGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhysicsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		37376D982861679D8C01BD9A /* PhysicsGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PhysicsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		396DE9EA2962ACF13E476F99 /* AnimationsDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationsDefinition.swift; sourceTree = "<group>"; };
 		39ECC6A2231361EEE944B4FE /* bb-a-elbow-r.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-elbow-r.json"; sourceTree = "<group>"; };
 		39F47C329819449D28A0239A /* bb-3-one-legged.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-3-one-legged.json"; sourceTree = "<group>"; };
@@ -254,10 +270,12 @@
 		3DA01253F96087CAA6843A1B /* Color+Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Tokens.swift"; sourceTree = "<group>"; };
 		3F21B6D504DF51012F795E95 /* bb-1-logo-three.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-1-logo-three.json"; sourceTree = "<group>"; };
 		427C77A0D7014BDC06B454DF /* LessonContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonContent.swift; sourceTree = "<group>"; };
+		4488B1CF1D7455CF53F9E4CA /* ChapterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterView.swift; sourceTree = "<group>"; };
 		44C621D65E074641B4D9EE7D /* InputDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputDefinition.swift; sourceTree = "<group>"; };
 		468C92DDFC772CD1A88E40AD /* bb-c-pull-up.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-c-pull-up.json"; sourceTree = "<group>"; };
 		47FA49C260B519FC37179C21 /* ScenarioID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioID.swift; sourceTree = "<group>"; };
 		4A0F6C1850BF81644C3F3AE4 /* bb-b-stepback.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-stepback.json"; sourceTree = "<group>"; };
+		4A1B286B222B5175D551F146 /* NextUpFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextUpFinder.swift; sourceTree = "<group>"; };
 		4A41D30A7C1FD02E674EC87D /* bb-2-shooters-roll.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-2-shooters-roll.json"; sourceTree = "<group>"; };
 		4DA73619B7B11D150440BA5B /* bb-5-toe-on-line.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-5-toe-on-line.json"; sourceTree = "<group>"; };
 		4DEFAC4037D2B22155CE1229 /* SimulationModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationModule.swift; sourceTree = "<group>"; };
@@ -286,6 +304,7 @@
 		6D45C4DDAB9A3833396DEFF9 /* bb-a-half-court.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-half-court.json"; sourceTree = "<group>"; };
 		6E18DFCC8141F0EF72A1DEA0 /* MasteryGateTakeoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasteryGateTakeoverView.swift; sourceTree = "<group>"; };
 		71CEF348BD01D03D3223B02C /* SimulationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationConfig.swift; sourceTree = "<group>"; };
+		75A2BAA226603248EAC26CA2 /* ArcheryCallPlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryCallPlayView.swift; sourceTree = "<group>"; };
 		765243C5C2D983166D8DC344 /* ScenarioBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioBackgroundView.swift; sourceTree = "<group>"; };
 		7659807F674E00A2DB85668C /* SimulationRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationRegistry.swift; sourceTree = "<group>"; };
 		7A6EEBEA5AE6782EFF0F876A /* PostSplashRouterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostSplashRouterView.swift; sourceTree = "<group>"; };
@@ -312,10 +331,12 @@
 		983D6320CA80974913215A19 /* MasteryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasteryService.swift; sourceTree = "<group>"; };
 		A1C23C70E3942EDABBECD3F8 /* PlayLayoutMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayLayoutMetrics.swift; sourceTree = "<group>"; };
 		A2BD5B0B4E34FAD8FD235201 /* bb-2-game-six-corner.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-2-game-six-corner.json"; sourceTree = "<group>"; };
+		A41E94A98B384BA64BFB2F8A /* target-thud.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "target-thud.wav"; sourceTree = "<group>"; };
 		A4B80171FE18F0E24442E27B /* bb-4-elbow-bank.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-4-elbow-bank.json"; sourceTree = "<group>"; };
 		A5887B34B2CC453BE544852F /* ScenarioLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioLoader.swift; sourceTree = "<group>"; };
 		AA3556E6D831458921B8B52E /* bb-a-ugly-2.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-ugly-2.json"; sourceTree = "<group>"; };
 		AA9DEAE11EE63EE5C4441CC7 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		ADC86A32163F3391B094CBA2 /* ArcheryCurriculum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryCurriculum.swift; sourceTree = "<group>"; };
 		B0A97EAA66EF1E9523C3426D /* bb-c-ugly-1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-c-ugly-1.json"; sourceTree = "<group>"; };
 		B183689743238F32B655E464 /* bb-a-top-key.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-top-key.json"; sourceTree = "<group>"; };
 		B186C26885E8B1BE0C4603B9 /* bb-b-rainbow.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-rainbow.json"; sourceTree = "<group>"; };
@@ -331,15 +352,19 @@
 		BFF506D6F1A792B76FB0816D /* dribble-loop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "dribble-loop.wav"; sourceTree = "<group>"; };
 		C11EA3D3ABA9C0ECDF6C1005 /* AudioBundleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioBundleTests.swift; sourceTree = "<group>"; };
 		C4135AD3FFE28EC94268834B /* Rank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rank.swift; sourceTree = "<group>"; };
+		C532B3389C4740D326D4750D /* arrow-whoosh.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "arrow-whoosh.wav"; sourceTree = "<group>"; };
 		C66ECF622E9E7DFFF9DE9F07 /* CallVerdictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallVerdictView.swift; sourceTree = "<group>"; };
+		C93392C86606F0BE3E372B42 /* ArcherySceneNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcherySceneNode.swift; sourceTree = "<group>"; };
 		CA5EED439BB982658A419DC0 /* RevealOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevealOverlay.swift; sourceTree = "<group>"; };
 		CAEA9B3ED5D445AAC1D85138 /* PlayerProfileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileStoreTests.swift; sourceTree = "<group>"; };
+		CCC452B0CF9F334B5356C504 /* ArcheryScenarioCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryScenarioCatalog.swift; sourceTree = "<group>"; };
 		CF9E0602F505A218168F1A6F /* Projectile2DModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Projectile2DModule.swift; sourceTree = "<group>"; };
 		D146A709617A400713985CD1 /* SportPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportPickerView.swift; sourceTree = "<group>"; };
 		D3D5DCBB3126C265F5C05E07 /* DailyScenarioPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyScenarioPicker.swift; sourceTree = "<group>"; };
 		D611143A4006A225DA394A50 /* bb-b-elbow.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-elbow.json"; sourceTree = "<group>"; };
 		D753DFE7BF4B1F44E0A40CA1 /* CourtCoordinateTransform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourtCoordinateTransform.swift; sourceTree = "<group>"; };
 		D809C6C8FE75C3FEFFFC81C4 /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayView.swift; sourceTree = "<group>"; };
+		D83C03738E0CC6197761A680 /* ArcheryScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryScenario.swift; sourceTree = "<group>"; };
 		D841EBE22B4C6B0FE2AC197D /* bb-1-flat.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-1-flat.json"; sourceTree = "<group>"; };
 		D89FF30441E91DC5500F54D8 /* bb-a-freethrow.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-freethrow.json"; sourceTree = "<group>"; };
 		D945DB882BBD3BBB5DD6CB1B /* bb-b-ugly-2.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-ugly-2.json"; sourceTree = "<group>"; };
@@ -349,6 +374,7 @@
 		DE41AAC818D00E32D8B2B0FD /* ScenarioDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioDefinition.swift; sourceTree = "<group>"; };
 		DEDB5BFF752609FFEBE03DD8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DF1EA282B0724F9FFEF747BF /* bb-a-wing-catch.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-wing-catch.json"; sourceTree = "<group>"; };
+		DF4BB000793F934837B8B578 /* ArcheryCallVerdictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryCallVerdictView.swift; sourceTree = "<group>"; };
 		DFA8AEFE3443D9C263541F3C /* PlayInputSingleFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayInputSingleFieldView.swift; sourceTree = "<group>"; };
 		E47AA15346583018EED15CFF /* airball.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = airball.wav; sourceTree = "<group>"; };
 		E4AC517D75B07B5A3CE1C1CE /* bb-3-standstill.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-3-standstill.json"; sourceTree = "<group>"; };
@@ -360,6 +386,7 @@
 		F0290C1763D1502D323C308D /* Chapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter.swift; sourceTree = "<group>"; };
 		F0827F358B101907C7849CE8 /* CallHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallHUD.swift; sourceTree = "<group>"; };
 		F174CF0BA821EEC10A5BBAE9 /* ChapterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterListView.swift; sourceTree = "<group>"; };
+		F1A3B2E79F184E943A4E6C92 /* arc-ch1-bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "arc-ch1-bg.png"; sourceTree = "<group>"; };
 		F26C3EC4B094E2E5E8A97052 /* bb-a-ugly-1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-ugly-1.json"; sourceTree = "<group>"; };
 		F54712539125042DCB2E6274 /* CelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationView.swift; sourceTree = "<group>"; };
 		F731D8863B9DC56E47830FC3 /* bb-c-flat-throw.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-c-flat-throw.json"; sourceTree = "<group>"; };
@@ -452,12 +479,16 @@
 			isa = PBXGroup;
 			children = (
 				08331D43606F118E4724D75E /* AppOpenView.swift */,
+				75A2BAA226603248EAC26CA2 /* ArcheryCallPlayView.swift */,
+				DF4BB000793F934837B8B578 /* ArcheryCallVerdictView.swift */,
+				C93392C86606F0BE3E372B42 /* ArcherySceneNode.swift */,
 				B710ED1104FC20788AF86564 /* Buttons.swift */,
 				F0827F358B101907C7849CE8 /* CallHUD.swift */,
 				8976CB61A0466434E935514C /* CallPlayView.swift */,
 				C66ECF622E9E7DFFF9DE9F07 /* CallVerdictView.swift */,
 				F54712539125042DCB2E6274 /* CelebrationView.swift */,
 				F174CF0BA821EEC10A5BBAE9 /* ChapterListView.swift */,
+				4488B1CF1D7455CF53F9E4CA /* ChapterView.swift */,
 				3DA01253F96087CAA6843A1B /* Color+Tokens.swift */,
 				D753DFE7BF4B1F44E0A40CA1 /* CourtCoordinateTransform.swift */,
 				4E7FDD3CA85816BDD0744657 /* Font+Tokens.swift */,
@@ -517,11 +548,15 @@
 		58C2A51D3F82FB2A8371CC67 /* Domain */ = {
 			isa = PBXGroup;
 			children = (
+				ADC86A32163F3391B094CBA2 /* ArcheryCurriculum.swift */,
+				D83C03738E0CC6197761A680 /* ArcheryScenario.swift */,
+				CCC452B0CF9F334B5356C504 /* ArcheryScenarioCatalog.swift */,
 				B4A5C734491464E15B339129 /* BasketballCurriculum.swift */,
 				F0290C1763D1502D323C308D /* Chapter.swift */,
 				D3D5DCBB3126C265F5C05E07 /* DailyScenarioPicker.swift */,
 				427C77A0D7014BDC06B454DF /* LessonContent.swift */,
 				64224DC624A867395EA5AD69 /* NextSituationPicker.swift */,
+				4A1B286B222B5175D551F146 /* NextUpFinder.swift */,
 				C4135AD3FFE28EC94268834B /* Rank.swift */,
 				47FA49C260B519FC37179C21 /* ScenarioID.swift */,
 				87314AE5D3120BC1E36A05C9 /* Sport.swift */,
@@ -641,6 +676,16 @@
 			path = Scenarios;
 			sourceTree = "<group>";
 		};
+		A38A8BFC769451C534D48F8A /* Archery */ = {
+			isa = PBXGroup;
+			children = (
+				C532B3389C4740D326D4750D /* arrow-whoosh.wav */,
+				12363103E06E8CC3DEBE96EB /* bullseye-hit.wav */,
+				A41E94A98B384BA64BFB2F8A /* target-thud.wav */,
+			);
+			path = Archery;
+			sourceTree = "<group>";
+		};
 		ACC49FBE6747A75AA0D40DFD /* Basketball */ = {
 			isa = PBXGroup;
 			children = (
@@ -661,9 +706,18 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		BB0D06977377C89488B5DBF3 /* chapters */ = {
+			isa = PBXGroup;
+			children = (
+				F1A3B2E79F184E943A4E6C92 /* arc-ch1-bg.png */,
+			);
+			path = chapters;
+			sourceTree = "<group>";
+		};
 		DC2E61851F4A397E4829DAEA /* Illustrations */ = {
 			isa = PBXGroup;
 			children = (
+				BB0D06977377C89488B5DBF3 /* chapters */,
 				3B86E38284964BB44A81C08F /* lessons */,
 				8E892AEFA12F7C8D2A0AB255 /* scenario_bb-01-freethrow.png */,
 			);
@@ -673,6 +727,7 @@
 		EA885B193037008185758ACB /* Audio */ = {
 			isa = PBXGroup;
 			children = (
+				A38A8BFC769451C534D48F8A /* Archery */,
 				7AA0248E2812E123919921D9 /* Basketball */,
 			);
 			path = Audio;
@@ -744,6 +799,7 @@
 						ProvisioningStyle = Automatic;
 					};
 					86875897627E9CD73CA2F4BC = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -778,6 +834,8 @@
 				3C530CA3266970F9C2F27A53 /* BarlowCondensed-Italic.ttf in Resources */,
 				3FCFA4CBA20EB8A8166B2139 /* BarlowCondensed-Regular.ttf in Resources */,
 				EE1E645F15B31D64FEE9B2BD /* airball.wav in Resources */,
+				9B11787AF87F10E9B72DEF6D /* arc-ch1-bg.png in Resources */,
+				5BED9E8FF4136E469B82D48F /* arrow-whoosh.wav in Resources */,
 				C7EA23C87181F0364384A093 /* bb-1-baseline.json in Resources */,
 				BE0386465DD28729354F3C18 /* bb-1-flat.json in Resources */,
 				8BF8B586B1D7A950BCE2533F /* bb-1-logo-three.json in Resources */,
@@ -829,6 +887,7 @@
 				0D49EF2F57DF293616141034 /* bb-c-wing-throw.json in Resources */,
 				401B475EBCCFD846AD2E2160 /* bg-basketball-gym-dusk.png in Resources */,
 				C4D65769C9586AFA5A6604EC /* brand-mark.wav in Resources */,
+				B268A2EE7281E5749DC7E012 /* bullseye-hit.wav in Resources */,
 				9B5C200ADDB78EBCC3C87827 /* dribble-loop.wav in Resources */,
 				B37DE08E75378F1D454EE4A3 /* glass-bounce.wav in Resources */,
 				509418D72D2F9259CA499861 /* miss-tone.wav in Resources */,
@@ -837,6 +896,7 @@
 				9EE4E9422BA802CA087297BD /* scenario_bb-01-freethrow.png in Resources */,
 				26C9CC49060744D0646517FA /* shoot-release.wav in Resources */,
 				D1EBBBC537096C34F0F2E608 /* swish-net.wav in Resources */,
+				2A7CD56111D1BC763C352199 /* target-thud.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -846,6 +906,7 @@
 			files = (
 				1EA596BE6BEFFC1A4704EA8C /* README.md in Resources */,
 				0A0911734AD176872DFF0C50 /* airball.wav in Resources */,
+				3D43A282367C9CF40DE57E7D /* arrow-whoosh.wav in Resources */,
 				AAD7375D99BE871F531A9DF2 /* bb-1-baseline.json in Resources */,
 				267AC0A42436762F81C39B95 /* bb-1-flat.json in Resources */,
 				AA25C5017A57BB4C92F1BF1C /* bb-1-logo-three.json in Resources */,
@@ -896,6 +957,7 @@
 				462F912C1533A6EE0F7F2ADF /* bb-c-ugly-1.json in Resources */,
 				5BC360F3E9CCBC0B5B601ED4 /* bb-c-wing-throw.json in Resources */,
 				7F150A76BB9ABDB1B1808142 /* brand-mark.wav in Resources */,
+				99FE65387E2AD098626546F6 /* bullseye-hit.wav in Resources */,
 				1C48B74D47984B3873B5A010 /* dribble-loop.wav in Resources */,
 				84DB8625238A6A1E8BEC74C2 /* glass-bounce.wav in Resources */,
 				F26EB030EB438C2767FB6A89 /* miss-tone.wav in Resources */,
@@ -903,6 +965,7 @@
 				56163DA5B104364F082CCA17 /* rim-hit.wav in Resources */,
 				DFE93D1AD9ADB5AC9BF0A3EB /* shoot-release.wav in Resources */,
 				0CC6F60D5976ACD96286E7D4 /* swish-net.wav in Resources */,
+				34A70CFDF20FB44C6DD87C1E /* target-thud.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -927,6 +990,12 @@
 			files = (
 				9880E276D98F5414A0D375A3 /* AnimationsDefinition.swift in Sources */,
 				769D66F6B595C2EE68905096 /* AppOpenView.swift in Sources */,
+				512D4B5312DC506848EFB94B /* ArcheryCallPlayView.swift in Sources */,
+				E6EED7791BDFBEE5D8AB6450 /* ArcheryCallVerdictView.swift in Sources */,
+				6AB9D4E7DDE781EB83088665 /* ArcheryCurriculum.swift in Sources */,
+				C1C82D6E0147F149944D34CF /* ArcheryScenario.swift in Sources */,
+				CA7350E21FC8DB49C1E37791 /* ArcheryScenarioCatalog.swift in Sources */,
+				B64606F323CDC92B1325F9DC /* ArcherySceneNode.swift in Sources */,
 				1077E261CD66562A5EDB8775 /* AudioService.swift in Sources */,
 				DAC60A676BE7074E197D6F5E /* BasketballCurriculum.swift in Sources */,
 				3B00612D2F6948708D5922A9 /* Buttons.swift in Sources */,
@@ -936,6 +1005,7 @@
 				DA72BBDE02511C77E4A06134 /* CelebrationView.swift in Sources */,
 				CCFD229D5BBFF6D436C64B90 /* Chapter.swift in Sources */,
 				601F84B50143F336A5610D2D /* ChapterListView.swift in Sources */,
+				FFEA889B7638710B507F2FE0 /* ChapterView.swift in Sources */,
 				9059FCB68096571624BC1472 /* Color+Tokens.swift in Sources */,
 				D01562D44B3D2C7420D507E2 /* CourtCoordinateTransform.swift in Sources */,
 				EAC0D096F5374DF97D82BC11 /* DailyScenarioPicker.swift in Sources */,
@@ -953,6 +1023,7 @@
 				D253BE4153A3E2F7975C19F7 /* MissedView.swift in Sources */,
 				C5141DF8A7BF4D58920CCD78 /* MotionController.swift in Sources */,
 				A2C0315FCC85E5F40DAEDCC4 /* NextSituationPicker.swift in Sources */,
+				B264E0A0009C34E27F3390AF /* NextUpFinder.swift in Sources */,
 				FB8A49C0551FAA4C8FB1D441 /* OnboardingView.swift in Sources */,
 				4CA11326E36DD74EFE10803A /* OutcomeDefinition.swift in Sources */,
 				7D1B2F2038833CF6F6369A6D /* PersistenceKeys.swift in Sources */,
@@ -1085,7 +1156,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = R54QH2958C;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -1184,7 +1254,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = R54QH2958C;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;

@@ -44,10 +44,23 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
     }
 
     var isUnlocked: Bool {
-        self == .basketball
+        // Temporarily unlocked for testing the archery flow end-to-end.
+        // Flip back to `self == .basketball` before shipping.
+        true
     }
 
     static var sortedForPicker: [Sport] {
         Sport.allCases
+    }
+
+    /// Curriculum for this sport. Returns an empty list for sports whose
+    /// chapters haven't been authored yet — the UI treats that as a
+    /// "coming soon" state rather than an error.
+    var chapters: [Chapter] {
+        switch self {
+        case .basketball: return BasketballCurriculum.chapters
+        case .archery:    return ArcheryCurriculum.chapters
+        case .soccer, .pool, .f1: return []
+        }
     }
 }
