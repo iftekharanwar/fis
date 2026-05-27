@@ -19,28 +19,79 @@ struct ChapterView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
+        ZStack(alignment: .top) {
+            Color.arclabBlack.ignoresSafeArea()
 
-            Spacer().frame(height: Spacing.xxl)
+            // Poster background, anchored to the top, occupies roughly the
+            // upper two-thirds. A vertical gradient fades it into pure
+            // black at the bottom so the lesson card + scenario row sit
+            // cleanly against the dark surface, no contrast fight.
+            if let bgName = chapter.backgroundImageName,
+               let uiImage = UIImage(named: bgName) {
+                GeometryReader { geo in
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geo.size.width, height: geo.size.height * 0.72)
+                        .clipped()
+                        .overlay(
+                            LinearGradient(
+                                colors: [
+                                    Color.arclabBlack.opacity(0),
+                                    Color.arclabBlack.opacity(0),
+                                    Color.arclabBlack.opacity(0.85),
+                                    Color.arclabBlack
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
+                .ignoresSafeArea(edges: .top)
 
-            heading
+                // Top scrim — fades the very top of the image to near-
+                // black so the TopBar's back button + chapter label don't
+                // fight the formula text in the upper-left of the diagram.
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        colors: [
+                            Color.arclabBlack.opacity(0.95),
+                            Color.arclabBlack.opacity(0.7),
+                            Color.arclabBlack.opacity(0)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 110)
+                    Spacer()
+                }
+                .ignoresSafeArea(edges: .top)
+                .allowsHitTesting(false)
+            }
 
-            Spacer().frame(height: Spacing.sm)
+            VStack(spacing: 0) {
+                topBar
 
-            subhead
+                Spacer().frame(height: Spacing.xxl)
 
-            Spacer()
+                heading
 
-            lessonRow
+                Spacer().frame(height: Spacing.sm)
 
-            Spacer().frame(height: Spacing.md)
+                subhead
 
-            practiceList
+                Spacer()
+
+                lessonRow
+
+                Spacer().frame(height: Spacing.md)
+
+                practiceList
+            }
+            .padding(.horizontal, Spacing.md)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.horizontal, Spacing.md)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arclabBlack.ignoresSafeArea())
     }
 
     private var topBar: some View {
@@ -162,14 +213,16 @@ struct ChapterView: View {
             : "\(scenarioTitle(for: scenarioId)). Tap to play.")
     }
 
-    /// Look up a human-readable archetype title for the scenario. Falls back
-    /// to a humanized form of the id if the scenario isn't loadable yet
-    /// (e.g. authoring stage).
+    /// Look up a human-readable archetype title for the scenario. Dispatches
+    /// by id prefix because archery scenarios live in a separate static
+    /// catalog rather than the JSON-on-disk basketball pipeline.
     private func scenarioTitle(for scenarioId: String) -> String {
+        if scenarioId.hasPrefix("arc-") {
+            return ArcheryScenarioCatalog.title(for: scenarioId)
+        }
         if let scenario = try? ScenarioLoader.load(ScenarioID(scenarioId)) {
             return scenario.meta.title
         }
-        // Fallback: humanize the id, e.g. "bb-freethrow-001" → "Bb Freethrow 001"
         return scenarioId
             .replacingOccurrences(of: "-", with: " ")
             .capitalized

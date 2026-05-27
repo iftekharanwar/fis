@@ -139,7 +139,7 @@ struct LessonView: View {
 
             if isLastCard {
                 Spacer().frame(height: Spacing.xl)
-                PrimaryButton(label: "Practice", action: handleComplete)
+                AccentButton(label: "Practice", action: handleComplete)
             }
 
             Spacer()

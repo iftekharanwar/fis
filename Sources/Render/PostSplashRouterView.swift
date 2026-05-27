@@ -1,20 +1,26 @@
 import SwiftUI
 
-/// Post-splash router. v2.1 flow:
-///   Home → SportPicker → Chapter → [Lesson | Scenario] → Verdict/Reveal → Home
+/// Post-splash router.
 ///
-/// First-launch users still see Onboarding before Home. Existing v1
-/// presentation paths (ScenarioContainerView via fullScreenCover) are reused
-/// for the scenario beat — the call-first + reveal beats arrive in steps 3–4
-/// of CONCEPT_v2.1 §13.
+/// v2.2 flow:
+///   Home → [TODAY → Scenario]
+///        → [ALL SPORTS → SportPicker → ChapterList(sport) → Chapter → Lesson | Scenario]
+///        → Verdict / Reveal → Home
+///
+/// TODAY is currently driven by NextUpFinder (the user's next unplayed
+/// scenario). The card surface is named TODAY so the home stays stable
+/// once daily-pick video content is wired in.
+///
+/// Scenario presentation dispatches by id prefix: `bb-*` opens the
+/// basketball `CallPlayView`, `arc-*` opens `ArcheryCallPlayView`. The
+/// two play surfaces share the reveal beat (`RevealOverlay`) but each
+/// owns its own scene + verdict view because archery and basketball have
+/// different success geometry and different sport-coded copy.
 struct PostSplashRouterView: View {
     @Environment(PlayerProfileStore.self) private var profile
 
     @State private var navigationPath = NavigationPath()
-    @State private var presentedScenario: ScenarioDefinition?
-    /// Tracked alongside `presentedScenario` so CallPlayView's reveal beat
-    /// can pull phenomenon + explainer from the originating chapter.
-    @State private var presentedChapter: Chapter?
+    @State private var presentedPlay: PresentedPlay?
     @State private var presentedProfile: Bool = false
 
     var body: some View {
@@ -29,7 +35,7 @@ struct PostSplashRouterView: View {
     private var homeStack: some View {
         NavigationStack(path: $navigationPath) {
             HomeView(
-                onPickDailyScenario: handleDailyScenarioTap,
+                onTapTodayCard: handleTapTodayCard,
                 onOpenSportPicker: { navigationPath.append(V2Route.sportPicker) },
                 onOpenProfile: { presentedProfile = true }
             )
@@ -38,18 +44,31 @@ struct PostSplashRouterView: View {
                     .navigationBarBackButtonHidden(true)
             }
         }
-        .fullScreenCover(item: $presentedScenario) { scenario in
-            CallPlayView(
-                scenario: scenario,
-                chapter: presentedChapter,
-                onClose: {
-                    presentedScenario = nil
-                    presentedChapter = nil
-                }
-            )
+        .fullScreenCover(item: $presentedPlay) { play in
+            playView(for: play)
         }
         .sheet(isPresented: $presentedProfile) {
             ProfileView()
+        }
+    }
+
+    // MARK: - Play presentation
+
+    @ViewBuilder
+    private func playView(for play: PresentedPlay) -> some View {
+        switch play {
+        case .basketball(let scenario, let chapter):
+            CallPlayView(
+                scenario: scenario,
+                chapter: chapter,
+                onClose: { presentedPlay = nil }
+            )
+        case .archery(let scenario, let chapter):
+            ArcheryCallPlayView(
+                scenario: scenario,
+                chapter: chapter,
+                onClose: { presentedPlay = nil }
+            )
         }
     }
 
@@ -60,12 +79,17 @@ struct PostSplashRouterView: View {
         switch route {
         case .sportPicker:
             SportPickerView(onSelect: { sport in
-                // v2.1: sport tap routes to the first chapter of that sport.
-                // Multi-sport picker arrives once soccer ships post-launch.
-                if let firstChapter = chapters(for: sport).first {
-                    navigationPath.append(V2Route.chapter(firstChapter.id))
-                }
+                guard sport.isUnlocked else { return }
+                navigationPath.append(V2Route.chapterList(sport))
             })
+
+        case .chapterList(let sport):
+            ChapterListView(
+                sport: sport,
+                onOpenChapter: { chapter in
+                    navigationPath.append(V2Route.chapter(chapter.id))
+                }
+            )
 
         case .chapter(let chapterId):
             if let chapter = chapter(withId: chapterId) {
@@ -88,8 +112,6 @@ struct PostSplashRouterView: View {
                 LessonView(
                     lesson: chapter.lesson,
                     onCompleted: {
-                        // Mark lesson as read, then drop back to the chapter
-                        // screen so the user picks their first scenario.
                         profile.mutate { $0.completedLessons.insert(lessonId) }
                         navigationPath.removeLast()
                     }
@@ -106,35 +128,42 @@ struct PostSplashRouterView: View {
         // OnboardingView mutated hasSeenOnboarding; @Observable re-evaluates body.
     }
 
-    private func handleDailyScenarioTap() {
-        // Daily Scenario pipeline (server-picked daily card + push notify)
-        // isn't wired yet — until it is, route to the canonical free throw
-        // and attach its owning chapter so the reveal beat has content.
-        let chapter = BasketballCurriculum.chapters.first(where: {
-            $0.scenarioIDs.contains("bb-freethrow-001")
-        })
-        presentScenario(id: "bb-freethrow-001", in: chapter)
+    /// User tapped the TODAY card. Same routing logic as before:
+    ///  - scenario exists AND its lesson has been read → present the
+    ///    scenario directly (engaged path)
+    ///  - otherwise → push the chapter view so the user lands on the
+    ///    lesson + scenario list.
+    private func handleTapTodayCard(chapter: Chapter, scenarioId: String?) {
+        let lessonRead = profile.profile.completedLessons.contains(chapter.lesson.id)
+        if let scenarioId, lessonRead {
+            presentScenario(id: scenarioId, in: chapter)
+        } else {
+            navigationPath.append(V2Route.chapter(chapter.id))
+        }
     }
 
+    /// Dispatches the scenario to the right play surface by id prefix.
+    /// Unknown / unloadable ids fail silently — better than a crash on a
+    /// stale curriculum entry.
     private func presentScenario(id: String, in chapter: Chapter?) {
-        guard let scenario = try? ScenarioLoader.load(ScenarioID(id)) else { return }
-        presentedChapter = chapter
-        presentedScenario = scenario
+        if id.hasPrefix("arc-") {
+            guard let arc = ArcheryScenarioCatalog.scenario(for: id) else { return }
+            presentedPlay = .archery(arc, chapter)
+        } else {
+            guard let scenario = try? ScenarioLoader.load(ScenarioID(id)) else { return }
+            presentedPlay = .basketball(scenario, chapter)
+        }
     }
 
     // MARK: - Curriculum lookup
 
-    private func chapters(for sport: Sport) -> [Chapter] {
-        switch sport {
-        case .basketball:
-            return BasketballCurriculum.chapters
-        default:
-            return []
-        }
-    }
-
     private func chapter(withId id: String) -> Chapter? {
-        BasketballCurriculum.chapters.first { $0.id == id }
+        for sport in Sport.allCases {
+            if let match = sport.chapters.first(where: { $0.id == id }) {
+                return match
+            }
+        }
+        return nil
     }
 
     // MARK: - Placeholders
@@ -148,9 +177,24 @@ struct PostSplashRouterView: View {
     }
 }
 
-/// Navigation routes for v2.1.
+/// Discriminated union covering both play surfaces. Identifiable so it
+/// can drive `.fullScreenCover(item:)` without a separate Bool flag.
+enum PresentedPlay: Identifiable {
+    case basketball(ScenarioDefinition, Chapter?)
+    case archery(ArcheryScenario, Chapter?)
+
+    var id: String {
+        switch self {
+        case .basketball(let s, _): return s.scenarioId.rawValue
+        case .archery(let s, _):    return s.id
+        }
+    }
+}
+
+/// Navigation routes for v2.2.
 enum V2Route: Hashable {
     case sportPicker
-    case chapter(String)                 // chapterId
-    case lesson(String, chapterId: String)  // lessonId
+    case chapterList(Sport)
+    case chapter(String)                       // chapterId
+    case lesson(String, chapterId: String)     // lessonId
 }
