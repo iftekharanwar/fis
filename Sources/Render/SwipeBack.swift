@@ -16,9 +16,11 @@ import SwiftUI
 /// Critical layout note: this modifier MUST NOT wrap content in a
 /// GeometryReader at the root, because that collapses cover content that
 /// depends on intrinsic full-bleed expansion (SpriteView, ZStack with
-/// .ignoresSafeArea backgrounds). Instead it reads screen size via
-/// UIScreen.main.bounds at gesture-resolution time. Content gets a plain
-/// .offset that respects its own layout.
+/// .ignoresSafeArea backgrounds). Instead it reads the content's own resolved
+/// size via a *background* GeometryReader (which matches the content's size
+/// without constraining it) — correct in any orientation / Split View, unlike
+/// the deprecated `UIScreen.main.bounds`. Content gets a plain `.offset` that
+/// respects its own layout.
 ///
 /// Gate dismissal with `isEnabled`: e.g. set `false` during a mid-flight
 /// action phase so the user can't accidentally swipe away in-progress work.
@@ -33,6 +35,11 @@ struct SwipeBackToDismiss: ViewModifier {
     /// Which axis the user committed to on first non-trivial drag. Locks the
     /// gesture to one axis so a slight diagonal doesn't bleed both ways.
     @State private var axis: DragAxis? = nil
+
+    /// The content's own resolved size, read via a background GeometryReader.
+    /// Used as the commit-threshold reference so the gesture works correctly in
+    /// landscape and Split View (where `UIScreen.main.bounds` lies).
+    @State private var contentSize: CGSize = .zero
 
     private enum DragAxis { case horizontal, vertical }
 
@@ -50,6 +57,14 @@ struct SwipeBackToDismiss: ViewModifier {
                     y: max(0, dragOffset.height))
             .animation(.interactiveSpring(response: 0.30, dampingFraction: 0.85),
                        value: dragOffset)
+            // Read the content's resolved size without constraining it.
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { contentSize = proxy.size }
+                        .onChange(of: proxy.size) { _, newValue in contentSize = newValue }
+                }
+            )
             .simultaneousGesture(dragGesture, including: isEnabled ? .all : .subviews)
             .onChange(of: isEnabled) { _, newValue in
                 if !newValue {
@@ -95,7 +110,10 @@ struct SwipeBackToDismiss: ViewModifier {
                 defer { axis = nil; dragOffset = .zero }
                 guard let lockedAxis = axis else { return }
 
-                let screen = UIScreen.main.bounds.size
+                // Threshold reference = the content's own size (correct in any
+                // orientation / Split View). Fall back to screen bounds only if
+                // the background reader hasn't reported yet.
+                let screen = contentSize == .zero ? UIScreen.main.bounds.size : contentSize
                 let traveled: CGFloat
                 let dimension: CGFloat
                 let predictedExtra: CGFloat

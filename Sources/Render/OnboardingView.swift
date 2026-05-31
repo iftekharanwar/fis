@@ -12,6 +12,7 @@ struct OnboardingView: View {
         ZStack {
             Color.arclabBlack.ignoresSafeArea()
 
+            AdaptiveContentContainer(maxWidth: 640) {
             VStack(spacing: 0) {
                 Spacer().frame(height: Spacing.xxl)
 
@@ -65,6 +66,7 @@ struct OnboardingView: View {
                     .opacity(verbVisible ? 1.0 : 0.0)
                     .animation(.easeOut(duration: 0.4).delay(1.2), value: verbVisible)
                     .accessibilityLabel("Begin. Open the sport picker.")
+            }
             }
         }
         .statusBarHidden(false)

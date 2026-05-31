@@ -13,6 +13,7 @@ import SwiftUI
 /// alone. Crimson stays reserved for miss state.
 struct HomeView: View {
     @Environment(PlayerProfileStore.self) private var profile
+    @Environment(\.horizontalSizeClass) private var hSizeClass
 
     let onPickDailyScenario: () -> Void
     let onOpenSportPicker: () -> Void
@@ -30,31 +31,72 @@ struct HomeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-
-            Spacer().frame(height: Spacing.md)
-
-            heroCard
-
-            Spacer().frame(height: Spacing.xl)
-
-            continueRow
-
-            // Bumped from 0.5 → 1.0 opacity per audit rec — at 50% the
-            // hairline barely separated the two near-identical rows and the
-            // user couldn't tell CONTINUE from PROFILE at a glance.
-            Rectangle()
-                .fill(Color.arclabBorderGrey)
-                .frame(height: 1)
-
-            profileRow
-
-            Spacer()
+        GeometryReader { geo in
+            let ctx = LayoutContext.resolve(
+                horizontalSizeClass: hSizeClass,
+                size: geo.size,
+                safeArea: geo.safeAreaInsets
+            )
+            Group {
+                if ctx.isRegular && ctx.isWide {
+                    twoColumnLayout      // iPad landscape: hero + side panel
+                } else {
+                    singleColumnLayout   // iPhone + iPad portrait (centered on iPad)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.arclabBlack.ignoresSafeArea())
         }
-        .padding(.horizontal, Spacing.md)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arclabBlack.ignoresSafeArea())
+    }
+
+    /// iPhone + iPad portrait. On iPad the column is capped + centered so the
+    /// hero card and rows don't stretch the full width.
+    private var singleColumnLayout: some View {
+        AdaptiveContentContainer(maxWidth: 600) {
+            VStack(spacing: 0) {
+                header
+                Spacer().frame(height: Spacing.md)
+                heroCard
+                Spacer().frame(height: Spacing.xl)
+                continueRow
+                // Bumped from 0.5 → 1.0 opacity per audit rec — at 50% the
+                // hairline barely separated the two near-identical rows and the
+                // user couldn't tell CONTINUE from PROFILE at a glance.
+                Rectangle()
+                    .fill(Color.arclabBorderGrey)
+                    .frame(height: 1)
+                profileRow
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.md)
+        }
+    }
+
+    /// iPad landscape: the hero daily card takes the left two-thirds; the
+    /// header + CONTINUE/PROFILE rows stack in a right-side panel.
+    private var twoColumnLayout: some View {
+        HStack(alignment: .top, spacing: Spacing.xl) {
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                heroCard
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity)
+
+            VStack(spacing: 0) {
+                header
+                Spacer().frame(height: Spacing.xl)
+                continueRow
+                Rectangle()
+                    .fill(Color.arclabBorderGrey)
+                    .frame(height: 1)
+                profileRow
+                Spacer()
+            }
+            .frame(width: 380)
+        }
+        .padding(.horizontal, Spacing.xl)
+        .padding(.top, Spacing.lg)
     }
 
     // MARK: - Header

@@ -84,6 +84,15 @@ final class ArcherySceneNode: SKScene {
 
     var audio: AudioService?
 
+    /// Multiplier for hardcoded cosmetic pixel constants (target rings, pin,
+    /// trail, ground line) so they stay visible on a large iPad canvas. Derived
+    /// from the smaller scene dimension vs the iPhone baseline (~393pt); never
+    /// below 1.0, capped so iPad isn't cartoonish. Figure/bow/arrow strokes are
+    /// already derived from figureHeight/svgScale and intentionally excluded.
+    var cosmeticScale: CGFloat {
+        min(max(min(size.width, size.height) / 393, 1.0), 2.2)
+    }
+
     /// (outcome, wobbleAtImpactRadians) — the wobble envelope value
     /// at the moment the arrow crosses the target plane. Ch1 scenarios
     /// always have wobble=0; Ch2 (paradox) scenarios use this to decide
@@ -124,8 +133,8 @@ final class ArcherySceneNode: SKScene {
 
     // MARK: - Public control
 
-    func applyUIReserve(top: CGFloat, bottom: CGFloat, safeTop: CGFloat, safeBottom: CGFloat) {
-        let next = SceneInsets(top: top, bottom: bottom, safeTop: safeTop, safeBottom: safeBottom)
+    func applyUIReserve(top: CGFloat, bottom: CGFloat, safeTop: CGFloat, safeBottom: CGFloat, right: CGFloat = 0) {
+        let next = SceneInsets(top: top, bottom: bottom, safeTop: safeTop, safeBottom: safeBottom, right: right)
         guard next != uiReserve else { return }
         uiReserve = next
         rebuildTransform(for: size)
@@ -267,7 +276,7 @@ final class ArcherySceneNode: SKScene {
         if ghostNode == nil {
             let node = SKShapeNode()
             node.strokeColor = UIColor.white.withAlphaComponent(0.65)
-            node.lineWidth = 1.6
+            node.lineWidth = 1.6 * cosmeticScale
             node.fillColor = .clear
             // SKShapeNode supports a glLineLength / dashPattern style via
             // SKAction; cheapest reliable approach is to build the dashed
@@ -471,7 +480,7 @@ final class ArcherySceneNode: SKScene {
         path.addLine(to: rightPt)
         let line = SKShapeNode(path: path)
         line.strokeColor = Self.borderGrey
-        line.lineWidth = 1
+        line.lineWidth = 1 * cosmeticScale
         addChild(line)
     }
 
@@ -767,7 +776,7 @@ final class ArcherySceneNode: SKScene {
         postPath.addLine(to: CGPoint(x: center.x, y: center.y - outerRadiusPx))
         let post = SKShapeNode(path: postPath)
         post.strokeColor = Self.midGrey
-        post.lineWidth = 2
+        post.lineWidth = 2 * cosmeticScale
         addChild(post)
 
         let group = SKNode()
@@ -777,14 +786,14 @@ final class ArcherySceneNode: SKScene {
             ring.position = center
             ring.fillColor = .clear
             ring.strokeColor = .white.withAlphaComponent(0.45 + CGFloat(i) * 0.15)
-            ring.lineWidth = 1
+            ring.lineWidth = 1 * cosmeticScale
             group.addChild(ring)
         }
         let bullseye = SKShapeNode(circleOfRadius: bullseyeRadiusPx)
         bullseye.position = center
         bullseye.fillColor = UIColor.white.withAlphaComponent(0.18)
         bullseye.strokeColor = .white
-        bullseye.lineWidth = 1.5
+        bullseye.lineWidth = 1.5 * cosmeticScale
         group.addChild(bullseye)
 
         addChild(group)
@@ -795,7 +804,7 @@ final class ArcherySceneNode: SKScene {
         let center = transform.scenePoint(
             world: CGPoint(x: scenario.targetDistance, y: scenario.bullseyeHeight)
         )
-        let pin = SKShapeNode(circleOfRadius: 3)
+        let pin = SKShapeNode(circleOfRadius: 3 * cosmeticScale)
         pin.position = center
         pin.fillColor = .white
         pin.strokeColor = .white
@@ -820,7 +829,7 @@ final class ArcherySceneNode: SKScene {
     private func buildTrail() {
         let trail = SKShapeNode()
         trail.strokeColor = UIColor.white.withAlphaComponent(0.65)
-        trail.lineWidth = 1.5
+        trail.lineWidth = 1.5 * cosmeticScale
         trail.fillColor = .clear
         addChild(trail)
         trailNode = trail
@@ -928,7 +937,9 @@ private struct ArcheryTransform {
     let verticalMargin: CGFloat = 8
 
     var xScale: CGFloat {
-        let usable = sceneSize.width - 2 * horizontalMargin
+        // `right`/`left` reserve a side band (iPad landscape dock); both default
+        // to 0 so portrait geometry is unchanged.
+        let usable = sceneSize.width - 2 * horizontalMargin - uiReserve.left - uiReserve.right
         return max(usable, 1) / CGFloat(worldXMax - worldXMin)
     }
 
@@ -938,7 +949,7 @@ private struct ArcheryTransform {
     }
 
     func scenePoint(world: CGPoint) -> CGPoint {
-        let x = horizontalMargin + (world.x - CGFloat(worldXMin)) * xScale
+        let x = horizontalMargin + uiReserve.left + (world.x - CGFloat(worldXMin)) * xScale
         let y = uiReserve.bottom + verticalMargin + (world.y - CGFloat(worldYMin)) * yScale
         return CGPoint(x: x, y: y)
     }

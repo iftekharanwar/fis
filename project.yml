@@ -11,7 +11,10 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    DEVELOPMENT_TEAM: ""
+    # Local signing team. Carried here so `xcodegen generate` preserves it
+    # instead of resetting to empty (which breaks on-device builds). Replace
+    # with your own team ID, or blank it if you set the team in Xcode instead.
+    DEVELOPMENT_TEAM: T993T6534U
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRICT_CONCURRENCY: complete
@@ -37,8 +40,16 @@ targets:
         UIViewControllerBasedStatusBarAppearance: true
         UILaunchScreen:
           UIColorName: LaunchBackground
+        # iPhone: portrait only (unchanged). iOS applies the base key on
+        # iPhone and the ~ipad variant on iPad automatically, so iPad gets
+        # all orientations while iPhone stays locked — no scene delegate needed.
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         UIRequiredDeviceCapabilities:
           - arm64
         UIAppFonts:
@@ -49,7 +60,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.iftekharanwar.physicsgame
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         GENERATE_INFOPLIST_FILE: NO

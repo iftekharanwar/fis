@@ -40,26 +40,28 @@ struct LessonView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
-            progressHairline
-                .padding(.horizontal, Spacing.md)
-                .padding(.top, Spacing.xs)
+        AdaptiveContentContainer(maxWidth: 700) {
+            VStack(spacing: 0) {
+                topBar
+                progressHairline
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.top, Spacing.xs)
 
-            ZStack {
-                // The story card.
-                cardContent
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
-                    .id(cardIndex)  // forces transition on every advance
+                ZStack {
+                    // The story card.
+                    cardContent
+                        .transition(.opacity.combined(with: .move(edge: .trailing)))
+                        .id(cardIndex)  // forces transition on every advance
 
-                // Invisible tap zones — left 33% goes back, right 67% advances.
-                // Bottom 80pt is excluded so accidental grip-line taps don't fire.
-                tapZones
+                    // Invisible tap zones — left 33% goes back, right 67% advances.
+                    // Bottom 80pt is excluded so accidental grip-line taps don't fire.
+                    tapZones
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
+            .padding(.horizontal, Spacing.md)
         }
-        .padding(.horizontal, Spacing.md)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
         .overlay {

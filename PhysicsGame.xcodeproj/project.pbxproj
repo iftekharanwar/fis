@@ -61,6 +61,7 @@
 		4CA11326E36DD74EFE10803A /* OutcomeDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B16C63005C492179FECFE8B /* OutcomeDefinition.swift */; };
 		4D174938975E03A2166E858F /* ScenarioBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 765243C5C2D983166D8DC344 /* ScenarioBackgroundView.swift */; };
 		4ED268F2C4D3A719DEE399F4 /* bb-b-flat.json in Resources */ = {isa = PBXBuildFile; fileRef = 53D8BAF455E275B61070AC03 /* bb-b-flat.json */; };
+		50135246D81D015E54FC02A6 /* AdaptiveLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833D67AC795133CC4D719CE3 /* AdaptiveLayoutTests.swift */; };
 		507576261646C5C2E7455CEA /* bb-b-freethrow.json in Resources */ = {isa = PBXBuildFile; fileRef = B2CCB11654AC0342A4837F5E /* bb-b-freethrow.json */; };
 		509418D72D2F9259CA499861 /* miss-tone.wav in Resources */ = {isa = PBXBuildFile; fileRef = 057D1055BF0763AA15795726 /* miss-tone.wav */; };
 		512D4B5312DC506848EFB94B /* ArcheryCallPlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2BAA226603248EAC26CA2 /* ArcheryCallPlayView.swift */; };
@@ -210,9 +211,11 @@
 		EE1E645F15B31D64FEE9B2BD /* airball.wav in Resources */ = {isa = PBXBuildFile; fileRef = E47AA15346583018EED15CFF /* airball.wav */; };
 		EED8294D5F7AFAB0608576F2 /* PlaySceneNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07EF9C90BFBFEEC9EE121655 /* PlaySceneNode.swift */; };
 		F055B38FF1A5F577448BFC35 /* Font+Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E7FDD3CA85816BDD0744657 /* Font+Tokens.swift */; };
+		F06B278F4B23169AFF4E6FC8 /* LayoutContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57AA5494B48AAE609BFD9F7D /* LayoutContext.swift */; };
 		F090A7848474A02902E4B54F /* bb-c-rainbow.json in Resources */ = {isa = PBXBuildFile; fileRef = 96F03B156C72D728DD673AFF /* bb-c-rainbow.json */; };
 		F26EB030EB438C2767FB6A89 /* miss-tone.wav in Resources */ = {isa = PBXBuildFile; fileRef = 057D1055BF0763AA15795726 /* miss-tone.wav */; };
 		F5E1424C64F4B803A5EADA45 /* bb-b-wing.json in Resources */ = {isa = PBXBuildFile; fileRef = 08850FEF30A97A81035007DE /* bb-b-wing.json */; };
+		F96300E2C406C80C892616C7 /* AdaptiveContentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A836AB9F75ED1B08BED16FA /* AdaptiveContentContainer.swift */; };
 		FB065A66D348701062DA66A7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DEDB5BFF752609FFEBE03DD8 /* Assets.xcassets */; };
 		FB665A4929E95AC819176542 /* bb-a-top-key.json in Resources */ = {isa = PBXBuildFile; fileRef = B183689743238F32B655E464 /* bb-a-top-key.json */; };
 		FB8A49C0551FAA4C8FB1D441 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100673C986D912EFEBC0F5F9 /* OnboardingView.swift */; };
@@ -286,6 +289,7 @@
 		54B021F5E63ADCE5F0F48A01 /* MasteryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasteryServiceTests.swift; sourceTree = "<group>"; };
 		55657A3022D7E039A18756F4 /* rim-hit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "rim-hit.wav"; sourceTree = "<group>"; };
 		565A53E3D7433F97610E37D8 /* PlayerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfile.swift; sourceTree = "<group>"; };
+		57AA5494B48AAE609BFD9F7D /* LayoutContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutContext.swift; sourceTree = "<group>"; };
 		58405730E86D1F12E345A4EC /* SportLevelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportLevelCatalog.swift; sourceTree = "<group>"; };
 		599642AB2CEC72A429E32B58 /* Spacing+Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Spacing+Tokens.swift"; sourceTree = "<group>"; };
 		5A69AAF4433BCE229E008117 /* PersistenceKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceKeys.swift; sourceTree = "<group>"; };
@@ -308,9 +312,11 @@
 		765243C5C2D983166D8DC344 /* ScenarioBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioBackgroundView.swift; sourceTree = "<group>"; };
 		7659807F674E00A2DB85668C /* SimulationRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationRegistry.swift; sourceTree = "<group>"; };
 		7A6EEBEA5AE6782EFF0F876A /* PostSplashRouterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostSplashRouterView.swift; sourceTree = "<group>"; };
+		7A836AB9F75ED1B08BED16FA /* AdaptiveContentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveContentContainer.swift; sourceTree = "<group>"; };
 		7CB0B5867941348343B853CE /* AudioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
 		7FF571A6760A0E4E463D989A /* bb-1-baseline.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-1-baseline.json"; sourceTree = "<group>"; };
 		80EDD39579F7F214B9EA9F12 /* SmokeTestDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokeTestDefinition.swift; sourceTree = "<group>"; };
+		833D67AC795133CC4D719CE3 /* AdaptiveLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveLayoutTests.swift; sourceTree = "<group>"; };
 		8374B82C301C3C8B83D401C6 /* bb-b-corner-3.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-corner-3.json"; sourceTree = "<group>"; };
 		83CB785580DE7171854CF1F5 /* PhysicsGameTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PhysicsGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8423C9B12D61CF29072D71B9 /* PlayerProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileStore.swift; sourceTree = "<group>"; };
@@ -443,28 +449,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		2C959E5B2C519BBFB6ACD0F4 /* Sprites */ = {
-			isa = PBXGroup;
-			children = (
-				4B636EEA51D3566A16A7167D /* Basketball */,
-			);
-			path = Sprites;
-			sourceTree = "<group>";
-		};
-		3B86E38284964BB44A81C08F /* lessons */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = lessons;
-			sourceTree = "<group>";
-		};
-		4B636EEA51D3566A16A7167D /* Basketball */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Basketball;
-			sourceTree = "<group>";
-		};
 		4CFA05BA1C6ED4C57872185A /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
@@ -478,6 +462,7 @@
 		520D3554F0C450A8B2D6E69B /* Render */ = {
 			isa = PBXGroup;
 			children = (
+				7A836AB9F75ED1B08BED16FA /* AdaptiveContentContainer.swift */,
 				08331D43606F118E4724D75E /* AppOpenView.swift */,
 				75A2BAA226603248EAC26CA2 /* ArcheryCallPlayView.swift */,
 				DF4BB000793F934837B8B578 /* ArcheryCallVerdictView.swift */,
@@ -493,6 +478,7 @@
 				D753DFE7BF4B1F44E0A40CA1 /* CourtCoordinateTransform.swift */,
 				4E7FDD3CA85816BDD0744657 /* Font+Tokens.swift */,
 				B9DB4D497A148712CD8D41CF /* HomeView.swift */,
+				57AA5494B48AAE609BFD9F7D /* LayoutContext.swift */,
 				34869B1BC84C0691328F5BB5 /* LessonView.swift */,
 				1B542C55649D4DAB4C0160AA /* LevelTypePickerView.swift */,
 				6E18DFCC8141F0EF72A1DEA0 /* MasteryGateTakeoverView.swift */,
@@ -529,7 +515,6 @@
 				4CFA05BA1C6ED4C57872185A /* Fonts */,
 				DC2E61851F4A397E4829DAEA /* Illustrations */,
 				84A6811EFE8A2A67DC0F7AA2 /* Scenarios */,
-				2C959E5B2C519BBFB6ACD0F4 /* Sprites */,
 				DEDB5BFF752609FFEBE03DD8 /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -697,6 +682,7 @@
 		AD386B2FA79F16196D83AA9A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				833D67AC795133CC4D719CE3 /* AdaptiveLayoutTests.swift */,
 				C11EA3D3ABA9C0ECDF6C1005 /* AudioBundleTests.swift */,
 				54B021F5E63ADCE5F0F48A01 /* MasteryServiceTests.swift */,
 				85CCC4DD8C3D57AACA7580A0 /* NextSituationPickerTests.swift */,
@@ -718,7 +704,6 @@
 			isa = PBXGroup;
 			children = (
 				BB0D06977377C89488B5DBF3 /* chapters */,
-				3B86E38284964BB44A81C08F /* lessons */,
 				8E892AEFA12F7C8D2A0AB255 /* scenario_bb-01-freethrow.png */,
 			);
 			path = Illustrations;
@@ -795,11 +780,11 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					26E883F1FFE157385F42A912 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = T993T6534U;
 						ProvisioningStyle = Automatic;
 					};
 					86875897627E9CD73CA2F4BC = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = T993T6534U;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -976,6 +961,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50135246D81D015E54FC02A6 /* AdaptiveLayoutTests.swift in Sources */,
 				C610B815B320DD0136B51A43 /* AudioBundleTests.swift in Sources */,
 				5C907242A1C71713A2597EFE /* MasteryServiceTests.swift in Sources */,
 				A6D1EAC74A881EF854C55FF0 /* NextSituationPickerTests.swift in Sources */,
@@ -988,6 +974,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F96300E2C406C80C892616C7 /* AdaptiveContentContainer.swift in Sources */,
 				9880E276D98F5414A0D375A3 /* AnimationsDefinition.swift in Sources */,
 				769D66F6B595C2EE68905096 /* AppOpenView.swift in Sources */,
 				512D4B5312DC506848EFB94B /* ArcheryCallPlayView.swift in Sources */,
@@ -1013,6 +1000,7 @@
 				D76C91B8317812B6FD546755 /* HintDefinition.swift in Sources */,
 				AFE2269832A071CF72331F0E /* HomeView.swift in Sources */,
 				E31EA62FDBC7F1DB91F95438 /* InputDefinition.swift in Sources */,
+				F06B278F4B23169AFF4E6FC8 /* LayoutContext.swift in Sources */,
 				8EDEC71F2E2FC8297D528F48 /* LessonContent.swift in Sources */,
 				C9F1A1A19D49254EF5E806F5 /* LessonView.swift in Sources */,
 				0ACB4B8DC66B23B3E0184B92 /* LevelTypeMastery.swift in Sources */,
@@ -1119,7 +1107,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = T993T6534U;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1165,7 +1153,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.iftekharanwar.physicsgame;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -1205,7 +1193,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = T993T6534U;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1263,7 +1251,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.iftekharanwar.physicsgame;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

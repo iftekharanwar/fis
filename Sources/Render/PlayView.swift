@@ -5,6 +5,7 @@ import SpriteKit
 struct PlayView: View {
     @Environment(PlayerProfileStore.self) private var profile
     @Environment(AudioService.self) private var audio
+    @Environment(\.horizontalSizeClass) private var hSizeClass
 
     let scenario: ScenarioDefinition
 
@@ -86,6 +87,15 @@ struct PlayView: View {
                 for: geometry.size,
                 safeArea: geometry.safeAreaInsets
             )
+            let ctx = LayoutContext.resolve(
+                horizontalSizeClass: hSizeClass,
+                size: geometry.size,
+                safeArea: geometry.safeAreaInsets
+            )
+            // iPad landscape: the chrome dock becomes a right-side column and
+            // the court frames into the left band. Everywhere else (iPhone +
+            // iPad portrait) keeps the legacy bottom-dock layout.
+            let useSideDock = ctx.isRegular && ctx.isWide
 
             ZStack(alignment: .top) {
                 // Z0 — full-bleed court canvas.
@@ -108,72 +118,25 @@ struct PlayView: View {
                 }
                 .animation(.easeOut(duration: 0.25), value: phase)
 
-                // Bottom overlay — input dock (.idle) or outcome (.outcome).
-                VStack(spacing: 0) {
-                    Spacer()
-                        .allowsHitTesting(false)
-                    if case .idle = phase {
-                        switch scenario.input.mode {
-                        case .numpadSingleTheta:
-                            PlayInputSingleFieldView(
-                                scenario: scenario,
-                                value: $thetaValue,
-                                onShoot: handleShoot,
-                                isNumpadVisible: $isNumpadVisible
-                            )
-                            .frame(height: 330)
-                            .background(Color.arclabBlack)
-                            .transition(.opacity)
-                        case .numpadSingleV:
-                            PlayInputSingleFieldView(
-                                scenario: scenario,
-                                value: $velocityValue,
-                                onShoot: handleShoot,
-                                isNumpadVisible: $isNumpadVisible
-                            )
-                            .frame(height: 330)
-                            .background(Color.arclabBlack)
-                            .transition(.opacity)
-                        case .numpadSingleD:
-                            PlayInputSingleFieldView(
-                                scenario: scenario,
-                                value: $distanceValue,
-                                onShoot: handleShoot,
-                                isNumpadVisible: $isNumpadVisible
-                            )
-                            .frame(height: 330)
-                            .background(Color.arclabBlack)
-                            .transition(.opacity)
-                        default:
-                            PlayInputView(
-                                scenario: scenario,
-                                thetaValue: $thetaValue,
-                                velocityValue: $velocityValue,
-                                activeField: $activeField,
-                                onShoot: handleShoot,
-                                isNumpadVisible: $isNumpadVisible
-                            )
-                            .frame(height: 330)
-                            .background(Color.arclabBlack)
-                            .transition(.opacity)
-                        }
-                    } else if case let .outcome(resolution) = phase {
-                        outcomeView(resolution: resolution)
-                            .frame(height: 480)
-                            .background(Color.arclabBlack)
-                            .transition(.opacity)
+                // Chrome dock — input (.idle) or outcome (.outcome). Hidden in
+                // .action so the shot flies across the full canvas.
+                if phase != .action {
+                    if useSideDock {
+                        sideDock(width: AdaptiveMetrics.sideDockWidth(for: geometry.size.width),
+                                 topReserve: metrics.topReserve)
+                    } else {
+                        bottomDock()
                     }
                 }
-                .animation(.easeOut(duration: 0.25), value: phase)
             }
             .onAppear {
-                propagateLayout(metrics: metrics, phase: phase)
+                propagateLayout(ctx: ctx, metrics: metrics, phase: phase)
             }
             .onChange(of: phase) { _, newPhase in
-                propagateLayout(metrics: metrics, phase: newPhase)
+                propagateLayout(ctx: ctx, metrics: metrics, phase: newPhase)
             }
             .onChange(of: geometry.size) { _, _ in
-                propagateLayout(metrics: metrics, phase: phase)
+                propagateLayout(ctx: ctx, metrics: metrics, phase: phase)
             }
         }
         .statusBarHidden(true)
@@ -361,20 +324,104 @@ struct PlayView: View {
     }
 
     /// Push current UI reserves to the scene so the world transform frames
-    /// inside the unoccluded vertical band.
-    private func propagateLayout(metrics: PlayLayoutMetrics, phase: Phase) {
-        let bottom: CGFloat
+    /// inside the unoccluded band. In iPad landscape the dock occludes a
+    /// right-side column (rightReserve); elsewhere it occludes a bottom band.
+    /// In .action the dock is hidden, so the court reclaims the full canvas.
+    private func propagateLayout(ctx: LayoutContext, metrics: PlayLayoutMetrics, phase: Phase) {
+        let desiredBottom: CGFloat
         switch phase {
-        case .idle:                bottom = metrics.bottomReserveIdle
-        case .action:              bottom = metrics.bottomReserveAction
-        case .outcome:             bottom = metrics.bottomReserveOutcome
+        case .idle:    desiredBottom = metrics.bottomReserveIdle
+        case .action:  desiredBottom = metrics.bottomReserveAction
+        case .outcome: desiredBottom = metrics.bottomReserveOutcome
         }
-        scene.applyUIReserve(
-            top: metrics.topReserve,
-            bottom: bottom,
-            safeTop: metrics.topReserve,        // top reserve already includes safe-area
-            safeBottom: bottom
+        let am = AdaptiveMetrics.compute(
+            ctx: ctx,
+            topReserve: metrics.topReserve,
+            desiredBottomDockHeight: desiredBottom
         )
+        // .action hides the dock → full-bleed flight (no side/bottom reserve
+        // beyond the safe area).
+        let right: CGFloat = phase == .action ? 0 : am.rightReserve
+        let bottom: CGFloat = phase == .action ? metrics.bottomReserveAction : am.bottomReserve
+        scene.applyUIReserve(
+            top: am.topReserve,
+            bottom: bottom,
+            safeTop: am.topReserve,        // top reserve already includes safe-area
+            safeBottom: bottom,
+            right: right
+        )
+    }
+
+    /// The input dock (.idle) or outcome composition (.outcome). Phase-aware;
+    /// returns nothing in .action (caller hides the dock entirely then).
+    @ViewBuilder
+    private func dockContent() -> some View {
+        if case .idle = phase {
+            switch scenario.input.mode {
+            case .numpadSingleTheta:
+                PlayInputSingleFieldView(
+                    scenario: scenario, value: $thetaValue,
+                    onShoot: handleShoot, isNumpadVisible: $isNumpadVisible
+                )
+            case .numpadSingleV:
+                PlayInputSingleFieldView(
+                    scenario: scenario, value: $velocityValue,
+                    onShoot: handleShoot, isNumpadVisible: $isNumpadVisible
+                )
+            case .numpadSingleD:
+                PlayInputSingleFieldView(
+                    scenario: scenario, value: $distanceValue,
+                    onShoot: handleShoot, isNumpadVisible: $isNumpadVisible
+                )
+            default:
+                PlayInputView(
+                    scenario: scenario,
+                    thetaValue: $thetaValue, velocityValue: $velocityValue,
+                    activeField: $activeField,
+                    onShoot: handleShoot, isNumpadVisible: $isNumpadVisible
+                )
+            }
+        } else if case let .outcome(resolution) = phase {
+            outcomeView(resolution: resolution)
+        }
+    }
+
+    /// Legacy bottom-pinned dock (iPhone + iPad portrait). Unchanged heights.
+    private func bottomDock() -> some View {
+        let height: CGFloat = { if case .outcome = phase { return 480 } else { return 330 } }()
+        return VStack(spacing: 0) {
+            Spacer().allowsHitTesting(false)
+            dockContent()
+                .frame(height: height)
+                .background(Color.arclabBlack)
+                .transition(.opacity)
+        }
+        .animation(.easeOut(duration: 0.25), value: phase)
+    }
+
+    /// iPad landscape: dock as a trailing column spanning below the HUD to the
+    /// bottom edge. The court frames into the band left of it (rightReserve).
+    /// The top `topReserve` strip is left clear so the HUD (incl. the trailing
+    /// level chip + variable strip) reads across the full width.
+    private func sideDock(width: CGFloat, topReserve: CGFloat) -> some View {
+        HStack(spacing: 0) {
+            Spacer(minLength: 0).allowsHitTesting(false)   // court shows through (left)
+            VStack(spacing: 0) {
+                Color.clear
+                    .frame(height: topReserve)             // keep HUD visible above
+                    .allowsHitTesting(false)
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0).allowsHitTesting(false)
+                    dockContent()
+                    Spacer(minLength: 0).allowsHitTesting(false)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.arclabBlack)
+            }
+            .frame(width: width)
+            .transition(.opacity)
+        }
+        .animation(.easeOut(duration: 0.25), value: phase)
     }
 
     @ViewBuilder

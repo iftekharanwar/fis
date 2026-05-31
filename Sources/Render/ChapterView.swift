@@ -70,26 +70,28 @@ struct ChapterView: View {
                 .allowsHitTesting(false)
             }
 
-            VStack(spacing: 0) {
-                topBar
+            AdaptiveContentContainer(maxWidth: 680) {
+                VStack(spacing: 0) {
+                    topBar
 
-                Spacer().frame(height: Spacing.xxl)
+                    Spacer().frame(height: Spacing.xxl)
 
-                heading
+                    heading
 
-                Spacer().frame(height: Spacing.sm)
+                    Spacer().frame(height: Spacing.sm)
 
-                subhead
+                    subhead
 
-                Spacer()
+                    Spacer()
 
-                lessonRow
+                    lessonRow
 
-                Spacer().frame(height: Spacing.md)
+                    Spacer().frame(height: Spacing.md)
 
-                practiceList
+                    practiceList
+                }
+                .padding(.horizontal, Spacing.md)
             }
-            .padding(.horizontal, Spacing.md)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }

@@ -11,20 +11,22 @@ struct SolutionView: View {
         ZStack {
             Color.arclabBlack.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                topZone
-                    .padding(.horizontal, Spacing.md)
+            AdaptiveContentContainer(maxWidth: 620) {
+                VStack(spacing: 0) {
+                    topZone
+                        .padding(.horizontal, Spacing.md)
 
-                Spacer().frame(height: Spacing.lg)
+                    Spacer().frame(height: Spacing.lg)
 
-                solutionZone
-                    .padding(.horizontal, Spacing.md)
+                    solutionZone
+                        .padding(.horizontal, Spacing.md)
 
-                Spacer()
+                    Spacer()
 
-                bottomButton
-                    .padding(.horizontal, Spacing.md)
-                    .padding(.bottom, Spacing.xxl)
+                    bottomButton
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.bottom, Spacing.xxl)
+                }
             }
         }
         .statusBarHidden(true)

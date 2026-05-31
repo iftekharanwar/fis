@@ -32,6 +32,7 @@ import SpriteKit
 struct ArcheryCallPlayView: View {
     @Environment(PlayerProfileStore.self) private var profile
     @Environment(AudioService.self) private var audio
+    @Environment(\.horizontalSizeClass) private var hSizeClass
 
     let scenario: ArcheryScenario
     let chapter: Chapter?
@@ -105,6 +106,15 @@ struct ArcheryCallPlayView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let ctx = LayoutContext.resolve(
+                horizontalSizeClass: hSizeClass,
+                size: geometry.size,
+                safeArea: geometry.safeAreaInsets
+            )
+            let useSideDock = ctx.isRegular && ctx.isWide
+            let dockWidth = AdaptiveMetrics.sideDockWidth(for: geometry.size.width)
+            let topReserve = 60 + geometry.safeAreaInsets.top   // CallHUD height
+
             ZStack(alignment: .top) {
                 Color.arclabBlack.ignoresSafeArea()
 
@@ -122,15 +132,23 @@ struct ArcheryCallPlayView: View {
                 }
                 .animation(.easeOut(duration: 0.2), value: phase)
 
-                VStack(spacing: 0) {
-                    Spacer().allowsHitTesting(false)
-                    bottomOverlay
+                // Phase dock — bottom band (iPhone + iPad portrait) or
+                // right-side column (iPad landscape). Hidden in flight phases.
+                if phaseShowsDock {
+                    if useSideDock {
+                        sideDock(width: dockWidth, topReserve: topReserve)
+                    } else {
+                        VStack(spacing: 0) {
+                            Spacer().allowsHitTesting(false)
+                            bottomOverlay
+                        }
+                        .animation(.easeOut(duration: 0.2), value: phase)
+                    }
                 }
-                .animation(.easeOut(duration: 0.2), value: phase)
 
                 if case .verdict(let outcome, let wasCorrect) = phase {
                     let cleanFlight = pendingWobbleAtImpact < cleanFlightThresholdRad
-                    RevealOverlay(
+                    let reveal = RevealOverlay(
                         wasCorrect: wasCorrect,
                         actualWentIn: scenario.usesParadoxMechanic
                             ? cleanFlight
@@ -143,7 +161,17 @@ struct ArcheryCallPlayView: View {
                             ? (cleanFlight ? "IT FLEW CLEAN" : "IT WOBBLED")
                             : nil
                     )
-                    .transition(.opacity)
+                    if useSideDock {
+                        HStack(spacing: 0) {
+                            Spacer(minLength: 0).allowsHitTesting(false)
+                            reveal
+                                .frame(width: dockWidth)
+                                .padding(.top, topReserve)
+                        }
+                        .transition(.opacity)
+                    } else {
+                        reveal.transition(.opacity)
+                    }
                 }
             }
             .onAppear { propagateReserve(for: geometry) }
@@ -829,30 +857,48 @@ struct ArcheryCallPlayView: View {
         }
     }
 
+    /// True for phases that show a dock. Flight phases hide it (full-bleed arc).
+    private var phaseShowsDock: Bool {
+        switch phase {
+        case .release, .computeAction, .bonusAttempt: return false
+        default: return true
+        }
+    }
+
     private func propagateReserve(for geometry: GeometryProxy) {
         let safeTop = geometry.safeAreaInsets.top
         let safeBottom = geometry.safeAreaInsets.bottom
         let topReserve: CGFloat = 60 + safeTop
-        let bottomReserve: CGFloat
+        let desiredBottom: CGFloat
         switch phase {
         case .stance:
-            bottomReserve = 220 + safeBottom
+            desiredBottom = 220 + safeBottom
         case .compute:
-            bottomReserve = 290 + safeBottom    // taller — two sliders
+            desiredBottom = 290 + safeBottom    // taller — two sliders
         case .release, .computeAction, .bonusAttempt:
-            bottomReserve = safeBottom
+            desiredBottom = safeBottom
         case .verdict:
-            bottomReserve = 480 + safeBottom
+            desiredBottom = 480 + safeBottom
         case .computeVerdict:
-            bottomReserve = 360 + safeBottom
+            desiredBottom = 360 + safeBottom
         case .formulaWalkthrough:
-            bottomReserve = 400 + safeBottom
+            desiredBottom = 400 + safeBottom
         }
+        let ctx = LayoutContext.resolve(
+            horizontalSizeClass: hSizeClass,
+            size: geometry.size,
+            safeArea: geometry.safeAreaInsets
+        )
+        let am = AdaptiveMetrics.compute(ctx: ctx, topReserve: topReserve, desiredBottomDockHeight: desiredBottom)
+        // Flight phases hide the dock → full-bleed canvas (no side/bottom band).
+        let right: CGFloat = phaseShowsDock ? am.rightReserve : 0
+        let bottom: CGFloat = phaseShowsDock ? am.bottomReserve : safeBottom
         scene.applyUIReserve(
-            top: topReserve,
-            bottom: bottomReserve,
+            top: am.topReserve,
+            bottom: bottom,
             safeTop: safeTop,
-            safeBottom: safeBottom
+            safeBottom: safeBottom,
+            right: right
         )
         // applyUIReserve rebuilds the scene graph (which clears the ghost).
         // Re-prime the ghost if we're in compute mode so the trajectory
@@ -860,5 +906,25 @@ struct ArcheryCallPlayView: View {
         if case .compute = phase {
             scene.setGhost(holdoverCm: computeHoldover, velocity: computeVelocity)
         }
+    }
+
+    /// iPad landscape: phase dock as a trailing column below the HUD. The
+    /// archery scene frames into the band left of it (rightReserve).
+    private func sideDock(width: CGFloat, topReserve: CGFloat) -> some View {
+        HStack(spacing: 0) {
+            Spacer(minLength: 0).allowsHitTesting(false)   // scene shows through (left)
+            VStack(spacing: 0) {
+                Color.clear.frame(height: topReserve).allowsHitTesting(false)
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0).allowsHitTesting(false)
+                    bottomOverlay
+                    Spacer(minLength: 0).allowsHitTesting(false)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.arclabBlack)
+            }
+            .frame(width: width)
+        }
+        .animation(.easeOut(duration: 0.2), value: phase)
     }
 }

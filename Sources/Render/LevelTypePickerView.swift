@@ -14,23 +14,25 @@ struct LevelTypePickerView: View {
     let onOpenFamousMoments: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
-            Spacer().frame(height: Spacing.xl)
-            heading
-            Spacer().frame(height: Spacing.lg)
+        AdaptiveContentContainer(maxWidth: 640) {
+            VStack(spacing: 0) {
+                topBar
+                Spacer().frame(height: Spacing.xl)
+                heading
+                Spacer().frame(height: Spacing.lg)
 
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 0) {
-                    lessonRow
-                    Spacer().frame(height: Spacing.md)
-                    levelRows
-                    Spacer().frame(height: Spacing.lg)
-                    famousMomentsRow
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        lessonRow
+                        Spacer().frame(height: Spacing.md)
+                        levelRows
+                        Spacer().frame(height: Spacing.lg)
+                        famousMomentsRow
+                    }
                 }
             }
+            .padding(.horizontal, Spacing.md)
         }
-        .padding(.horizontal, Spacing.md)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
         .task { autoSelectLevelTypeIfRequested() }

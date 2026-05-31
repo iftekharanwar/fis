@@ -13,6 +13,7 @@ import SpriteKit
 struct CallPlayView: View {
     @Environment(PlayerProfileStore.self) private var profile
     @Environment(AudioService.self) private var audio
+    @Environment(\.horizontalSizeClass) private var hSizeClass
 
     let scenario: ScenarioDefinition
     /// Curriculum chapter the scenario belongs to. Drives the reveal beat:
@@ -100,6 +101,14 @@ struct CallPlayView: View {
                 for: geometry.size,
                 safeArea: geometry.safeAreaInsets
             )
+            let ctx = LayoutContext.resolve(
+                horizontalSizeClass: hSizeClass,
+                size: geometry.size,
+                safeArea: geometry.safeAreaInsets
+            )
+            let useSideDock = ctx.isRegular && ctx.isWide
+            let dockWidth = AdaptiveMetrics.sideDockWidth(for: geometry.size.width)
+            let callTopReserve = metrics.topReserve - 40   // CallHUD is shorter
 
             ZStack(alignment: .top) {
                 // Z0 — full-bleed court canvas.
@@ -117,18 +126,25 @@ struct CallPlayView: View {
                 }
                 .animation(.easeOut(duration: 0.2), value: phase)
 
-                // Bottom overlay — phase-dependent UI.
-                VStack(spacing: 0) {
-                    Spacer().allowsHitTesting(false)
-                    bottomOverlay
+                // Phase-dependent dock — bottom band (iPhone + iPad portrait)
+                // or right-side column (iPad landscape). Hidden during the
+                // full-screen flight phases so the arc owns the canvas.
+                if phaseShowsDock {
+                    if useSideDock {
+                        sideDock(width: dockWidth, topReserve: callTopReserve)
+                    } else {
+                        VStack(spacing: 0) {
+                            Spacer().allowsHitTesting(false)
+                            bottomOverlay
+                        }
+                        .animation(.easeOut(duration: 0.2), value: phase)
+                    }
                 }
-                .animation(.easeOut(duration: 0.2), value: phase)
 
-                // Reveal overlay — slides up over the verdict screen ~0.9s
-                // after the verdict lands. Pulls phenomenon + explainer from
-                // the chapter context (graceful fallback if no chapter).
+                // Reveal overlay — slides up over the verdict ~0.9s after it
+                // lands. In landscape it rides within the right column.
                 if case .verdict(let resolution, let wasCorrect) = phase {
-                    RevealOverlay(
+                    let reveal = RevealOverlay(
                         wasCorrect: wasCorrect,
                         actualWentIn: actualWentIn(resolution),
                         phenomenon: revealPhenomenon,
@@ -136,12 +152,22 @@ struct CallPlayView: View {
                         onContinue: handleClose,
                         onTryCompute: handleTryCompute
                     )
-                    .transition(.opacity)
+                    if useSideDock {
+                        HStack(spacing: 0) {
+                            Spacer(minLength: 0).allowsHitTesting(false)
+                            reveal
+                                .frame(width: dockWidth)
+                                .padding(.top, callTopReserve)
+                        }
+                        .transition(.opacity)
+                    } else {
+                        reveal.transition(.opacity)
+                    }
                 }
             }
-            .onAppear { propagateLayout(metrics: metrics) }
-            .onChange(of: phase) { _, _ in propagateLayout(metrics: metrics) }
-            .onChange(of: geometry.size) { _, _ in propagateLayout(metrics: metrics) }
+            .onAppear { propagateLayout(ctx: ctx, metrics: metrics) }
+            .onChange(of: phase) { _, _ in propagateLayout(ctx: ctx, metrics: metrics) }
+            .onChange(of: geometry.size) { _, _ in propagateLayout(ctx: ctx, metrics: metrics) }
         }
         .statusBarHidden(true)
         // iOS-native escape: mirror the CLOSE chip's gating so swipe-down /
@@ -216,24 +242,58 @@ struct CallPlayView: View {
         }
     }
 
-    private func propagateLayout(metrics: PlayLayoutMetrics) {
+    /// True for phases that show a dock (stance/frozen/compute/verdict/…).
+    /// The full-screen flight phases hide it so the arc owns the canvas.
+    private var phaseShowsDock: Bool {
+        switch phase {
+        case .release, .finish, .computeAction, .bonusAttempt: return false
+        default: return true
+        }
+    }
+
+    private func propagateLayout(ctx: LayoutContext, metrics: PlayLayoutMetrics) {
         // Stance + frozen reserve roughly equal the v1 IDLE bottom; verdict
         // matches v1 OUTCOME; release/finish are full-screen.
-        let bottom: CGFloat
+        let desiredBottom: CGFloat
         switch phase {
-        case .stance, .frozen, .compute:                          bottom = metrics.bottomReserveIdle
-        case .release, .finish, .computeAction, .bonusAttempt:    bottom = metrics.bottomReserveAction
-        case .verdict, .computeVerdict, .formulaWalkthrough:      bottom = metrics.bottomReserveOutcome
+        case .stance, .frozen, .compute:                          desiredBottom = metrics.bottomReserveIdle
+        case .release, .finish, .computeAction, .bonusAttempt:    desiredBottom = metrics.bottomReserveAction
+        case .verdict, .computeVerdict, .formulaWalkthrough:      desiredBottom = metrics.bottomReserveOutcome
         }
         // v2.1 uses CallHUD (60pt) instead of v1's PlayHUDView (140pt) so
         // the top reserve is smaller — more vertical room for the court arc.
         let topReserve = metrics.topReserve - 40  // 100 - 40 = 60pt
+        let am = AdaptiveMetrics.compute(ctx: ctx, topReserve: topReserve, desiredBottomDockHeight: desiredBottom)
+        // Flight phases hide the dock → full-bleed canvas (no side/bottom band).
+        let right: CGFloat = phaseShowsDock ? am.rightReserve : 0
+        let bottom: CGFloat = phaseShowsDock ? am.bottomReserve : metrics.bottomReserveAction
         scene.applyUIReserve(
-            top: topReserve,
+            top: am.topReserve,
             bottom: bottom,
-            safeTop: topReserve,
-            safeBottom: bottom
+            safeTop: am.topReserve,
+            safeBottom: bottom,
+            right: right
         )
+    }
+
+    /// iPad landscape: phase dock as a trailing column below the HUD. The
+    /// court frames into the band left of it (rightReserve).
+    private func sideDock(width: CGFloat, topReserve: CGFloat) -> some View {
+        HStack(spacing: 0) {
+            Spacer(minLength: 0).allowsHitTesting(false)   // court shows through (left)
+            VStack(spacing: 0) {
+                Color.clear.frame(height: topReserve).allowsHitTesting(false)
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0).allowsHitTesting(false)
+                    bottomOverlay
+                    Spacer(minLength: 0).allowsHitTesting(false)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.arclabBlack)
+            }
+            .frame(width: width)
+        }
+        .animation(.easeOut(duration: 0.2), value: phase)
     }
 
     // MARK: - Phase-dependent UI

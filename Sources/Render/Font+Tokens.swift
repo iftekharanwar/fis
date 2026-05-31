@@ -30,11 +30,23 @@ extension Font {
         Font.custom("Anton-Regular", size: size, relativeTo: relativeTo)
     }
 
+    /// Anton scaled by a `LayoutContext.typeScale` so poster verbs grow on a
+    /// regular-width canvas (iPad) and stay phone-sized on compact (scale 1.0).
+    static func anton(size: CGFloat, scale: CGFloat, relativeTo: Font.TextStyle = .largeTitle) -> Font {
+        anton(size: size * scale, relativeTo: relativeTo)
+    }
+
     // MARK: - Barlow Condensed (prose, italic flavor)
 
     static func barlowCondensed(size: CGFloat, italic: Bool = false, relativeTo: Font.TextStyle = .body) -> Font {
         let name = italic ? "BarlowCondensed-Italic" : "BarlowCondensed-Regular"
         return Font.custom(name, size: size, relativeTo: relativeTo)
+    }
+
+    /// Barlow Condensed scaled by a `LayoutContext.typeScale` for subheads/prose
+    /// that should grow on a regular-width canvas. Scale 1.0 = unchanged.
+    static func barlowCondensed(size: CGFloat, scale: CGFloat, italic: Bool = false, relativeTo: Font.TextStyle = .body) -> Font {
+        barlowCondensed(size: size * scale, italic: italic, relativeTo: relativeTo)
     }
 
     // MARK: - SF Mono (system, technical readouts)

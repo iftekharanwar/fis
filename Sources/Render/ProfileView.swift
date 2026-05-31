@@ -8,22 +8,24 @@ struct ProfileView: View {
     @Environment(PlayerProfileStore.self) private var profile
 
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
+        AdaptiveContentContainer(maxWidth: 640) {
+            VStack(spacing: 0) {
+                topBar
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: Spacing.xl) {
-                    Spacer().frame(height: Spacing.lg)
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: Spacing.xl) {
+                        Spacer().frame(height: Spacing.lg)
 
-                    iqHeroBlock
-                    streakBand
-                    chapterBadges
+                        iqHeroBlock
+                        streakBand
+                        chapterBadges
 
-                    Spacer().frame(height: Spacing.xxl)
+                        Spacer().frame(height: Spacing.xxl)
+                    }
                 }
             }
+            .padding(.horizontal, Spacing.md)
         }
-        .padding(.horizontal, Spacing.md)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
     }

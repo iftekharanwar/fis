@@ -150,6 +150,17 @@ struct RootView: View {
             } else {
                 Color.arclabBlack
             }
+        case "archeryplay":
+            // Archery call surface (Parham's v2.2). Pin-gap scenario.
+            if let scenario = ArcheryScenarioCatalog.scenario(for: "arc-pingap-001") {
+                ArcheryCallPlayView(
+                    scenario: scenario,
+                    chapter: ArcheryCurriculum.chapters.first,
+                    onClose: {}
+                )
+            } else {
+                Color.arclabBlack
+            }
         case "profile":
             ProfileView()
         default:

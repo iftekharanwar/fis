@@ -76,6 +76,16 @@ final class PlaySceneNode: SKScene {
     /// Set after the ball passes apex; prevents re-triggering the freeze.
     private var didFreezeAtApex: Bool = false
 
+    /// Multiplier for hardcoded cosmetic pixel constants (stroke widths, label
+    /// font sizes) so they don't render as hairlines / tiny text on a large
+    /// iPad canvas. Derived from the smaller scene dimension vs the iPhone
+    /// baseline (~393pt) these constants were tuned at; never shrinks below
+    /// 1.0, capped so iPad isn't cartoonish. Uses `min(w,h)` so a wide
+    /// landscape canvas doesn't inflate strokes.
+    var cosmeticScale: CGFloat {
+        min(max(min(size.width, size.height) / 393, 1.0), 2.2)
+    }
+
     init(projectileParams: Projectile2DParams, size: CGSize) {
         self.projectileParams = projectileParams
         super.init(size: size)
@@ -123,8 +133,8 @@ final class PlaySceneNode: SKScene {
 
     /// Push reserved UI bands from SwiftUI. Deferred mid-simulation —
     /// repositionNodes() would tear down the in-flight scene graph.
-    func applyUIReserve(top: CGFloat, bottom: CGFloat, safeTop: CGFloat, safeBottom: CGFloat) {
-        let new = SceneInsets(top: top, bottom: bottom, safeTop: safeTop, safeBottom: safeBottom)
+    func applyUIReserve(top: CGFloat, bottom: CGFloat, safeTop: CGFloat, safeBottom: CGFloat, right: CGFloat = 0) {
+        let new = SceneInsets(top: top, bottom: bottom, safeTop: safeTop, safeBottom: safeBottom, right: right)
         guard new != uiReserve else { return }
         if isSimulating { return }
         uiReserve = new
@@ -152,7 +162,9 @@ final class PlaySceneNode: SKScene {
         layer.zPosition = -10
 
         // Fake a vertical gradient with stacked thin rectangles — SKShapeNode has no CGGradient.
-        let stripeCount = 24
+        // Stripe count scales with height so the gradient stays smooth on a tall
+        // iPad canvas; iPhone stays at the 24 baseline (393/36 < 24).
+        let stripeCount = max(24, Int(size.height / 36))
         let stripeHeight = size.height / CGFloat(stripeCount)
         for i in 0..<stripeCount {
             let stripe = SKShapeNode(rectOf: CGSize(width: size.width, height: stripeHeight + 1))
@@ -184,7 +196,7 @@ final class PlaySceneNode: SKScene {
         layer.addChild(shaft)
 
         let floorY = transform.scenePoint(world: CGPoint(x: 0, y: CGFloat(projectileParams.world.floorY))).y
-        let reflectionHeight: CGFloat = 60
+        let reflectionHeight: CGFloat = 60 * cosmeticScale
         let reflection = SKShapeNode(rectOf: CGSize(width: size.width, height: reflectionHeight))
         reflection.position = CGPoint(x: size.width / 2, y: floorY + reflectionHeight / 4)
         reflection.fillColor = UIColor(white: 1.0, alpha: 0.025)
@@ -225,7 +237,7 @@ final class PlaySceneNode: SKScene {
         path.addLine(to: CGPoint(x: size.width, y: floorY))
         floor.path = path
         floor.strokeColor = UIColor(white: 1.0, alpha: 0.55)
-        floor.lineWidth = 1.5
+        floor.lineWidth = 1.5 * cosmeticScale
         addChild(floor)
 
         // Orange free-throw accent under the player's release position only.
@@ -237,7 +249,7 @@ final class PlaySceneNode: SKScene {
         accentPath.addLine(to: CGPoint(x: releaseX + 40, y: floorY))
         accent.path = accentPath
         accent.strokeColor = teamAccent.withAlphaComponent(0.75)
-        accent.lineWidth = 3
+        accent.lineWidth = 3 * cosmeticScale
         addChild(accent)
     }
 
@@ -262,7 +274,7 @@ final class PlaySceneNode: SKScene {
             polePath.addLine(to: poleTop)
             pole.path = polePath
             pole.strokeColor = UIColor(white: 1.0, alpha: 0.45)
-            pole.lineWidth = 3
+            pole.lineWidth = 3 * cosmeticScale
             pole.zPosition = -0.1
             addChild(pole)
 
@@ -270,7 +282,7 @@ final class PlaySceneNode: SKScene {
             outerNode.position = bbCenter
             outerNode.fillColor = UIColor(white: 1.0, alpha: 0.18)
             outerNode.strokeColor = UIColor(white: 1.0, alpha: 0.85)
-            outerNode.lineWidth = 2
+            outerNode.lineWidth = 2 * cosmeticScale
             addChild(outerNode)
 
             let innerW = visualBoardWidth * 0.40
@@ -279,7 +291,7 @@ final class PlaySceneNode: SKScene {
             inner.position = CGPoint(x: bbCenter.x, y: bbCenter.y - visualBoardHeight * 0.10)
             inner.fillColor = .clear
             inner.strokeColor = UIColor(white: 1.0, alpha: 0.85)
-            inner.lineWidth = 1.5
+            inner.lineWidth = 1.5 * cosmeticScale
             addChild(inner)
         }
 
@@ -295,7 +307,7 @@ final class PlaySceneNode: SKScene {
         rimEllipse.position = hoopCenter
         rimEllipse.fillColor = .clear
         rimEllipse.strokeColor = UIColor(white: 1.0, alpha: 0.95)
-        rimEllipse.lineWidth = 3
+        rimEllipse.lineWidth = 3 * cosmeticScale
         addChild(rimEllipse)
 
         let netLength = transform.sceneDistance(world: 0.5)
@@ -309,7 +321,7 @@ final class PlaySceneNode: SKScene {
         let net = SKShapeNode()
         net.path = netPath(narrowness: 0.3)
         net.strokeColor = UIColor(white: 1.0, alpha: 0.65)
-        net.lineWidth = 1.5
+        net.lineWidth = 1.5 * cosmeticScale
         net.name = "net"
         addChild(net)
         netNode = net
@@ -530,7 +542,7 @@ final class PlaySceneNode: SKScene {
         seamPath.addLine(to: CGPoint(x: ballRadius * 0.85, y: 0))
         seam.path = seamPath
         seam.strokeColor = UIColor(white: 0.15, alpha: 1.0)
-        seam.lineWidth = 1
+        seam.lineWidth = 1 * cosmeticScale
         container.addChild(seam)
 
         container.isHidden = true
@@ -631,7 +643,7 @@ final class PlaySceneNode: SKScene {
             let failed = SKShapeNode()
             failed.path = path
             failed.strokeColor = UIColor(red: 1.0, green: 0.188, blue: 0.216, alpha: 1.0)
-            failed.lineWidth = 1.5
+            failed.lineWidth = 1.5 * cosmeticScale
             failed.name = "failedArc"
             addChild(failed)
             trajectoryNode = failed
@@ -643,11 +655,12 @@ final class PlaySceneNode: SKScene {
             for point in ghostTrajectory.dropFirst() {
                 path.addLine(to: transform.scenePoint(world: point))
             }
-            let dashedPath = path.copy(dashingWithPhase: 0, lengths: [4, 4])
+            let dashLen = 4 * cosmeticScale
+            let dashedPath = path.copy(dashingWithPhase: 0, lengths: [dashLen, dashLen])
             let ghost = SKShapeNode()
             ghost.path = dashedPath
             ghost.strokeColor = UIColor(white: 1.0, alpha: 0.5)
-            ghost.lineWidth = 1
+            ghost.lineWidth = 1 * cosmeticScale
             ghost.name = "ghostArc"
             ghost.zPosition = -1
             addChild(ghost)
@@ -657,7 +670,7 @@ final class PlaySceneNode: SKScene {
             let markerPos = transform.scenePoint(world: lastPos)
             let marker = SKLabelNode(fontNamed: "Menlo-Regular")
             marker.text = "✕"
-            marker.fontSize = 18
+            marker.fontSize = 18 * cosmeticScale
             marker.fontColor = .white
             marker.horizontalAlignmentMode = .center
             marker.verticalAlignmentMode = .center
@@ -783,7 +796,7 @@ final class PlaySceneNode: SKScene {
         let line = SKShapeNode()
         line.path = path
         line.strokeColor = UIColor(white: 1.0, alpha: 0.7)
-        line.lineWidth = 1
+        line.lineWidth = 1 * cosmeticScale
         addChild(line)
         trajectoryNode = line
     }
@@ -819,17 +832,17 @@ final class PlaySceneNode: SKScene {
         path.addLine(to: endpoint)
         line.path = path
         line.strokeColor = UIColor(white: 1.0, alpha: 0.9)
-        line.lineWidth = 1
+        line.lineWidth = 1 * cosmeticScale
         addChild(line)
         angleIndicatorNode = line
 
         let label = SKLabelNode(fontNamed: "Menlo-Regular")
         label.text = "\(Int(degrees.rounded()))°"
-        label.fontSize = 11
+        label.fontSize = 11 * cosmeticScale
         label.fontColor = UIColor(white: 1.0, alpha: 0.7)
         label.horizontalAlignmentMode = .left
         label.verticalAlignmentMode = .center
-        label.position = CGPoint(x: endpoint.x + 8, y: endpoint.y)
+        label.position = CGPoint(x: endpoint.x + 8 * cosmeticScale, y: endpoint.y)
         label.name = "angleLabel"
         addChild(label)
     }

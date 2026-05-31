@@ -15,32 +15,34 @@ struct MasteryGateTakeoverView: View {
         ZStack {
             Color.arclabBlack.ignoresSafeArea()
 
-            VStack(spacing: Spacing.xl) {
-                Spacer()
+            AdaptiveContentContainer(maxWidth: 600) {
+                VStack(spacing: Spacing.xl) {
+                    Spacer()
 
-                Text(headline)
-                    .font(.anton(size: 48))
-                    .foregroundColor(.arclabWhite)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.lg)
+                    Text(headline)
+                        .font(.anton(size: 48))
+                        .foregroundColor(.arclabWhite)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Spacing.lg)
 
-                VStack(spacing: Spacing.xs) {
-                    ForEach(Array(bodyLines.enumerated()), id: \.offset) { _, line in
-                        Text(line)
-                            .font(.barlowCondensed(size: 18, italic: true))
-                            .foregroundColor(.arclabMidGrey)
-                            .multilineTextAlignment(.center)
+                    VStack(spacing: Spacing.xs) {
+                        ForEach(Array(bodyLines.enumerated()), id: \.offset) { _, line in
+                            Text(line)
+                                .font(.barlowCondensed(size: 18, italic: true))
+                                .foregroundColor(.arclabMidGrey)
+                                .multilineTextAlignment(.center)
+                        }
                     }
+
+                    Spacer()
+
+                    Text("▾ TAP")
+                        .font(.sfMono(size: 11))
+                        .foregroundColor(.arclabMidGrey)
+                        .tracking(2.0)
+
+                    Spacer().frame(height: Spacing.xxl)
                 }
-
-                Spacer()
-
-                Text("▾ TAP")
-                    .font(.sfMono(size: 11))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(2.0)
-
-                Spacer().frame(height: Spacing.xxl)
             }
         }
         .contentShape(Rectangle())

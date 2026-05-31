@@ -8,21 +8,23 @@ struct SportPickerView: View {
     let onSelect: (Sport) -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
+        AdaptiveContentContainer(maxWidth: 640) {
+            VStack(spacing: 0) {
+                topBar
 
-            Spacer().frame(height: Spacing.xl)
+                Spacer().frame(height: Spacing.xl)
 
-            pickHeading
+                pickHeading
 
-            Spacer().frame(height: Spacing.lg)
+                Spacer().frame(height: Spacing.lg)
 
-            // ScrollView prevents F1 row clipping on iPhone 17 and contains layout bounds.
-            ScrollView(.vertical, showsIndicators: false) {
-                sportList
+                // ScrollView prevents F1 row clipping on iPhone 17 and contains layout bounds.
+                ScrollView(.vertical, showsIndicators: false) {
+                    sportList
+                }
             }
+            .padding(.horizontal, Spacing.md)
         }
-        .padding(.horizontal, Spacing.md)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
         .statusBarHidden(false)

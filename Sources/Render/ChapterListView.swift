@@ -12,20 +12,22 @@ struct ChapterListView: View {
     let onSelectChapter: (Chapter) -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
+        AdaptiveContentContainer(maxWidth: 640) {
+            VStack(spacing: 0) {
+                topBar
 
-            Spacer().frame(height: Spacing.xl)
+                Spacer().frame(height: Spacing.xl)
 
-            heading
+                heading
 
-            Spacer().frame(height: Spacing.lg)
+                Spacer().frame(height: Spacing.lg)
 
-            ScrollView(.vertical, showsIndicators: false) {
-                chapterList
+                ScrollView(.vertical, showsIndicators: false) {
+                    chapterList
+                }
             }
+            .padding(.horizontal, Spacing.md)
         }
-        .padding(.horizontal, Spacing.md)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
     }
