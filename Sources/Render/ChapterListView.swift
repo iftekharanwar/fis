@@ -157,7 +157,7 @@ private struct ChapterListRow: View {
             .padding(.vertical, Spacing.md)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
         .accessibilityLabel("Chapter \(chapter.index). \(chapter.title). \(chapter.subtitle). \(status.label).")
     }
 }

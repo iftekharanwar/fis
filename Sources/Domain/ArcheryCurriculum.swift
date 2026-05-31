@@ -73,85 +73,124 @@ enum ArcheryCurriculum {
         )
     ]
 
-    // MARK: - Lesson 1.1 — "The pin gap" as a 6-card story
+    // MARK: - Lesson 1.1 — "The pin gap" as an 8-card story
+    //
+    // Illustration slots arc-l1-01 … arc-l1-08 live in the asset catalog and
+    // load by name. Until the art is added they resolve to nil and the cards
+    // render type-only (LessonView guards with `if let uiImage`).
 
     private static let lesson_1_1 = LessonContent(
         id: "arc-l1.1-pingap",
         title: "Why an arrow drops more than you think",
-        oneLiner: "Same gravity as a free throw. A quarter-second of flight — and the drop quadruples when you double the range.",
-        estimatedReadSeconds: 75,
+        oneLiner: "Same gravity as a free throw. A blink of flight — yet doubling the range quadruples the drop.",
+        estimatedReadSeconds: 90,
         cards: [
-            // Card 1 — set the hook
+            // Card 1 — hook: the arc is there, just hidden
             .init(
-                headline: "An arrow drops, too.",
-                body: "Watch a free throw and you see the arc. Watch an arrow — you don't. It's too fast. But the arc is still there."
+                headline: "An arrow falls, too.",
+                body: "A free throw shows its arc. An arrow hides it — the flight is a blink. But gravity pulls on it the entire way, start to finish.",
+                illustration: "arc-l1-01"
             ),
-            // Card 2 — name the force
+            // Card 2 — same force as everything else
             .init(
                 headline: "Same gravity. 9.8 m/s².",
-                body: "The arrow obeys the same rule as the basketball. It just travels so fast that a quarter-second is the entire flight."
+                body: "The arrow obeys the exact rule a dropped ball does. The only difference is speed: the whole trip is over in a fraction of a second.",
+                illustration: "arc-l1-02"
             ),
-            // Card 3 — the key insight
+            // Card 3 — the squared law (core counterintuition)
             .init(
-                headline: "Drop scales with time SQUARED.",
-                body: "Twice the distance isn't twice the drop. It's four times. Gravity gets longer to pull — and time multiplies on itself.",
+                headline: "Double the distance. Quadruple the drop.",
+                body: "Drop grows with the square of flight time, and time grows with distance. So 40 m doesn't sag twice as much as 20 m — it sags four times as much.",
+                illustration: "arc-l1-03",
                 math: "Δy = ½ · g · t²"
             ),
-            // Card 4 — name the pin
+            // Card 4 — concrete numbers, so the law isn't hand-wavy
             .init(
-                headline: "Your sight pin is a guess about distance.",
-                body: "A pin is calibrated for one yardage. At that distance, it puts the arrow in the bullseye. At any other distance, it lies."
+                headline: "Half a meter at 20. Over two at 40.",
+                body: "A recurve arrow leaves near 60 m/s. At 20 m it flies about a third of a second and drops roughly half a meter. At 40 m the drop climbs past two — more than a body length lower.",
+                illustration: "arc-l1-04",
+                math: "20 m  →  ≈ 0.5 m\n40 m  →  ≈ 2.2 m"
             ),
-            // Card 5 — the practical move
+            // Card 5 — a pin is calibrated for exactly one range
             .init(
-                headline: "Holdover.",
-                body: "To hit farther with a closer-calibrated pin, aim ABOVE the bullseye. The longer the shot, the higher you hold."
+                headline: "Your sight pin knows ONE distance.",
+                body: "Sight a pin in at 20 m and it's perfect — there. The pin locks the bow's launch angle for that one range. Anywhere else, that angle is already wrong.",
+                illustration: "arc-l1-05"
             ),
-            // Card 6 — close the loop
+            // Card 6 — the chapter's namesake: gaps grow with range
+            .init(
+                headline: "So the pins bunch up close, spread out far.",
+                body: "On a multi-pin sight the 20 and 30 sit almost together. The 40, 50, 60 pins spread wider and wider — each added step of distance adds more drop than the last. The gap IS the squared law, made visible.",
+                illustration: "arc-l1-06"
+            ),
+            // Card 7 — the practical move
+            .init(
+                headline: "Past your pin? Hold over.",
+                body: "With one pin sighted short, a longer shot needs it held ABOVE the gold — let the extra drop carry the arrow down into center. The farther out, the higher you hold.",
+                illustration: "arc-l1-07"
+            ),
+            // Card 8 — close the loop into the scenario
             .init(
                 headline: "Now you call it.",
-                body: "A 40m bullseye. A 20m pin. The pin looks dead-on. Where does the arrow actually land?"
+                body: "A target at 40 meters. A pin sighted for 20. The pin sits dead on the gold — and now you know it's lying. Where does the arrow actually land?",
+                illustration: "arc-l1-08"
             )
         ]
     )
 
-    // MARK: - Lesson 2.1 — "The archer's paradox" as a 6-card story
+    // MARK: - Lesson 2.1 — "The archer's paradox" as a 7-card story
+    //
+    // Illustration slots arc-l2-01 … arc-l2-07. Cards 02 (flex wave) and 05
+    // (spine deflection test) ship as code-generated diagrams; the rest load
+    // by name once added (LessonView guards with `if let uiImage`).
 
     private static let lesson_2_1 = LessonContent(
         id: "arc-l2.1-paradox",
         title: "Why arrows bend through the bow",
-        oneLiner: "The shaft is resting against the bow. To get out, it has to flex around it — and the stiffness has to be right.",
-        estimatedReadSeconds: 90,
+        oneLiner: "The shaft rests against the bow. To escape, it has to flex around the handle — and the stiffness has to match the draw.",
+        estimatedReadSeconds: 100,
         cards: [
-            // Card 1 — set the hook
+            // Card 1 — the paradox itself (the hook)
             .init(
-                headline: "Arrows aren't sticks. They're springs.",
-                body: "Watch a slow-motion shot. The shaft is bent like a bow itself — wobbling visibly as it leaves the string. That's not a mistake. It HAS to bend."
+                headline: "It points off the gold — and hits it anyway.",
+                body: "At full draw the arrow rests against the side of the bow, angled a little off the line to the target. By straight-line logic it should miss. For centuries, no one could say why it doesn't.",
+                illustration: "arc-l2-01"
             ),
-            // Card 2 — name the geometry
+            // Card 2 — arrows are springs
             .init(
-                headline: "The string is behind. The arrow rests on the side.",
-                body: "The shaft sits against the riser — the front of the bow. When the string snaps forward, it pushes the back of the arrow. But the shaft has nowhere straight to go: the riser is in the way."
+                headline: "An arrow is a spring, not a rod.",
+                body: "High-speed film settled it. Leaving the string, the shaft bends and wobbles, flexing side to side like a struck tuning fork. That bending isn't a flaw — it's the whole trick.",
+                illustration: "arc-l2-02"
             ),
-            // Card 3 — the bend
+            // Card 3 — why it must bend
             .init(
-                headline: "So the arrow flexes around it.",
-                body: "It bends in the middle, slips past the riser, then springs back. The whole thing happens in milliseconds — but it's visible on slow-motion video."
+                headline: "The push comes from behind — into the bow.",
+                body: "The string drives the back of the shaft straight forward. But the riser — the bow's handle — sits right in the path. With nowhere straight to go, the arrow has to bend around it.",
+                illustration: "arc-l2-03"
             ),
-            // Card 4 — spine
+            // Card 4 — flex around, recover straight
             .init(
-                headline: "Spine = the arrow's stiffness.",
-                body: "Match it to your bow's draw weight and the flex is just right: arrow clears the riser, snaps back straight, hits clean. Too stiff or too soft — the arrow wobbles all the way to the target."
+                headline: "It snakes past the handle, then recovers straight.",
+                body: "The shaft's middle bows out to clear the riser, whips back the other way, then settles straight — all in a few thousandths of a second. The flex is only a few percent of the shaft's length, but on high-speed film it's unmistakable.",
+                illustration: "arc-l2-04"
             ),
-            // Card 5 — practical consequence
+            // Card 5 — spine = stiffness
             .init(
-                headline: "Mismatch = miss.",
-                body: "A 60-lb bow needs a stiffer arrow than a 40-lb bow. Cross them up and the arrow oscillates through the entire flight, impacting at an angle and burying off-target."
+                headline: "Spine is how far an arrow bends.",
+                body: "Hang a set weight from the middle of a supported shaft and measure the sag — that's spine. A stiff arrow barely flexes; a weak one bends far. Every shaft is rated for a band of bow weights.",
+                illustration: "arc-l2-05"
             ),
-            // Card 6 — close the loop
+            // Card 6 — match / mismatch
+            .init(
+                headline: "Too stiff or too soft, and it never recovers.",
+                body: "A heavier bow throws harder, so it needs a stiffer arrow. Off the match, the flex is wrong: the shaft fishtails the whole way and slaps in at an angle. Spine has to fit the bow.",
+                illustration: "arc-l2-06"
+            ),
+            // Card 7 — close the loop into the scenario (60 lb bow, 85 spine)
             .init(
                 headline: "Now you call it.",
-                body: "A 60-lb bow. An 85-spine arrow. Watch the release in slow-motion and tell me — will it fly clean?"
+                body: "A 60-pound bow. An 85-spine shaft — stiffer than the bow is asking for. Watch the release in slow motion: does it recover, or wobble off the gold?",
+                illustration: "arc-l2-07"
             )
         ]
     )

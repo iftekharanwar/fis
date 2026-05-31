@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Typography tokens per `CONCEPT.md` and `SCREENS.md` Conventions.
 ///
@@ -9,12 +10,21 @@ import SwiftUI
 ///   font, bundled.
 /// - **SF Mono** — every technical readout (variables, units, ranks, level
 ///   codes, stat strips, attempt counters). System-bundled (free, no bundle
-///   hit, Dynamic Type-native). Uppercase only for codes/tags/nav of ≤3 words.
+///   hit). Uppercase only for codes/tags/nav of ≤3 words.
 ///
-/// **Dynamic Type** — every helper uses `Font.custom(..., size:, relativeTo:)`
-/// so custom fonts scale with the user's accessibility text size. Poster
-/// headlines (Anton verbs) clamp via the caller using `.dynamicTypeSize(...)`
-/// to protect layout — see SCREENS.md Conventions for the clamping policy.
+/// **Dynamic Type** — every family scales with the user's accessibility text
+/// size. Anton and Barlow scale via `Font.custom(..., relativeTo:)`. SF Mono
+/// scales via `UIFontMetrics`: a fixed `Font.system(size:)` does *not* respond
+/// to Dynamic Type, so we build the monospaced `UIFont` and let
+/// `UIFontMetrics` scale it relative to a text style. Poster headlines (Anton
+/// verbs) clamp via the caller using `.dynamicTypeSize(...)` to protect
+/// layout — see SCREENS.md Conventions for the clamping policy.
+///
+/// **Legibility floor** — base sizes are clamped to a minimum before scaling
+/// (`12` for SF Mono, `16` for Barlow prose) so no call site can render text
+/// below the readable floor, even if it passes a smaller literal. To change
+/// the floor, edit `TypeScale` here — never re-introduce sub-floor sizes at
+/// call sites.
 ///
 /// **Font fallback** — if the bundled .ttf files aren't present in
 /// `Resources/Fonts/` at runtime, `Font.custom` silently falls back to the
@@ -34,20 +44,68 @@ extension Font {
 
     static func barlowCondensed(size: CGFloat, italic: Bool = false, relativeTo: Font.TextStyle = .body) -> Font {
         let name = italic ? "BarlowCondensed-Italic" : "BarlowCondensed-Regular"
-        return Font.custom(name, size: size, relativeTo: relativeTo)
+        return Font.custom(name, size: max(size, TypeScale.minProse), relativeTo: relativeTo)
     }
 
     // MARK: - SF Mono (system, technical readouts)
 
-    /// SF Mono at any size. System-bundled — no .ttf required.
-    /// Uppercase rule (≤3 words) enforced by the caller, not the font.
-    static func sfMono(size: CGFloat, weight: Font.Weight = .regular, relativeTo: Font.TextStyle = .body) -> Font {
-        // SF Mono is exposed via `.monospaced` design on a system font;
-        // explicit-size variant uses `Font.system(size:weight:design:)` per
-        // Apple's Font docs. Dynamic Type scaling is automatic via relativeTo
-        // when used with `Font.system(_:design:)` (preferred for body text)
-        // but we use fixed-size here so the readouts stay precision-aligned
-        // with the surrounding bordered chip layouts.
-        Font.system(size: size, weight: weight, design: .monospaced)
+    /// SF Mono at any size, Dynamic Type-aware. System-bundled — no .ttf
+    /// required. The uppercase rule (≤3 words) is enforced by the caller, not
+    /// the font. We build a concrete monospaced `UIFont` and scale it through
+    /// `UIFontMetrics`, because a plain `Font.system(size:)` is frozen and
+    /// ignores the user's accessibility text-size setting.
+    static func sfMono(size: CGFloat, weight: Font.Weight = .regular, relativeTo textStyle: Font.TextStyle = .body) -> Font {
+        let base = UIFont.monospacedSystemFont(ofSize: max(size, TypeScale.minMono), weight: weight.uiKitWeight)
+        let scaled = UIFontMetrics(forTextStyle: textStyle.uiKitTextStyle).scaledFont(for: base)
+        return Font(scaled)
+    }
+}
+
+// MARK: - Legibility floor
+
+private enum TypeScale {
+    /// Smallest SF Mono base size before Dynamic Type scaling.
+    static let minMono: CGFloat = 12
+    /// Smallest Barlow prose base size before Dynamic Type scaling.
+    static let minProse: CGFloat = 16
+}
+
+// MARK: - SwiftUI → UIKit bridges (for UIFontMetrics scaling)
+
+private extension Font.Weight {
+    /// The UIKit weight matching this SwiftUI weight, so we can build a
+    /// concrete `UIFont` for `UIFontMetrics` to scale.
+    var uiKitWeight: UIFont.Weight {
+        switch self {
+        case .ultraLight: return .ultraLight
+        case .thin: return .thin
+        case .light: return .light
+        case .medium: return .medium
+        case .semibold: return .semibold
+        case .bold: return .bold
+        case .heavy: return .heavy
+        case .black: return .black
+        default: return .regular
+        }
+    }
+}
+
+private extension Font.TextStyle {
+    /// The UIKit text style whose Dynamic Type scaling curve this readout
+    /// should follow.
+    var uiKitTextStyle: UIFont.TextStyle {
+        switch self {
+        case .largeTitle: return .largeTitle
+        case .title: return .title1
+        case .title2: return .title2
+        case .title3: return .title3
+        case .headline: return .headline
+        case .subheadline: return .subheadline
+        case .callout: return .callout
+        case .footnote: return .footnote
+        case .caption: return .caption1
+        case .caption2: return .caption2
+        default: return .body
+        }
     }
 }

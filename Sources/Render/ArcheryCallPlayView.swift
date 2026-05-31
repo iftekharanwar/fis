@@ -67,7 +67,7 @@ struct ArcheryCallPlayView: View {
     /// the draw weight.
     @State private var computeSpine: Double = 85.0
 
-    private let computeMaxAttempts = 3
+    private let computeMaxAttempts = 5
     private let velocityRange: ClosedRange<Double> = 50...110
     private let spineRange: ClosedRange<Double> = 30...100
 
@@ -137,7 +137,6 @@ struct ArcheryCallPlayView: View {
                             : outcome.didHit,
                         phenomenon: revealPhenomenon,
                         explainer: revealExplainer,
-                        onContinue: handleClose,
                         onTryCompute: handleTryCompute,
                         outcomeLabelOverride: scenario.usesParadoxMechanic
                             ? (cleanFlight ? "IT FLEW CLEAN" : "IT WOBBLED")
@@ -453,10 +452,12 @@ struct ArcheryCallPlayView: View {
             Spacer()
 
             VStack(spacing: Spacing.xs) {
-                PrimaryButton(label: "Show the math", action: handleShowMath)
+                if success || attempt >= 3 {
+                    PrimaryButton(label: "Show the math", action: handleShowMath)
+                }
                 HStack(spacing: Spacing.md) {
                     if canRetry {
-                        SecondaryButton(label: "Retry", action: handleComputeRetry)
+                        AccentOutlineButton(label: "Retry", action: handleComputeRetry)
                     }
                     SecondaryButton(label: "Done", action: handleClose)
                 }

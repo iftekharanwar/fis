@@ -46,12 +46,12 @@ struct TopBar: View {
             Button(action: action) {
                 Text("← \(label.uppercased())")
                     .font(.sfMono(size: 11))
-                    .foregroundColor(.arclabMidGrey)
+                    .foregroundColor(.arclabRimOrange)
                     .tracking(2.0)
                     .frame(minHeight: 44, alignment: .leading)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressableButtonStyle())
             .accessibilityLabel("Back to \(label).")
         }
     }

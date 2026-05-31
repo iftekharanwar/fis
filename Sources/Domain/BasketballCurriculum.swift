@@ -12,7 +12,8 @@ enum BasketballCurriculum {
             title: "The arc",
             subtitle: "Every shot is a projectile. Here's the baseline.",
             lesson: lesson_1_1,
-            scenarioIDs: ["bb-freethrow-001"]
+            scenarioIDs: ["bb-freethrow-001"],
+            backgroundImageName: "bb-ch1-bg"
         ),
         Chapter(
             id: "bb-ch2-release-height",

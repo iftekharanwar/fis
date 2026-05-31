@@ -47,7 +47,7 @@ struct RootView: View {
         case "home":
             HomeView(
                 onTapTodayCard: { _, _ in },
-                onOpenSportPicker: {},
+                onOpenSport: { _ in },
                 onOpenProfile: {}
             )
         case "chapterlist":

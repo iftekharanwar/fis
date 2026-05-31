@@ -34,9 +34,9 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         switch self {
         case .basketball: return "basketball.fill"
         case .soccer:     return "soccerball"
-        case .pool:       return "circle.grid.cross.fill"  // 8-ball stand-in
+        case .pool:       return "8.circle.fill"
         case .archery:    return "target"
-        case .f1:         return "car.fill"
+        case .f1:         return "car.side"
         }
     }
 

@@ -55,7 +55,7 @@ struct IntroView: View {
                         .frame(minWidth: 44, minHeight: 44, alignment: .leading)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableButtonStyle())
                 .accessibilityLabel("Close. Return to home.")
             }
             Spacer()
@@ -104,7 +104,7 @@ struct IntroView: View {
 
             Text(scenario.situation.questionRevealed)
                 .font(.barlowCondensed(size: 14, italic: true))
-                .foregroundColor(.arclabMidGrey)
+                .foregroundColor(.arclabWhite)
                 .padding(.top, Spacing.sm)
 
             if let attemptInfo = replayAttemptInfoLine {
@@ -131,7 +131,7 @@ struct IntroView: View {
                 )
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
         .accessibilityLabel("\(startButtonLabel). Start the scenario.")
     }
 

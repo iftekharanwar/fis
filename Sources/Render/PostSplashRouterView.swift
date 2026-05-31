@@ -36,7 +36,7 @@ struct PostSplashRouterView: View {
         NavigationStack(path: $navigationPath) {
             HomeView(
                 onTapTodayCard: handleTapTodayCard,
-                onOpenSportPicker: { navigationPath.append(V2Route.sportPicker) },
+                onOpenSport: { sport in navigationPath.append(V2Route.chapterList(sport)) },
                 onOpenProfile: { presentedProfile = true }
             )
             .navigationDestination(for: V2Route.self) { route in

@@ -51,6 +51,7 @@
 		7230B4DD21FDE19F11E50812 /* rim-drop.wav in Resources */ = {isa = PBXBuildFile; fileRef = EFE42EFD365B9D8BF4E5E2B9 /* rim-drop.wav */; };
 		769D66F6B595C2EE68905096 /* AppOpenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08331D43606F118E4724D75E /* AppOpenView.swift */; };
 		7D1B2F2038833CF6F6369A6D /* PersistenceKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A69AAF4433BCE229E008117 /* PersistenceKeys.swift */; };
+		7D9E6BC32FC90E3700D58227 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 7D9E6BC22FC90E3700D58227 /* AppIcon.icon */; };
 		7F150A76BB9ABDB1B1808142 /* brand-mark.wav in Resources */ = {isa = PBXBuildFile; fileRef = DAC015AA73E8226960B1022D /* brand-mark.wav */; };
 		848AAFA08C36A7E13FCD0618 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9DEAE11EE63EE5C4441CC7 /* ProfileView.swift */; };
 		84DB8625238A6A1E8BEC74C2 /* glass-bounce.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6BC8F61703BCD9389E7C4F26 /* glass-bounce.wav */; };
@@ -147,7 +148,7 @@
 		33CBC61BF6F5D7B7EB6C594C /* HintDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HintDefinition.swift; sourceTree = "<group>"; };
 		347168285791808919BD9FD1 /* TopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopBar.swift; sourceTree = "<group>"; };
 		34869B1BC84C0691328F5BB5 /* LessonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonView.swift; sourceTree = "<group>"; };
-		37376D982861679D8C01BD9A /* PhysicsGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PhysicsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		37376D982861679D8C01BD9A /* PhysicsGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhysicsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		396DE9EA2962ACF13E476F99 /* AnimationsDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationsDefinition.swift; sourceTree = "<group>"; };
 		3C4BFA89135A12CC98258CD1 /* PlayHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayHUDView.swift; sourceTree = "<group>"; };
 		3D4E4862EDE6A9C4FB6FD79B /* ScenarioContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioContainerView.swift; sourceTree = "<group>"; };
@@ -180,6 +181,7 @@
 		7659807F674E00A2DB85668C /* SimulationRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationRegistry.swift; sourceTree = "<group>"; };
 		7A6EEBEA5AE6782EFF0F876A /* PostSplashRouterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostSplashRouterView.swift; sourceTree = "<group>"; };
 		7CB0B5867941348343B853CE /* AudioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
+		7D9E6BC22FC90E3700D58227 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		80EDD39579F7F214B9EA9F12 /* SmokeTestDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokeTestDefinition.swift; sourceTree = "<group>"; };
 		83CB785580DE7171854CF1F5 /* PhysicsGameTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PhysicsGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8423C9B12D61CF29072D71B9 /* PlayerProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileStore.swift; sourceTree = "<group>"; };
@@ -344,6 +346,7 @@
 				DC2E61851F4A397E4829DAEA /* Illustrations */,
 				84A6811EFE8A2A67DC0F7AA2 /* Scenarios */,
 				DEDB5BFF752609FFEBE03DD8 /* Assets.xcassets */,
+				7D9E6BC22FC90E3700D58227 /* AppIcon.icon */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -605,6 +608,7 @@
 				509418D72D2F9259CA499861 /* miss-tone.wav in Resources */,
 				6332BC52876D5A9B2A0F3755 /* rim-drop.wav in Resources */,
 				BE07AAB32AC82C29B5EBB02D /* rim-hit.wav in Resources */,
+				7D9E6BC32FC90E3700D58227 /* AppIcon.icon in Resources */,
 				9EE4E9422BA802CA087297BD /* scenario_bb-01-freethrow.png in Resources */,
 				26C9CC49060744D0646517FA /* shoot-release.wav in Resources */,
 				D1EBBBC537096C34F0F2E608 /* swish-net.wav in Resources */,
@@ -814,12 +818,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Arclab;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.iftekharanwar.physicsgame;
+				MARKETING_VERSION = 1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.parhamkarbasi.physicsgame;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -912,12 +918,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Arclab;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.iftekharanwar.physicsgame;
+				MARKETING_VERSION = 1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.parhamkarbasi.physicsgame;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

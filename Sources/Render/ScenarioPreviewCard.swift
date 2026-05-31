@@ -36,7 +36,7 @@ struct ScenarioPreviewCard: View {
             .clipShape(RoundedRectangle(cornerRadius: Sizing.cardRadius))
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle(haptic: .impact(weight: .medium)))
         .accessibilityLabel("\(titleAbove). \(bigTitle). \(actionLabel).")
     }
 
