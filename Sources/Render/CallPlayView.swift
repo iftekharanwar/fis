@@ -52,7 +52,7 @@ struct CallPlayView: View {
     @State private var releaseHapticCount: Int = 0
 
     /// Max attempts in compute mode before returning to chapter.
-    private let computeMaxAttempts = 3
+    private let computeMaxAttempts = 5
 
     enum Phase: Sendable, Equatable {
         /// Shooter at the line, "CALL IT." prompt, tap to release.
@@ -149,7 +149,6 @@ struct CallPlayView: View {
                         actualWentIn: actualWentIn(resolution),
                         phenomenon: revealPhenomenon,
                         explainer: revealExplainer,
-                        onContinue: handleClose,
                         onTryCompute: handleTryCompute
                     )
                     if useSideDock {
@@ -463,12 +462,15 @@ struct CallPlayView: View {
 
             Spacer()
 
-            // Show the math is always available; retry is offered if attempts remain.
+            // Show the math unlocks once they've made it or tried 3+ times;
+            // retry (orange) is offered while attempts remain.
             VStack(spacing: Spacing.xs) {
-                PrimaryButton(label: "Show the math", action: handleShowMath)
+                if madeIt || attempt >= 3 {
+                    PrimaryButton(label: "Show the math", action: handleShowMath)
+                }
                 HStack(spacing: Spacing.md) {
                     if canRetry {
-                        SecondaryButton(label: "Retry", action: handleComputeRetry)
+                        AccentOutlineButton(label: "Retry", action: handleComputeRetry)
                     }
                     SecondaryButton(label: "Done", action: handleClose)
                 }

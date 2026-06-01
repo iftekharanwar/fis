@@ -1,5 +1,28 @@
 import SwiftUI
 
+/// Makes any button *feel* tapped instead of reading as cold tappable text:
+/// a quick scale-down + dim while the finger is down, and a haptic the instant
+/// the press lands (on touch-down, not release) so the tap registers as
+/// physical. Apply with `.buttonStyle(PressableButtonStyle())`.
+///
+/// Default haptic is a light impact (nav rows, secondary actions); hero CTAs
+/// pass `.heavy`, content surfaces `.medium`.
+struct PressableButtonStyle: ButtonStyle {
+    var pressedScale: CGFloat = 0.97
+    var pressedOpacity: Double = 0.7
+    var haptic: SensoryFeedback = .impact(weight: .light)
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? pressedScale : 1.0)
+            .opacity(configuration.isPressed ? pressedOpacity : 1.0)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            .sensoryFeedback(haptic, trigger: configuration.isPressed) { _, pressed in
+                pressed  // fire on press-down only, not on release
+            }
+    }
+}
+
 /// Primary CTA — filled, high-contrast, hero-button-shaped. Used for the
 /// single most important action on a screen (BEGIN onboarding, PRACTICE
 /// after a lesson, CALL IT on the hero card if it ever becomes a separate
@@ -27,12 +50,9 @@ struct PrimaryButton: View {
                 .opacity(isEnabled ? 1.0 : 0.4)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle(haptic: .impact(weight: .heavy)))
         .disabled(!isEnabled)
-        .sensoryFeedback(.impact(weight: .heavy), trigger: tapCount)
     }
-
-    @State private var tapCount: Int = 0
 }
 
 /// Accent CTA — orange-filled, reserved for the SINGLE hero moment per
@@ -67,12 +87,35 @@ struct AccentButton: View {
                 .opacity(isEnabled ? 1.0 : 0.4)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle(haptic: .impact(weight: .heavy)))
         .disabled(!isEnabled)
-        .sensoryFeedback(.impact(weight: .heavy), trigger: tapCount)
     }
+}
 
-    @State private var tapCount: Int = 0
+/// Accent CTA, outlined — orange label + orange border, transparent fill.
+/// Lower weight than the filled `AccentButton`: use when an action should read
+/// as orange/important but isn't the single filled hero on the screen — e.g.
+/// RETRY on a missed attempt, sitting beside the white "Show the math".
+struct AccentOutlineButton: View {
+    let label: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label.uppercased())
+                .font(.sfMono(size: 16, weight: .medium))
+                .foregroundColor(.arclabRimOrange)
+                .tracking(3.2)
+                .frame(maxWidth: .infinity)
+                .frame(height: Sizing.pillButtonHeight)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Sizing.pillRadius)
+                        .stroke(Color.arclabRimOrange, lineWidth: Sizing.borderWidth)
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(PressableButtonStyle())
+    }
 }
 
 /// Secondary CTA — outlined ghost button, lower visual weight. Used for
@@ -102,10 +145,7 @@ struct SecondaryButton: View {
                 )
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        // Medium weight — softer than PrimaryButton's heavy to match the
-        // secondary visual hierarchy (transparent vs filled).
-        .sensoryFeedback(.impact(weight: .medium), trigger: tapCount)
+        .buttonStyle(PressableButtonStyle())
     }
 }
 

@@ -128,8 +128,8 @@ struct RootView: View {
             }
         case "home":
             HomeView(
-                onPickDailyScenario: {},
-                onOpenSportPicker: {},
+                onTapTodayCard: { _, _ in },
+                onOpenSport: { _ in },
                 onOpenProfile: {}
             )
         case "lesson":

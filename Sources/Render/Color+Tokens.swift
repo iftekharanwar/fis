@@ -16,9 +16,12 @@ extension Color {
     /// `#FFFFFF` — primary type.
     static let arclabWhite = Color(red: 1, green: 1, blue: 1)
 
-    /// `#6B6B6B` — muted labels, captions, mid-grey. **One value only**;
-    /// no second mid-grey allowed (per audit fix on 2026-05-19).
-    static let arclabMidGrey = Color(hex: 0x6B6B6B)
+    /// `#8A8A8A` — muted labels, captions, mid-grey. **One value only**;
+    /// no second mid-grey allowed (per audit fix on 2026-05-19). Raised from
+    /// `#6B6B6B` on 2026-05-29: the old value was 3.9:1 on black, under the
+    /// WCAG AA 4.5:1 floor for body text. `#8A8A8A` clears it (~6:1) while
+    /// staying perceptibly muted next to `arclabWhite`.
+    static let arclabMidGrey = Color(hex: 0x8A8A8A)
 
     /// `#3A3A3A` — 1pt rules and chip borders.
     static let arclabBorderGrey = Color(hex: 0x3A3A3A)

@@ -38,10 +38,7 @@ struct ScenarioPreviewCard: View {
             .clipShape(RoundedRectangle(cornerRadius: Sizing.cardRadius))
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        // Medium impact for the hero card — heavier than the secondary rows
-        // so the daily-card tap feels like the headline action it is.
-        .sensoryFeedback(.impact(weight: .medium), trigger: tapCount)
+        .buttonStyle(PressableButtonStyle(haptic: .impact(weight: .medium)))
         .accessibilityLabel("\(titleAbove). \(bigTitle). \(actionLabel).")
     }
 

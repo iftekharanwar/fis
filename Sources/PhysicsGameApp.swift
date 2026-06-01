@@ -38,6 +38,11 @@ struct PhysicsGameApp: App {
                 .environment(spotter)
                 .environment(subscription)
                 .environment(audio)
+                // Cap Dynamic Type at the largest standard size. The content
+                // screens are fixed (non-scrolling) VStacks that overflow past
+                // this; all standard sizes are fully supported, and the opt-in
+                // accessibility sizes render at this ceiling instead of clipping.
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         }
     }
 }

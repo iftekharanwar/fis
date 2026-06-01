@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "bb-ch1-bg.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

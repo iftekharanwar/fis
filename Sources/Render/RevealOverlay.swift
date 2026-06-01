@@ -17,11 +17,10 @@ struct RevealOverlay: View {
     let actualWentIn: Bool
     let phenomenon: String
     let explainer: String
-    let onContinue: () -> Void
-    /// v2.1 §4 compute beat: optional second CTA that opens slider mode.
-    /// nil hides the button entirely (e.g., when compute mode isn't unlocked
-    /// for this scenario, or already exhausted attempts).
-    let onTryCompute: (() -> Void)?
+    /// v2.1 §4 compute beat: opens slider mode. This is the only CTA on the
+    /// reveal card — the user goes deeper ("See why") or exits via the close
+    /// chrome. There is intentionally no "Continue" that just dismisses.
+    let onTryCompute: () -> Void
 
     /// Optional override for the chip's outcome text. nil → fall back to
     /// "IT WENT IN" / "IT MISSED" driven by `actualWentIn`. Used by paradox
@@ -76,7 +75,7 @@ struct RevealOverlay: View {
             callStatusRow
             phenomenonHeadline
             explainerBody
-            continueButton
+            seeWhyButton
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.md)
@@ -124,16 +123,9 @@ struct RevealOverlay: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    private var continueButton: some View {
-        HStack(spacing: Spacing.sm) {
-            if let onTryCompute {
-                SecondaryButton(label: "Continue", action: onContinue)
-                AccentButton(label: "See why  →", action: onTryCompute)
-            } else {
-                PrimaryButton(label: "Continue", action: onContinue)
-            }
-        }
-        .padding(.top, Spacing.xs)
+    private var seeWhyButton: some View {
+        AccentButton(label: "See why  →", action: onTryCompute)
+            .padding(.top, Spacing.xs)
     }
 }
 
@@ -152,7 +144,6 @@ struct RevealOverlay: View {
             actualWentIn: true,
             phenomenon: "Why every shot is an arc.",
             explainer: "Once the ball leaves your hand, only gravity acts on it. The arc is fully determined by release angle and speed — the rest is geometry.",
-            onContinue: {},
             onTryCompute: {}
         )
     }

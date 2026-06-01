@@ -96,10 +96,8 @@ private struct ChapterRow: View {
     let isUnlocked: Bool
     let onTap: () -> Void
 
-    @State private var tapCount: Int = 0
-
     var body: some View {
-        Button(action: handleTap) {
+        Button(action: onTap) {
             HStack(alignment: .top, spacing: Spacing.md) {
                 Text("\(chapter.index)")
                     .font(.anton(size: 36))
@@ -133,14 +131,7 @@ private struct ChapterRow: View {
             .padding(.vertical, Spacing.md)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .medium), trigger: tapCount, condition: { _, _ in isUnlocked })
-        .sensoryFeedback(.warning, trigger: tapCount, condition: { _, _ in !isUnlocked })
-        .accessibilityLabel("Chapter \(chapter.index). \(chapter.title). \(isUnlocked ? "Unlocked." : "Locked.")")
-    }
-
-    private func handleTap() {
-        tapCount += 1
-        onTap()
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel("Chapter \(chapter.index). \(chapter.title). \(chapter.subtitle). \(isUnlocked ? "Unlocked." : "Locked.")")
     }
 }

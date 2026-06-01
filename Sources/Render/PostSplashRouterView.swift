@@ -46,8 +46,8 @@ struct PostSplashRouterView: View {
     private var homeStack: some View {
         NavigationStack(path: $navigationPath) {
             HomeView(
-                onPickDailyScenario: handleDailyScenarioTap,
-                onOpenSportPicker: handleContinueTap,
+                onTapTodayCard: handleTapTodayCard,
+                onOpenSport: { sport in navigationPath.append(V2Route.chapterList(sport)) },
                 onOpenProfile: { presentedProfile = true }
             )
             .navigationDestination(for: V2Route.self) { route in
@@ -202,6 +202,18 @@ struct PostSplashRouterView: View {
         )
         let chapter = BasketballCurriculum.chapters.first(where: { $0.id == pick.chapterId })
         presentScenario(id: pick.scenarioId, in: chapter)
+    }
+
+    /// v2.3 Home CONTINUE hero tap. `scenarioId` is non-nil when the chapter
+    /// has an authored next-up scenario — present it directly via the call
+    /// surface. Nil means "preview": push the chapter view so the player can
+    /// see what's coming.
+    private func handleTapTodayCard(chapter: Chapter, scenarioId: String?) {
+        if let scenarioId {
+            presentScenario(id: scenarioId, in: chapter)
+        } else {
+            navigationPath.append(V2Route.chapter(chapter.id))
+        }
     }
 
     private func presentScenario(id: String, in chapter: Chapter?) {

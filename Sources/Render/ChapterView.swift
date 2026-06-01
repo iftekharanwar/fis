@@ -136,7 +136,7 @@ struct ChapterView: View {
 
                 Text(chapter.lesson.oneLiner)
                     .font(.barlowCondensed(size: 14, italic: true))
-                    .foregroundColor(.arclabMidGrey)
+                    .foregroundColor(.arclabWhite)
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.leading)
 
@@ -158,11 +158,11 @@ struct ChapterView: View {
             )
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
     }
 
     private var practiceList: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             if chapter.scenarioIDs.isEmpty {
                 emptyPractice
             } else {
@@ -190,25 +190,31 @@ struct ChapterView: View {
 
     private func scenarioRow(index: Int, scenarioId: String) -> some View {
         let locked = !lessonRead
+        let accent: Color = locked ? .arclabBorderGrey : .arclabRimOrange
         return Button(action: { if !locked { onOpenScenario(scenarioId) } }) {
             HStack(spacing: Spacing.sm) {
                 Text(String(format: "%02d", index))
-                    .font(.sfMono(size: 11))
-                    .foregroundColor(locked ? .arclabBorderGrey : .arclabMidGrey)
+                    .font(.sfMono(size: 13))
+                    .foregroundColor(accent)
                     .tracking(2.0)
                 Text(scenarioTitle(for: scenarioId))
-                    .font(.barlowCondensed(size: 16))
-                    .foregroundColor(locked ? .arclabBorderGrey : .arclabWhite)
+                    .font(.barlowCondensed(size: 20))
+                    .foregroundColor(accent)
                 Spacer()
                 Text(locked ? "READ FIRST" : "→")
-                    .font(.sfMono(size: 11))
-                    .foregroundColor(.arclabMidGrey)
+                    .font(.sfMono(size: locked ? 11 : 17, weight: .medium))
+                    .foregroundColor(accent)
                     .tracking(2.0)
             }
-            .frame(minHeight: 44)
+            .padding(.horizontal, Spacing.md)
+            .frame(maxWidth: .infinity, minHeight: 66)
+            .overlay(
+                RoundedRectangle(cornerRadius: Sizing.pillRadius, style: .continuous)
+                    .stroke(accent, lineWidth: Sizing.borderWidth)
+            )
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
         .disabled(locked)
         .accessibilityLabel(locked
             ? "\(scenarioTitle(for: scenarioId)). Locked — read the lesson first."

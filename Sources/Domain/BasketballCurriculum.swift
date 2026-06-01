@@ -17,6 +17,11 @@ enum BasketballCurriculum {
             sport: .basketball,
             index: 1,
             title: "The arc",
+            // Hybrid resolution: v3 mastery seeds + lensReveal kept (BranchP's
+            // ch1 referenced `bb-freethrow-001`/`lesson_1_1` which aren't
+            // authored — would break compilation/runtime). BranchP's new
+            // `backgroundImageName` asset is adopted so ChapterView gets the
+            // poster background BranchP introduced.
             subtitle: "Every shot is the same shape. Arc height controls everything.",
             lesson: lesson_1_arc,
             scenarioIDs: ["bb-1-baseline", "bb-1-flat", "bb-1-logo-three"],
@@ -47,7 +52,8 @@ enum BasketballCurriculum {
                     "bb-4-wing-bank", "bb-4-wrong-angle", "bb-4-elbow-bank",
                     "bb-5-toe-on-line", "bb-5-toe-behind", "bb-5-corner-pocket"
                 ]
-            ]
+            ],
+            backgroundImageName: "bb-ch1-bg"
         ),
         Chapter(
             id: "bb-ch2-spin",
