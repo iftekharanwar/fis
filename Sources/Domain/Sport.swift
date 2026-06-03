@@ -43,13 +43,13 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// Which sports have shippable content. Soccer/Pool/F1 are stubs (no
+    /// Which sports have shippable content. Pool/F1 remain stubs (no
     /// curriculum, no scenarios) — they render in the picker as "coming soon"
     /// rather than tappable rows that lead to dead ends.
     var isUnlocked: Bool {
         switch self {
-        case .basketball, .archery: return true
-        case .soccer, .pool, .f1:   return false
+        case .basketball, .archery, .soccer: return true
+        case .pool, .f1:                     return false
         }
     }
 
@@ -64,7 +64,8 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         switch self {
         case .basketball: return BasketballCurriculum.chapters
         case .archery:    return ArcheryCurriculum.chapters
-        case .soccer, .pool, .f1: return []
+        case .soccer:     return SoccerCurriculum.chapters
+        case .pool, .f1:  return []
         }
     }
 }

@@ -32,6 +32,11 @@ struct PostSplashRouterView: View {
     /// basketball numpad PlayView).
     @State private var pushedArcheryScenario: ArcheryScenario?
     @State private var pushedArcheryChapter: Chapter?
+    /// Soccer push: SoccerScenario goes through SoccerCallPlayView — the
+    /// Magnus-driven free-kick surface (plan view, SF Symbol figures, no
+    /// numpad). One scenario at a time; no auto-advance queue yet.
+    @State private var pushedSoccerScenario: SoccerScenario?
+    @State private var pushedSoccerChapter: Chapter?
     @State private var presentedProfile: Bool = false
 
     var body: some View {
@@ -95,6 +100,17 @@ struct PostSplashRouterView: View {
                 }
             )
         }
+        // Soccer push: SoccerCallPlayView (Magnus free-kick surface).
+        .fullScreenCover(item: $pushedSoccerScenario) { scenario in
+            SoccerCallPlayView(
+                scenario: scenario,
+                chapter: pushedSoccerChapter,
+                onClose: {
+                    pushedSoccerScenario = nil
+                    pushedSoccerChapter = nil
+                }
+            )
+        }
         .sheet(isPresented: $presentedProfile) {
             ProfileView()
         }
@@ -148,7 +164,20 @@ struct PostSplashRouterView: View {
                             startArcheryPush(chapter: chapter, scenarioId: scenarioId)
                         }
                     )
-                case .soccer, .pool, .f1:
+                case .soccer:
+                    // Soccer reuses the same chapter shell as archery — lesson
+                    // row + scenario rows. Scenario taps present
+                    // SoccerCallPlayView (Magnus free-kick surface).
+                    ChapterView(
+                        chapter: chapter,
+                        onOpenLesson: { lesson in
+                            navigationPath.append(V2Route.lesson(lesson.id, chapterId: chapter.id))
+                        },
+                        onOpenScenario: { scenarioId in
+                            startSoccerPush(chapter: chapter, scenarioId: scenarioId)
+                        }
+                    )
+                case .pool, .f1:
                     // Locked sports shouldn't reach here, but render an
                     // honest "coming soon" if they do (vs cryptic crash).
                     placeholder("\(chapter.sport.displayName) is coming soon.")
@@ -232,6 +261,19 @@ struct PostSplashRouterView: View {
         }
         pushedArcheryChapter = chapter
         pushedArcheryScenario = scenario
+    }
+
+    /// Soccer scenario tap → look up in catalog → present in
+    /// SoccerCallPlayView. Single scenario per push; each scenario carries
+    /// its own Magnus mechanic so the player doesn't bounce through a
+    /// level-type picker first.
+    private func startSoccerPush(chapter: Chapter, scenarioId: String) {
+        guard let scenario = SoccerScenarioCatalog.scenario(for: scenarioId) else {
+            print("[arclab/router] soccer scenario not in catalog: \(scenarioId)")
+            return
+        }
+        pushedSoccerChapter = chapter
+        pushedSoccerScenario = scenario
     }
 
     /// User explicitly bailed (CLOSE chip or swipe back). Pop to picker.
