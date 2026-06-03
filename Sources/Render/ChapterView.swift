@@ -222,11 +222,14 @@ struct ChapterView: View {
     }
 
     /// Look up a human-readable archetype title for the scenario. Dispatches
-    /// by id prefix because archery scenarios live in a separate static
-    /// catalog rather than the JSON-on-disk basketball pipeline.
+    /// by id prefix because archery + soccer scenarios live in separate
+    /// static catalogs rather than the JSON-on-disk basketball pipeline.
     private func scenarioTitle(for scenarioId: String) -> String {
         if scenarioId.hasPrefix("arc-") {
             return ArcheryScenarioCatalog.title(for: scenarioId)
+        }
+        if scenarioId.hasPrefix("soc-") {
+            return SoccerScenarioCatalog.title(for: scenarioId)
         }
         if let scenario = try? ScenarioLoader.load(ScenarioID(scenarioId)) {
             return scenario.meta.title
