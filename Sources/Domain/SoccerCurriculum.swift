@@ -33,7 +33,10 @@ enum SoccerCurriculum {
                 oneLiner: "The top of the ball drags through the air; the air shoves the ball into the ground.",
                 seconds: 90
             ),
-            scenarioIDs: ["soc-dip-001"],
+            // Locked: lesson + scenario (soc-dip-001) are authored, but the
+            // chapter stays gated until ready. Empty scenarioIDs renders it
+            // locked (matches archery ch3-5). Restore "soc-dip-001" to ship.
+            scenarioIDs: [],
             lensReveal: "When a striker drops one over the keeper, you'll see why."
         ),
         Chapter(
@@ -48,7 +51,8 @@ enum SoccerCurriculum {
                 oneLiner: "With no rotation, the airflow flips chaotically and the ball lurches sideways late.",
                 seconds: 95
             ),
-            scenarioIDs: ["soc-knuckle-001"],
+            // Locked until ready. Restore "soc-knuckle-001" to ship.
+            scenarioIDs: [],
             lensReveal: "You'll spot a knuckler before the keeper does."
         ),
         Chapter(
@@ -63,7 +67,8 @@ enum SoccerCurriculum {
                 oneLiner: "Maximum side spin pulls the flight into a long arc — the keeper steps the wrong way.",
                 seconds: 105
             ),
-            scenarioIDs: ["soc-banana-001"],
+            // Locked until ready. Restore "soc-banana-001" to ship.
+            scenarioIDs: [],
             lensReveal: "From now on, no angle looks closed to you."
         ),
         Chapter(
@@ -78,7 +83,8 @@ enum SoccerCurriculum {
                 oneLiner: "From a 90-degree angle, only an inswinging spin can carry the ball into the net.",
                 seconds: 110
             ),
-            scenarioIDs: ["soc-olympic-001"],
+            // Locked until ready. Restore "soc-olympic-001" to ship.
+            scenarioIDs: [],
             lensReveal: "The Olympic goal isn't luck. It's geometry."
         )
     ]

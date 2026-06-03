@@ -10,8 +10,10 @@ struct LevelTypePickerView: View {
 
     let chapter: Chapter
     let onSelectLevelType: (LevelTypeID) -> Void
-    let onOpenLesson: (LessonStub) -> Void
     let onOpenFamousMoments: () -> Void
+
+    /// Drives the expanding lesson reader (replaces the old full-screen push).
+    @State private var lessonExpanded = false
 
     var body: some View {
         AdaptiveContentContainer(maxWidth: 640) {
@@ -35,6 +37,22 @@ struct LevelTypePickerView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
+        // Picker recedes behind the expanding reader.
+        .opacity(lessonExpanded ? 0 : 1)
+        .scaleEffect(lessonExpanded ? 0.96 : 1)
+        .animation(.easeOut(duration: 0.42), value: lessonExpanded)
+        .lessonReader(
+            isPresented: $lessonExpanded,
+            lesson: chapter.lesson,
+            chapterTitle: chapter.title,
+            chapterIndex: chapter.index,
+            onClose: { finished in
+                if finished {
+                    profile.mutate { $0.completedLessons.insert(chapter.lesson.id) }
+                }
+                lessonExpanded = false
+            }
+        )
         .task { autoSelectLevelTypeIfRequested() }
     }
 
@@ -78,7 +96,7 @@ struct LevelTypePickerView: View {
     }
 
     private var lessonRow: some View {
-        Button(action: { onOpenLesson(chapter.lesson) }) {
+        Button(action: { lessonExpanded = true }) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("LESSON · \(chapter.lesson.estimatedReadSeconds)s")
                     .font(.sfMono(size: 10))

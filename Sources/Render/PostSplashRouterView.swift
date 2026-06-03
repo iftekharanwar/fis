@@ -144,9 +144,6 @@ struct PostSplashRouterView: View {
                         onSelectLevelType: { lt in
                             startLevelTypePush(chapter: chapter, levelType: lt)
                         },
-                        onOpenLesson: { lesson in
-                            navigationPath.append(V2Route.lesson(lesson.id, chapterId: chapter.id))
-                        },
                         onOpenFamousMoments: {
                             // v3.1 — Famous Moments replay flow. v3 ship: no-op
                             // until the dedicated FamousMomentsView lands.
@@ -157,9 +154,6 @@ struct PostSplashRouterView: View {
                     // scenario rows). Scenario taps present ArcheryCallPlayView.
                     ChapterView(
                         chapter: chapter,
-                        onOpenLesson: { lesson in
-                            navigationPath.append(V2Route.lesson(lesson.id, chapterId: chapter.id))
-                        },
                         onOpenScenario: { scenarioId in
                             startArcheryPush(chapter: chapter, scenarioId: scenarioId)
                         }
@@ -170,14 +164,11 @@ struct PostSplashRouterView: View {
                     // SoccerCallPlayView (Magnus free-kick surface).
                     ChapterView(
                         chapter: chapter,
-                        onOpenLesson: { lesson in
-                            navigationPath.append(V2Route.lesson(lesson.id, chapterId: chapter.id))
-                        },
                         onOpenScenario: { scenarioId in
                             startSoccerPush(chapter: chapter, scenarioId: scenarioId)
                         }
                     )
-                case .pool, .f1:
+                case .pool:
                     // Locked sports shouldn't reach here, but render an
                     // honest "coming soon" if they do (vs cryptic crash).
                     placeholder("\(chapter.sport.displayName) is coming soon.")

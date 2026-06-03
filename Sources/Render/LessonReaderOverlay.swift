@@ -1,0 +1,279 @@
+import SwiftUI
+import UIKit
+
+/// The expanding lesson reader. Replaces the old full-screen `LessonView`
+/// push: tapping the lesson card on a chapter screen *expands* this reader in
+/// place — the chapter title rises and pins at the top, the card grows into a
+/// full-bleed poster reader, and the same left/right tap paging drives the
+/// story cards. Closing collapses it back.
+///
+/// Hosted via the `.lessonReader(...)` modifier so both `ChapterView`
+/// (archery / soccer) and `LevelTypePickerView` (basketball) get the identical
+/// interaction. The host owns the `isPresented` binding and decides what to do
+/// on close — `onClose(finished:)` reports whether the reader was finished
+/// (reached the end / tapped Begin) vs. dismissed early, so the host applies
+/// the first-play gating (mark the lesson read only on finish).
+///
+/// Motion mirrors the approved mockup: a scale-from-near-bottom + fade, on
+/// Apple's default ease curve, ~0.42s. No `matchedGeometryEffect` — the card
+/// and reader are separate layers; the chapter fades out behind the reader.
+struct LessonReaderOverlay: View {
+    let lesson: LessonContent
+    /// Chapter title + index shown in the pinned header (the title that
+    /// "moved up" from the chapter screen).
+    let chapterTitle: String
+    let chapterIndex: Int
+    /// Reports dismissal. `finished == true` when the reader reached the last
+    /// card (or the user tapped Begin); `false` on an early close (✕).
+    let onClose: (_ finished: Bool) -> Void
+
+    @State private var cardIndex: Int = 0
+    @State private var showCoachmark: Bool = false
+    @AppStorage("arclab.lesson.coachmark.seen") private var coachmarkSeen: Bool = false
+
+    private var currentCard: LessonContent.Card { lesson.cards[cardIndex] }
+    private var isLastCard: Bool { cardIndex >= lesson.cards.count - 1 }
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Color.arclabBlack.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                header
+                progressHairline
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.top, Spacing.xs)
+
+                ZStack {
+                    cardContent
+                        .transition(.opacity.combined(with: .move(edge: .trailing)))
+                        .id(cardIndex)   // re-trigger transition on each advance
+                    tapZones
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+            }
+            .padding(.horizontal, Spacing.md)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.arclabBlack.ignoresSafeArea())
+        .overlay {
+            if showCoachmark {
+                coachmarkOverlay.transition(.opacity)
+            }
+        }
+        .onAppear {
+            cardIndex = 0
+            if !coachmarkSeen { showCoachmark = true }
+        }
+    }
+
+    // MARK: - Pinned header (the chapter title, shrunk up)
+
+    private var header: some View {
+        HStack(alignment: .top, spacing: Spacing.sm) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(chapterTitle.uppercased())
+                    .font(.anton(size: 20))
+                    .foregroundColor(.arclabWhite)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                Text("CHAPTER \(chapterIndex) · \(cardIndex + 1)/\(lesson.cards.count)")
+                    .font(.sfMono(size: 10, weight: .medium))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+            }
+            Spacer()
+            Button(action: { close(finished: false) }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.arclabMidGrey)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Circle().stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
+                    )
+                    .contentShape(Circle())
+            }
+            .buttonStyle(PressableButtonStyle())
+            .accessibilityLabel("Close lesson")
+        }
+        .padding(.top, Spacing.sm)
+    }
+
+    /// Segmented progress hairline — one tick per card, white up to current.
+    private var progressHairline: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<lesson.cards.count, id: \.self) { i in
+                Rectangle()
+                    .fill(i <= cardIndex ? Color.arclabWhite : Color.arclabBorderGrey)
+                    .frame(height: 2)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    // MARK: - Card body
+
+    private var cardContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: Spacing.lg)
+
+            if let illustration = currentCard.illustrationName,
+               let uiImage = UIImage(named: illustration) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxHeight: 220)
+                    .clipShape(RoundedRectangle(cornerRadius: Sizing.cardRadius))
+                    .padding(.bottom, Spacing.lg)
+            }
+
+            Text(currentCard.headline)
+                .font(.anton(size: 44))
+                .textCase(.uppercase)
+                .foregroundColor(.arclabWhite)
+                .lineLimit(4)
+                .minimumScaleFactor(0.65)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let body = currentCard.body {
+                Spacer().frame(height: Spacing.md)
+                Text(body)
+                    .font(.barlowCondensed(size: 17, italic: true))
+                    .foregroundColor(.arclabMidGrey)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let math = currentCard.math {
+                Spacer().frame(height: Spacing.md)
+                Text(math)
+                    .font(.sfMono(size: 16))
+                    .foregroundColor(.arclabWhite)
+                    .padding(Spacing.sm)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Sizing.cardRadius)
+                            .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
+                    )
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if isLastCard {
+                Spacer().frame(height: Spacing.xl)
+                PrimaryButton(label: "Begin", action: { close(finished: true) })
+            }
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Left third → back, right two-thirds → next. Bottom 80pt excluded so the
+    /// Begin button + thumb-rest taps don't fire navigation.
+    private var tapZones: some View {
+        GeometryReader { geo in
+            HStack(spacing: 0) {
+                Color.clear
+                    .frame(width: geo.size.width * 0.33)
+                    .contentShape(Rectangle())
+                    .onTapGesture { back() }
+                Color.clear
+                    .frame(width: geo.size.width * 0.67)
+                    .contentShape(Rectangle())
+                    .onTapGesture { advance() }
+            }
+            .frame(height: max(0, geo.size.height - 80))
+        }
+    }
+
+    private var coachmarkOverlay: some View {
+        VStack {
+            Spacer()
+            VStack(spacing: Spacing.xs) {
+                Text("TAP TO CONTINUE")
+                    .font(.sfMono(size: 11, weight: .medium))
+                    .foregroundColor(.arclabWhite)
+                    .tracking(2.5)
+                Text("Tap left to go back.")
+                    .font(.barlowCondensed(size: 13, italic: true))
+                    .foregroundColor(.arclabMidGrey)
+            }
+            .padding(.vertical, Spacing.sm)
+            .padding(.horizontal, Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: Sizing.cardRadius)
+                    .fill(Color.arclabCardBlack)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Sizing.cardRadius)
+                            .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
+                    )
+            )
+            Spacer().frame(height: 120)
+        }
+        .allowsHitTesting(false)
+    }
+
+    // MARK: - Actions
+
+    private func advance() {
+        dismissCoachmarkIfNeeded()
+        if isLastCard {
+            close(finished: true)
+        } else {
+            withAnimation(.easeOut(duration: 0.22)) { cardIndex += 1 }
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        }
+    }
+
+    private func back() {
+        dismissCoachmarkIfNeeded()
+        guard cardIndex > 0 else { return }
+        withAnimation(.easeOut(duration: 0.22)) { cardIndex -= 1 }
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+    }
+
+    private func close(finished: Bool) {
+        dismissCoachmarkIfNeeded()
+        onClose(finished)
+    }
+
+    private func dismissCoachmarkIfNeeded() {
+        guard showCoachmark else { return }
+        withAnimation(.easeOut(duration: 0.3)) { showCoachmark = false }
+        coachmarkSeen = true
+    }
+}
+
+// MARK: - Host modifier
+
+extension View {
+    /// Presents the expanding `LessonReaderOverlay` above the host chapter
+    /// screen. The host fades/recedes behind it (apply `.blur`/`.opacity` keyed
+    /// on the same binding if desired). Motion matches the approved mockup:
+    /// scale-from-near-bottom + fade on Apple's default curve.
+    func lessonReader(
+        isPresented: Binding<Bool>,
+        lesson: LessonContent,
+        chapterTitle: String,
+        chapterIndex: Int,
+        onClose: @escaping (_ finished: Bool) -> Void
+    ) -> some View {
+        overlay {
+            if isPresented.wrappedValue {
+                LessonReaderOverlay(
+                    lesson: lesson,
+                    chapterTitle: chapterTitle,
+                    chapterIndex: chapterIndex,
+                    onClose: onClose
+                )
+                .transition(
+                    .scale(scale: 0.90, anchor: UnitPoint(x: 0.5, y: 0.72))
+                        .combined(with: .opacity)
+                )
+                .zIndex(10)
+            }
+        }
+        .animation(.easeOut(duration: 0.42), value: isPresented.wrappedValue)
+    }
+}

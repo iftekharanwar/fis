@@ -19,7 +19,7 @@ enum SportLevelCatalog {
                     shortLabel: "MAKE THE SHOT."
                 )
             ]
-        case .soccer, .pool, .archery, .f1:
+        case .soccer, .pool, .archery:
             return []
         }
     }

@@ -85,7 +85,7 @@ struct ChapterListView: View {
             return chapter.isShippableInV3
         case .archery, .soccer:
             return !chapter.scenarioIDs.isEmpty
-        case .pool, .f1:
+        case .pool:
             return false
         }
     }

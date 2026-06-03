@@ -18,7 +18,7 @@ struct SportPickerView: View {
 
                 Spacer().frame(height: Spacing.lg)
 
-                // ScrollView prevents F1 row clipping on iPhone 17 and contains layout bounds.
+                // ScrollView keeps the sport rows from clipping on smaller screens and contains layout bounds.
                 ScrollView(.vertical, showsIndicators: false) {
                     sportList
                 }

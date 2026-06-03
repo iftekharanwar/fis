@@ -189,7 +189,6 @@ struct DiagnosticLevelTypePickerWrapper: View {
             onSelectLevelType: { lt in
                 startLevelTypePush(levelType: lt)
             },
-            onOpenLesson: { _ in },
             onOpenFamousMoments: {}
         )
         .fullScreenCover(item: $presentedScenario) { scenario in

@@ -4,9 +4,8 @@ import Foundation
 enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
     case basketball
     case soccer
-    case pool
     case archery
-    case f1
+    case pool
 
     var id: String { rawValue }
 
@@ -14,9 +13,8 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         switch self {
         case .basketball: return "BASKETBALL"
         case .soccer:     return "SOCCER"
-        case .pool:       return "POOL"
         case .archery:    return "ARCHERY"
-        case .f1:         return "F1"
+        case .pool:       return "POOL"
         }
     }
 
@@ -27,9 +25,8 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         switch self {
         case .basketball: return "THE ARC"
         case .soccer:     return "THE CURVE"
-        case .pool:       return "THE BREAK"
         case .archery:    return "THE DISTANCE"
-        case .f1:         return "THE TURN"
+        case .pool:       return "THE BREAK"
         }
     }
 
@@ -37,19 +34,18 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         switch self {
         case .basketball: return "basketball.fill"
         case .soccer:     return "soccerball"
-        case .pool:       return "8.circle.fill"
         case .archery:    return "target"
-        case .f1:         return "car.side"
+        case .pool:       return "8.circle.fill"
         }
     }
 
-    /// Which sports have shippable content. Pool/F1 remain stubs (no
-    /// curriculum, no scenarios) — they render in the picker as "coming soon"
-    /// rather than tappable rows that lead to dead ends.
+    /// Which sports have shippable content. Pool remains a stub (no
+    /// curriculum, no scenarios) — it renders in the picker as "coming soon"
+    /// rather than a tappable row that leads to a dead end.
     var isUnlocked: Bool {
         switch self {
         case .basketball, .archery, .soccer: return true
-        case .pool, .f1:                     return false
+        case .pool:                          return false
         }
     }
 
@@ -65,7 +61,7 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         case .basketball: return BasketballCurriculum.chapters
         case .archery:    return ArcheryCurriculum.chapters
         case .soccer:     return SoccerCurriculum.chapters
-        case .pool, .f1:  return []
+        case .pool:       return []
         }
     }
 }

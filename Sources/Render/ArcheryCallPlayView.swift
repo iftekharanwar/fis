@@ -75,6 +75,8 @@ struct ArcheryCallPlayView: View {
     enum Phase: Equatable {
         case stance
         case release
+        /// Arrow frozen mid-flight; CALL IT (YES / NO) overlay visible.
+        case frozen
         case verdict(ArcheryOutcome, wasCorrect: Bool)
         case compute(attempt: Int)
         case computeAction(attempt: Int)
@@ -225,7 +227,7 @@ struct ArcheryCallPlayView: View {
 
     private var showsInfoStrip: Bool {
         switch phase {
-        case .stance, .compute:                 return true
+        case .stance, .frozen, .compute:        return true
         default:                                return false
         }
     }
@@ -265,6 +267,8 @@ struct ArcheryCallPlayView: View {
         switch phase {
         case .stance:
             stanceDock
+        case .frozen:
+            callDock
         case .release, .computeAction, .bonusAttempt:
             EmptyView()
         case .verdict(let outcome, let wasCorrect):
@@ -296,7 +300,34 @@ struct ArcheryCallPlayView: View {
         }
     }
 
+    /// Stance — loose the arrow. The call moved mid-flight (CONCEPT parity
+    /// with basketball): the user releases first, then predicts while the
+    /// arrow hangs frozen.
     private var stanceDock: some View {
+        VStack(spacing: Spacing.sm) {
+            Text("NOCK IT.")
+                .font(.anton(size: 32))
+                .foregroundColor(.arclabWhite)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Spacing.md)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("TAP TO LOOSE")
+                .font(.sfMono(size: 11))
+                .foregroundColor(.arclabMidGrey)
+                .tracking(2.0)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 220)
+        .padding(.bottom, Spacing.lg)
+        .background(Color.arclabBlack)
+        .contentShape(Rectangle())
+        .onTapGesture { handleRelease() }
+        .transition(.opacity)
+    }
+
+    /// Mid-flight call — arrow frozen, user predicts the outcome.
+    private var callDock: some View {
         VStack(spacing: Spacing.sm) {
             Text(scenario.stancePrompt)
                 .font(.anton(size: 28))
@@ -716,10 +747,19 @@ struct ArcheryCallPlayView: View {
 
     // MARK: - Actions
 
+    /// Stance tap — loose the arrow. It flies, then freezes mid-flight
+    /// (scene.onReachedMidflight → .frozen) where the user makes the call.
+    private func handleRelease() {
+        phase = .release
+        scene.startSimulation(pauseAtMidflight: true)
+    }
+
+    /// Mid-flight call — the user predicted YES/NO while the arrow hung.
+    /// Record it and let the arrow finish its flight to the verdict.
     private func handleCall(yes: Bool) {
         userCall = yes
         phase = .release
-        scene.startSimulation()
+        scene.resumeFlight()
     }
 
     private func handleTryCompute() {
@@ -798,7 +838,12 @@ struct ArcheryCallPlayView: View {
         Task {
             try? await Task.sleep(for: .milliseconds(1200))
             switch phase {
-            case .stance:    handleCall(yes: true)
+            case .stance:
+                // Loose, wait for the mid-flight freeze, then auto-call.
+                handleRelease()
+                try? await Task.sleep(for: .milliseconds(1200))
+                if case .frozen = phase { handleCall(yes: true) }
+            case .frozen:    handleCall(yes: true)
             case .compute:   handleComputeShoot()
             default:         return
             }
@@ -813,7 +858,9 @@ struct ArcheryCallPlayView: View {
 
     private var shouldShowClose: Bool {
         switch phase {
-        case .release, .computeAction:                          return false
+        // CLOSE hidden mid-prediction (release flight + frozen call) so the
+        // user can't bail mid-mechanic, mirroring basketball's gating.
+        case .release, .frozen, .computeAction:                 return false
         case .stance, .verdict, .compute, .computeVerdict,
              .formulaWalkthrough, .bonusAttempt:                return true
         }
@@ -822,6 +869,7 @@ struct ArcheryCallPlayView: View {
     private var hudOpacity: Double {
         switch phase {
         case .release, .computeAction, .bonusAttempt:           return 0.5
+        case .frozen:                                           return 1.0
         case .stance, .verdict, .compute, .computeVerdict,
              .formulaWalkthrough:                               return 1.0
         }
@@ -844,6 +892,12 @@ struct ArcheryCallPlayView: View {
 
     private func configureScene() {
         scene.audio = audio
+        scene.onReachedMidflight = {
+            Task { @MainActor in
+                // Arrow hung mid-flight — surface the call.
+                phase = .frozen
+            }
+        }
         scene.onOutcomeResolved = { outcome, wobbleAtImpact in
             Task { @MainActor in
                 pendingWobbleAtImpact = wobbleAtImpact
@@ -862,6 +916,7 @@ struct ArcheryCallPlayView: View {
     private var phaseShowsDock: Bool {
         switch phase {
         case .release, .computeAction, .bonusAttempt: return false
+        // .frozen shows the dock (the call YES/NO) → default true.
         default: return true
         }
     }
@@ -872,7 +927,7 @@ struct ArcheryCallPlayView: View {
         let topReserve: CGFloat = 60 + safeTop
         let desiredBottom: CGFloat
         switch phase {
-        case .stance:
+        case .stance, .frozen:
             desiredBottom = 220 + safeBottom
         case .compute:
             desiredBottom = 290 + safeBottom    // taller — two sliders

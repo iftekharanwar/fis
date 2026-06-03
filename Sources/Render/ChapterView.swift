@@ -8,8 +8,10 @@ struct ChapterView: View {
     @Environment(PlayerProfileStore.self) private var profile
 
     let chapter: Chapter
-    let onOpenLesson: (LessonStub) -> Void
     let onOpenScenario: (String) -> Void
+
+    /// Drives the expanding lesson reader (replaces the old full-screen push).
+    @State private var lessonExpanded = false
 
     /// True iff this chapter's lesson has been read at least once. Drives
     /// the first-play gating per CONCEPT_v2.1 §3 — scenarios are locked
@@ -93,7 +95,23 @@ struct ChapterView: View {
                 .padding(.horizontal, Spacing.md)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Chapter recedes behind the expanding reader.
+            .opacity(lessonExpanded ? 0 : 1)
+            .scaleEffect(lessonExpanded ? 0.96 : 1)
+            .animation(.easeOut(duration: 0.42), value: lessonExpanded)
         }
+        .lessonReader(
+            isPresented: $lessonExpanded,
+            lesson: chapter.lesson,
+            chapterTitle: chapter.title,
+            chapterIndex: chapter.index,
+            onClose: { finished in
+                if finished {
+                    profile.mutate { $0.completedLessons.insert(chapter.lesson.id) }
+                }
+                lessonExpanded = false
+            }
+        )
     }
 
     private var topBar: some View {
@@ -121,7 +139,7 @@ struct ChapterView: View {
     }
 
     private var lessonRow: some View {
-        Button(action: { onOpenLesson(chapter.lesson) }) {
+        Button(action: { lessonExpanded = true }) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("LESSON · \(chapter.lesson.estimatedReadSeconds)s")
                     .font(.sfMono(size: 10))
@@ -243,7 +261,6 @@ struct ChapterView: View {
 #Preview {
     ChapterView(
         chapter: BasketballCurriculum.chapters[0],
-        onOpenLesson: { _ in },
         onOpenScenario: { _ in }
     )
 }

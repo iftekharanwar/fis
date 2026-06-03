@@ -35,12 +35,44 @@ final class ArcherySceneNode: SKScene {
 
     let scenario: ArcheryScenario
 
-    /// Sim seconds per real second. Higher = closer to real time. The
-    /// arrow's TRUE flight time scales with velocity (40m / v), so when
-    /// the user cranks power the on-screen flight is punchy-quick; at
+    /// Sim seconds per real second at normal playback. Higher = closer to
+    /// real time. The arrow's TRUE flight time scales with velocity (40m / v),
+    /// so when the user cranks power the on-screen flight is punchy-quick; at
     /// low power the arrow visibly arcs and lingers. Was 0.25 (uniform
     /// slow-mo) — that made power changes feel meaningless.
-    private let timeScale: Double = 0.65
+    ///
+    /// The *effective* time scale now varies across the flight via
+    /// `currentTimeScale()` — full speed off the string, a cinematic slow-mo
+    /// through the middle third, then back to full speed into the target.
+    private let timeScaleNormal: Double = 0.65
+
+    /// Time scale during the mid-flight slow-mo window. ~3.6× slower than
+    /// normal — enough to read as "bullet time" without dragging.
+    private let timeScaleSlow: Double = 0.18
+
+    /// Mid-flight slow-mo window, as a fraction of horizontal flight (x /
+    /// targetDistance). Full speed before `slowStart`, eased to slow across
+    /// the next `rampWidth`, held slow until `slowEnd`, eased back to full.
+    private let slowStart: Double = 0.32
+    private let slowEnd: Double = 0.68
+    private let rampWidth: Double = 0.10
+
+    // MARK: - Mid-flight call freeze
+
+    /// Fired once when the arrow reaches `midflightFreezeFraction` of its
+    /// horizontal flight, *if* the shot was launched with `pauseAtMidflight`.
+    /// Drives the call beat: the play view freezes here and shows YES / NO,
+    /// then calls `resumeFlight()`.
+    var onReachedMidflight: (() -> Void)?
+
+    /// Whether the current shot should freeze mid-flight for the call.
+    private var pauseAtMidflight: Bool = false
+    /// Guard so the freeze fires exactly once per shot.
+    private var midflightTriggered: Bool = false
+    /// Set once the user has resumed past the freeze, so it never re-fires.
+    private var midflightDone: Bool = false
+    /// Fraction of horizontal flight at which the call freeze happens.
+    private let midflightFreezeFraction: Double = 0.5
 
     private var transform: ArcheryTransform!
     private(set) var uiReserve: SceneInsets = .zero
@@ -142,9 +174,13 @@ final class ArcherySceneNode: SKScene {
     }
 
     /// Fire the arrow with the pin's calibration angle (call-mode default).
-    func startSimulation() {
+    /// `pauseAtMidflight` freezes the arrow mid-flight for the call beat —
+    /// the user predicts YES/NO while the arrow hangs, then `resumeFlight()`
+    /// carries it home. Compute/bonus shots pass false (no freeze).
+    func startSimulation(pauseAtMidflight: Bool = false) {
         fireArrow(launchAngle: scenario.pinLaunchAngleRadians,
-                  velocity: scenario.arrowVelocity)
+                  velocity: scenario.arrowVelocity,
+                  pauseAtMidflight: pauseAtMidflight)
     }
 
     /// Fire the arrow with the user's chosen holdover and velocity (compute mode).
@@ -167,7 +203,18 @@ final class ArcherySceneNode: SKScene {
         )
     }
 
-    private func fireArrow(launchAngle: Double, velocity: Double, spineOverride: Double? = nil) {
+    /// Resume a shot that was frozen at the mid-flight call beat. The arrow
+    /// continues from where it hung; no further freeze this shot.
+    func resumeFlight() {
+        guard !isSimulating, !midflightDone else { return }
+        midflightDone = true
+        pauseAtMidflight = false
+        isSimulating = true
+        lastUpdateTime = 0   // re-seed dt so we don't jump on the first frame
+        accumulator = 0
+    }
+
+    private func fireArrow(launchAngle: Double, velocity: Double, spineOverride: Double? = nil, pauseAtMidflight: Bool = false) {
         clearGhost()
         applyBowAngle(worldLaunchAngle: launchAngle, velocity: velocity)
         simPosition = CGPoint(x: 0, y: scenario.releaseHeight)
@@ -177,6 +224,9 @@ final class ArcherySceneNode: SKScene {
         )
         trailPoints = [simPosition]
         isSimulating = true
+        self.pauseAtMidflight = pauseAtMidflight
+        midflightTriggered = false
+        midflightDone = false
         accumulator = 0
         lastUpdateTime = 0
         flightElapsedTime = 0
@@ -312,15 +362,42 @@ final class ArcherySceneNode: SKScene {
         }
         let realDt = currentTime - lastUpdateTime
         lastUpdateTime = currentTime
-        accumulator += min(realDt * timeScale, 0.05)
+        accumulator += min(realDt * currentTimeScale(), 0.05)
 
         while accumulator >= fixedDt && isSimulating {
             stepSimulation()
             accumulator -= fixedDt
+            if !isSimulating { break }   // a mid-flight freeze ended the sim
         }
 
         updateFlightArrowVisual()
         updateTrailVisual()
+    }
+
+    /// Playback speed at the arrow's current position: full speed off the
+    /// string, eased into a slow-mo window through the middle of the flight,
+    /// then eased back to full speed into the target. Produces the
+    /// "normal → slo-mo → normal" cinematic without changing the physics
+    /// (the fixed-dt integrator is untouched; only how fast we feed it real
+    /// time varies).
+    private func currentTimeScale() -> Double {
+        let dx = scenario.targetDistance
+        guard dx > 0 else { return timeScaleNormal }
+        let progress = max(0, min(1, simPosition.x / dx))
+
+        // smoothstep ramp helper.
+        func smooth(_ a: Double, _ b: Double, _ x: Double) -> Double {
+            guard b > a else { return x < a ? 0 : 1 }
+            let t = max(0, min(1, (x - a) / (b - a)))
+            return t * t * (3 - 2 * t)
+        }
+
+        // 0 before slow window, 1 inside it, eased on both edges.
+        let rampIn  = smooth(slowStart, slowStart + rampWidth, progress)
+        let rampOut = smooth(slowEnd - rampWidth, slowEnd, progress)
+        let slowAmount = rampIn * (1 - rampOut)   // peaks at 1 in the middle
+
+        return timeScaleNormal + (timeScaleSlow - timeScaleNormal) * slowAmount
     }
 
     private func stepSimulation() {
@@ -329,6 +406,18 @@ final class ArcherySceneNode: SKScene {
         simPosition.y += simVelocity.dy * fixedDt
         trailPoints.append(simPosition)
         flightElapsedTime += fixedDt
+
+        // Mid-flight call freeze — pause once the arrow passes the freeze
+        // point so the user can predict YES/NO while it hangs. Fires only
+        // when the shot was launched with pauseAtMidflight (the call beat),
+        // and only once per shot.
+        if pauseAtMidflight, !midflightTriggered,
+           simPosition.x >= scenario.targetDistance * midflightFreezeFraction {
+            midflightTriggered = true
+            isSimulating = false
+            onReachedMidflight?()
+            return
+        }
 
         guard simPosition.x >= scenario.targetDistance else { return }
 
@@ -369,6 +458,9 @@ final class ArcherySceneNode: SKScene {
         accumulator = 0
         lastUpdateTime = 0
         flightElapsedTime = 0
+        pauseAtMidflight = false
+        midflightTriggered = false
+        midflightDone = false
     }
 
     // MARK: - Scene graph

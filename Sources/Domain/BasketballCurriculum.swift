@@ -103,6 +103,11 @@ enum BasketballCurriculum {
     ]
 
     // MARK: - Lesson 1 — THE ARC
+    //
+    // Illustration slots bb-l1-01 … bb-l1-06 live in the asset catalog and
+    // load by name. Until the art is added they resolve to nil and the cards
+    // render type-only (LessonView guards with `if let uiImage`). Art direction
+    // for each slot lives in Resources/Illustrations/lessons/README.md.
 
     private static let lesson_1_arc = LessonContent(
         id: "bb-l1-arc",
@@ -112,28 +117,34 @@ enum BasketballCurriculum {
         cards: [
             .init(
                 headline: "Every shot is the same shape.",
-                body: "Once it leaves the hand, nothing changes it. Air doesn't push it. Nothing pulls it back. One thing remains."
+                body: "Once it leaves the hand, nothing changes it. Air doesn't push it. Nothing pulls it back. One thing remains.",
+                illustration: "bb-l1-01"
             ),
             .init(
                 headline: "Gravity.",
-                body: "A constant pull, straight down. 9.8 meters per second per second. Same on every shot ever taken."
+                body: "A constant pull, straight down. 9.8 meters per second per second. Same on every shot ever taken.",
+                illustration: "bb-l1-02"
             ),
             .init(
                 headline: "That's the whole story.",
-                body: "Gravity plus the release. Two ingredients draw the arc."
+                body: "Gravity plus the release. Two ingredients draw the arc.",
+                illustration: "bb-l1-03"
             ),
             .init(
                 headline: "And it has an equation.",
                 body: "This is the rule the shot is obeying. Release height, angle, and speed — gravity does the rest.",
+                illustration: "bb-l1-04",
                 math: "y(t) = h + v · sin(θ) · t − ½ · g · t²"
             ),
             .init(
                 headline: "Hang time is a myth.",
-                body: "Jordan didn't hang. Gravity is constant. What looks like floating is the arc reaching its slowest point, then falling. The eye lies. The math doesn't."
+                body: "Jordan didn't hang. Gravity is constant. What looks like floating is the arc reaching its slowest point, then falling. The eye lies. The math doesn't.",
+                illustration: "bb-l1-05"
             ),
             .init(
                 headline: "The arc is already decided.",
-                body: "The eye just hasn't caught it yet."
+                body: "The eye just hasn't caught it yet.",
+                illustration: "bb-l1-06"
             )
         ]
     )
