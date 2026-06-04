@@ -40,7 +40,7 @@ struct AppOpenView: View {
 
             // Center stack: brand mark + loading label.
             VStack(spacing: Spacing.lg) {
-                Text("ARCLAB")
+                Text("PHISIOS")
                     .font(.anton(size: 96))
                     .foregroundColor(.arclabWhite)
                     .tracking(2)
@@ -54,7 +54,7 @@ struct AppOpenView: View {
             }
 
             // Sliver pinned to the bottom inset via VStack + Spacer, so its
-            // position is independent of where ARCLAB lands vertically.
+            // position is independent of where PHISIOS lands vertically.
             // v3 #PT10: previously the sliver lived inside the VStack with the
             // brand mark and was invisible because Spacer/maxFrame stack-sizing
             // collapsed it. Hoisting it to a dedicated bottom-pinned overlay

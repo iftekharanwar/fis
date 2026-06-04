@@ -16,15 +16,15 @@ struct ChapterListView: View {
             VStack(spacing: 0) {
                 topBar
 
-                Spacer().frame(height: Spacing.xl)
+                Spacer().frame(height: Spacing.md)
 
                 heading
 
                 Spacer().frame(height: Spacing.lg)
 
-                ScrollView(.vertical, showsIndicators: false) {
-                    chapterList
-                }
+                chapterList
+
+                Spacer(minLength: 0)
             }
             .padding(.horizontal, Spacing.md)
         }

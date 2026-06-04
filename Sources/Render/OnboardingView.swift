@@ -16,7 +16,7 @@ struct OnboardingView: View {
             VStack(spacing: 0) {
                 Spacer().frame(height: Spacing.xxl)
 
-                Text("ARCLAB")
+                Text("PHISIOS")
                     .font(.sfMono(size: 14, weight: .medium))
                     .foregroundColor(.arclabMidGrey)
                     .tracking(3.2)

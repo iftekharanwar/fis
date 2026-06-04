@@ -50,7 +50,7 @@ extension Font {
 
     static func barlowCondensed(size: CGFloat, italic: Bool = false, relativeTo: Font.TextStyle = .body) -> Font {
         let name = italic ? "BarlowCondensed-Italic" : "BarlowCondensed-Regular"
-        return Font.custom(name, size: max(size, TypeScale.minProse), relativeTo: relativeTo)
+        return Font.custom(name, size: max(size, TypeScale.minProse) * TypeScale.bodyBoost, relativeTo: relativeTo)
     }
 
     /// Barlow Condensed scaled by a `LayoutContext.typeScale` for subheads/prose
@@ -67,7 +67,7 @@ extension Font {
     /// `UIFontMetrics`, because a plain `Font.system(size:)` is frozen and
     /// ignores the user's accessibility text-size setting.
     static func sfMono(size: CGFloat, weight: Font.Weight = .regular, relativeTo textStyle: Font.TextStyle = .body) -> Font {
-        let base = UIFont.monospacedSystemFont(ofSize: max(size, TypeScale.minMono), weight: weight.uiKitWeight)
+        let base = UIFont.monospacedSystemFont(ofSize: max(size, TypeScale.minMono) * TypeScale.bodyBoost, weight: weight.uiKitWeight)
         let scaled = UIFontMetrics(forTextStyle: textStyle.uiKitTextStyle).scaledFont(for: base)
         return Font(scaled)
     }
@@ -80,6 +80,12 @@ private enum TypeScale {
     static let minMono: CGFloat = 12
     /// Smallest Barlow prose base size before Dynamic Type scaling.
     static let minProse: CGFloat = 16
+    /// Global readability boost applied to body prose (Barlow Condensed) and
+    /// technical readouts (SF Mono) — but NOT display titles (Anton). Bakes the
+    /// user-preferred "110%" into the default so non-title text reads
+    /// comfortably at the standard Dynamic Type size; Dynamic Type still scales
+    /// further on top of this.
+    static let bodyBoost: CGFloat = 1.10
 }
 
 // MARK: - SwiftUI → UIKit bridges (for UIFontMetrics scaling)

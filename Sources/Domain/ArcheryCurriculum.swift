@@ -17,8 +17,7 @@ enum ArcheryCurriculum {
             title: "The pin gap",
             subtitle: "The arrow falls. Your sight only knows one distance.",
             lesson: lesson_1_1,
-            scenarioIDs: ["arc-pingap-001"],
-            backgroundImageName: "arc-ch1-bg"
+            scenarioIDs: ["arc-pingap-001"]
         ),
         Chapter(
             id: "arc-ch2-paradox",

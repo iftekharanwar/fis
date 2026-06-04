@@ -68,10 +68,6 @@ struct HomeView: View {
 
     private var header: some View {
         HStack(alignment: .center) {
-            Text("ARCLAB")
-                .font(.sfMono(size: 13))
-                .foregroundColor(.arclabMidGrey)
-                .tracking(2.0)
             Spacer()
             progressPill
         }

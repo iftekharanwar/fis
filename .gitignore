@@ -47,6 +47,9 @@ fastlane/test_output
 Icon
 ._*
 
+# Local verification output (screenshots, scratch artifacts)
+output/
+
 # IDE noise
 .vscode/
 .idea/

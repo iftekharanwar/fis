@@ -1190,7 +1190,7 @@
 				DEVELOPMENT_TEAM = PRPH5X7Y2F;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Arclab;
+				INFOPLIST_KEY_CFBundleDisplayName = Phisios;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1290,7 +1290,7 @@
 				DEVELOPMENT_TEAM = PRPH5X7Y2F;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Arclab;
+				INFOPLIST_KEY_CFBundleDisplayName = Phisios;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

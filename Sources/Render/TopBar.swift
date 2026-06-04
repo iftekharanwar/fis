@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Shared top bar — every v2.1 surface uses this. Two slots: a leading
-/// affordance (either system word like ARCLAB, or a back chip ← LABEL) and
+/// affordance (either system word like PHISIOS, or a back chip ← LABEL) and
 /// a trailing micro-readout (chapter number, streak, lesson length, rank).
 ///
 /// Locked typography: SF Mono 11pt, tracking 2.0, uppercase only. Leading
@@ -13,7 +13,7 @@ struct TopBar: View {
 
 
     enum Leading {
-        /// Static identity word, e.g. "ARCLAB". Not tappable.
+        /// Static identity word, e.g. "PHISIOS". Not tappable.
         case word(String)
         /// Back chip — "← \(label)" with a tap target. Label is uppercased.
         case back(label: String, action: () -> Void)
@@ -84,10 +84,10 @@ struct TopBar: View {
 
 #Preview {
     VStack(spacing: 16) {
-        TopBar(leading: .word("ARCLAB"), trailing: .label("STREAK 0"))
+        TopBar(leading: .word("PHISIOS"), trailing: .label("STREAK 0"))
         TopBar(leading: .back(label: "Basketball", action: {}), trailing: .label("CHAPTER 1"))
         TopBar(leading: .back(label: "Back", action: {}), trailing: .label("LESSON · 60s"))
-        TopBar(leading: .word("ARCLAB"), trailing: .stacked(primary: "ROOKIE I", secondary: "0 / 200 XP"))
+        TopBar(leading: .word("PHISIOS"), trailing: .stacked(primary: "ROOKIE I", secondary: "0 / 200 XP"))
     }
     .padding()
     .background(Color.arclabBlack)

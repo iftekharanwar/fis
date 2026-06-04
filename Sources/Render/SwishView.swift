@@ -171,7 +171,7 @@ struct SwishView: View {
     }
 
     private var watermark: some View {
-        Text("ARCLAB")
+        Text("PHISIOS")
             .font(.sfMono(size: 9))
             .foregroundColor(.arclabMidGrey)
             .tracking(1.1)

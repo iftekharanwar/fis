@@ -140,7 +140,7 @@ struct LessonReaderOverlay: View {
                 Spacer().frame(height: Spacing.md)
                 Text(body)
                     .font(.barlowCondensed(size: 17, italic: true))
-                    .foregroundColor(.arclabMidGrey)
+                    .foregroundColor(.arclabWhite)
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }

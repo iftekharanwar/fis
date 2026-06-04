@@ -183,13 +183,17 @@ struct ChapterView: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             if chapter.scenarioIDs.isEmpty {
                 emptyPractice
-            } else {
+            } else if lessonRead {
+                // Practice unlocks only after the lesson is read — the live
+                // button appears on finish rather than sitting disabled first.
                 ForEach(Array(chapter.scenarioIDs.enumerated()), id: \.offset) { (idx, scenarioId) in
                     scenarioRow(index: idx + 1, scenarioId: scenarioId)
                 }
             }
+            // Lesson not yet read → nothing here; reading it reveals the button.
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .animation(.easeOut(duration: 0.3), value: lessonRead)
     }
 
     private var emptyPractice: some View {
@@ -207,36 +211,33 @@ struct ChapterView: View {
     }
 
     private func scenarioRow(index: Int, scenarioId: String) -> some View {
-        let locked = !lessonRead
-        let accent: Color = locked ? .arclabBorderGrey : .arclabRimOrange
-        return Button(action: { if !locked { onOpenScenario(scenarioId) } }) {
+        // Only rendered once the lesson is read (see practiceList), so the row
+        // is always the live, tappable state — there is no locked variant.
+        Button(action: { onOpenScenario(scenarioId) }) {
             HStack(spacing: Spacing.sm) {
                 Text(String(format: "%02d", index))
                     .font(.sfMono(size: 13))
-                    .foregroundColor(accent)
+                    .foregroundColor(.arclabRimOrange)
                     .tracking(2.0)
                 Text(scenarioTitle(for: scenarioId))
                     .font(.barlowCondensed(size: 20))
-                    .foregroundColor(accent)
+                    .foregroundColor(.arclabRimOrange)
                 Spacer()
-                Text(locked ? "READ FIRST" : "→")
-                    .font(.sfMono(size: locked ? 11 : 17, weight: .medium))
-                    .foregroundColor(accent)
+                Text("→")
+                    .font(.sfMono(size: 17, weight: .medium))
+                    .foregroundColor(.arclabRimOrange)
                     .tracking(2.0)
             }
             .padding(.horizontal, Spacing.md)
             .frame(maxWidth: .infinity, minHeight: 66)
             .overlay(
                 RoundedRectangle(cornerRadius: Sizing.pillRadius, style: .continuous)
-                    .stroke(accent, lineWidth: Sizing.borderWidth)
+                    .stroke(Color.arclabRimOrange, lineWidth: Sizing.borderWidth)
             )
             .contentShape(Rectangle())
         }
         .buttonStyle(PressableButtonStyle())
-        .disabled(locked)
-        .accessibilityLabel(locked
-            ? "\(scenarioTitle(for: scenarioId)). Locked — read the lesson first."
-            : "\(scenarioTitle(for: scenarioId)). Tap to play.")
+        .accessibilityLabel("\(scenarioTitle(for: scenarioId)). Tap to play.")
     }
 
     /// Look up a human-readable archetype title for the scenario. Dispatches
