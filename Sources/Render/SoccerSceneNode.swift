@@ -51,6 +51,12 @@ final class SoccerSceneNode: SKScene {
     private var centreCircleNode: SKShapeNode?
     private var goalFrameNode: SKShapeNode?
     private var shooterNode: SKSpriteNode?
+    /// Current SF Symbol for the shooter. Held here so that scene-graph
+    /// rebuilds (triggered by `applyReserves` on phase changes) keep
+    /// whichever pose was set last — the kicking pose persists from
+    /// release all the way through the verdict screen instead of
+    /// snapping back to the walking pose the instant the dock resizes.
+    private var currentShooterSymbol: String = "figure.walk"
     private var keeperNode: SKSpriteNode?
     private var wallNodes: [SKSpriteNode] = []
     private var teammateNode: SKSpriteNode?
@@ -169,6 +175,11 @@ final class SoccerSceneNode: SKScene {
 
         // Flip the shooter into a kicking pose at release.
         updateShooterSymbol("figure.kickboxing")
+
+        // Play the boot-meets-ball sound at the exact moment of strike.
+        Task { @MainActor in
+            AudioService.shared.play(.kickBall)
+        }
 
         ballNode?.isHidden = false
         updateBallVisual()
@@ -541,7 +552,7 @@ final class SoccerSceneNode: SKScene {
     }
 
     private func buildShooter() {
-        let sprite = makeFigureSprite(systemName: "figure.walk", scale: 1.0)
+        let sprite = makeFigureSprite(systemName: currentShooterSymbol, scale: 1.0)
         sprite.position = transform.scenePoint(world: .zero)
         addChild(sprite)
         shooterNode = sprite
@@ -602,6 +613,7 @@ final class SoccerSceneNode: SKScene {
     /// figure into a kicking pose the moment the ball is struck, and
     /// back to a walking pose between attempts.
     private func updateShooterSymbol(_ systemName: String) {
+        currentShooterSymbol = systemName
         guard let existing = shooterNode else { return }
         let position = existing.position
         existing.removeFromParent()

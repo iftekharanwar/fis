@@ -21,6 +21,9 @@ enum SoundID: String, Sendable, CaseIterable {
     case targetThud   = "target-thud"
     case bullseyeHit  = "bullseye-hit"
 
+    // Soccer
+    case kickBall     = "kick-ball"       // boot-meets-ball thud at release
+
     var filename: String { "\(rawValue).wav" }
 
     /// Linear gain (0...1) applied to the player node.
@@ -41,6 +44,9 @@ enum SoundID: String, Sendable, CaseIterable {
         case .arrowWhoosh:  return 0.40   // subtle, sits under the release
         case .targetThud:   return 0.45   // muted miss thud
         case .bullseyeHit:  return 0.71   // the reward
+
+        // Soccer
+        case .kickBall:     return 0.60   // punchy strike on release
         }
     }
 
@@ -50,6 +56,8 @@ enum SoundID: String, Sendable, CaseIterable {
             return "Audio/Basketball"
         case .bowRelease, .arrowWhoosh, .targetThud, .bullseyeHit:
             return "Audio/Archery"
+        case .kickBall:
+            return "Audio/Soccer"
         }
     }
 }

@@ -424,6 +424,14 @@
 		FED49D4031D10DAF2A453E41 /* SoundID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundID.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		52C07D532FD0ADE4001F6202 /* Soccer */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Soccer;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXGroup section */
 		0AFA27E145FCD99C299C11D4 /* Backgrounds */ = {
 			isa = PBXGroup;
@@ -745,6 +753,7 @@
 		EA885B193037008185758ACB /* Audio */ = {
 			isa = PBXGroup;
 			children = (
+				52C07D532FD0ADE4001F6202 /* Soccer */,
 				A38A8BFC769451C534D48F8A /* Archery */,
 				7AA0248E2812E123919921D9 /* Basketball */,
 			);
@@ -778,6 +787,9 @@
 			dependencies = (
 				E822BD9EBD3D667853221ACD /* PBXTargetDependency */,
 			);
+			fileSystemSynchronizedGroups = (
+				52C07D532FD0ADE4001F6202 /* Soccer */,
+			);
 			name = PhysicsGameTests;
 			packageProductDependencies = (
 			);
@@ -795,6 +807,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				52C07D532FD0ADE4001F6202 /* Soccer */,
 			);
 			name = PhysicsGame;
 			packageProductDependencies = (
