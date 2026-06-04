@@ -79,6 +79,11 @@ final class SoccerSceneNode: SKScene {
     private var simPosition: CGPoint = .zero
     private var simVelocity: CGVector = .zero
     private var lateralAccel: Double = 0
+    /// Signed SPIN slider value that started the current shot. Kept so
+    /// the teammate header can redirect the ball in the SPIN direction
+    /// the player dialled in — the head essentially passes the spin
+    /// intent through, only translated into the post-header velocity.
+    private var lastSignedSpin: Double = 0
     private var isSimulating: Bool = false
     private var lastUpdateTime: TimeInterval = 0
     private var accumulator: Double = 0
@@ -178,6 +183,7 @@ final class SoccerSceneNode: SKScene {
         simPosition = .zero
         simVelocity = CGVector(dx: vx, dy: vy)
         lateralAccel = a
+        lastSignedSpin = signedSpin
         trailPoints = [simPosition]
         isSimulating = true
         accumulator = 0
@@ -275,24 +281,44 @@ final class SoccerSceneNode: SKScene {
             return
         }
 
-        // Attacking teammate deflection — only on scenarios that ship
-        // one. The ball doesn't STOP here, it just bounces forward at
-        // a new lateral velocity so it can still find the net.
+        // Attacking teammate deflection. The header is now PURE spin-
+        // driven: the head sends the ball toward the post on the spin's
+        // side, and the magnitude of the spin sets how close to that
+        // post the ball lands.
+        //
+        //   spin = +max  →  inside the right post
+        //   spin = 0     →  straight forward from the header (no redirect)
+        //   spin = −max  →  inside the left post
+        //
+        // Implementation: back-solve the post-header lateral velocity
+        // that carries the ball from the teammate's position to the
+        // computed target landing X by the goal line. The Magnus shove
+        // is zeroed because the head took ALL the spin off the ball —
+        // the rest of the flight is a clean straight line.
         if scenario.hasTeammate && !hasDeflectedOffTeammate {
             let teammateY = scenario.teammateDistance
-            let crossedTeammate = prev.y < teammateY && simPosition.y >= teammateY
-            if crossedTeammate {
-                let teammateX = scenario.teammateOffset * (scenario.goalWidth / 2.0)
-                if abs(simPosition.x - teammateX) < teammateHalfMeters {
-                    // Reflect the lateral velocity off the teammate's
-                    // body — they redirect the ball, losing some pace.
-                    // Forward velocity dampens slightly. No queued
-                    // outcome: the ball keeps flying toward the goal.
-                    simVelocity.dx = -simVelocity.dx * 0.6
-                    simVelocity.dy *= 0.92
-                    hasDeflectedOffTeammate = true
-                    return
-                }
+            let teammateX = scenario.teammateOffset * (scenario.goalWidth / 2.0)
+            let inHeaderYBand = abs(simPosition.y - teammateY) < teammateYZoneMeters
+            let inHeaderXBand = abs(simPosition.x - teammateX) < teammateHalfMeters
+            if inHeaderYBand && inHeaderXBand {
+                let halfWidth = scenario.goalWidth / 2.0
+                let postInside = halfWidth - 0.5
+                let spinSign: Double = lastSignedSpin >= 0 ? 1.0 : -1.0
+                let spinFraction = min(abs(lastSignedSpin) / headerSpinMaxReference, 1.0)
+                let postOnSpinSide = spinSign * postInside
+                let targetLanding = teammateX + (postOnSpinSide - teammateX) * spinFraction
+
+                let vy_post = simVelocity.dy * 0.92
+                let remainingForward = scenario.goalDistance - scenario.teammateDistance
+                let remainingTime = max(remainingForward / vy_post, 0.001)
+                let lateralNeeded = targetLanding - teammateX
+                let vx_post = lateralNeeded / remainingTime
+
+                simVelocity.dx = vx_post
+                simVelocity.dy = vy_post
+                lateralAccel = 0
+                hasDeflectedOffTeammate = true
+                return
             }
         }
 
@@ -371,15 +397,16 @@ final class SoccerSceneNode: SKScene {
     }
 
     /// True iff a ball at `worldX` (lateral meters) is intersecting any
-    /// figure in the defender wall — the three figure.stand silhouettes
-    /// from `buildWall()`.
+    /// figure in the defender wall. Edges are derived from the same
+    /// `wallDefenderCount` that `buildWall()` uses to lay out the
+    /// silhouettes, so the visual and the hitbox stay in lockstep when
+    /// a scenario bumps the wall to 4 bodies.
     private func wallContains(worldX: Double) -> Bool {
         let halfWidth = scenario.goalWidth / 2.0
         let centre = wallOffsetNorm * halfWidth
-        // Wall spans the leftmost figure's left edge to the rightmost
-        // figure's right edge, ±wallFigureHalfMeters per body.
-        let leftEdge = centre - wallSpacingNorm * halfWidth - wallFigureHalfMeters
-        let rightEdge = centre + wallSpacingNorm * halfWidth + wallFigureHalfMeters
+        let halfRange = Double(scenario.wallDefenderCount - 1) / 2.0
+        let leftEdge = centre - halfRange * wallSpacingNorm * halfWidth - wallFigureHalfMeters
+        let rightEdge = centre + halfRange * wallSpacingNorm * halfWidth + wallFigureHalfMeters
         return worldX >= leftEdge && worldX <= rightEdge
     }
 
@@ -399,10 +426,28 @@ final class SoccerSceneNode: SKScene {
     /// keeper's position. Scaled down with the smaller keeper sprite.
     private let keeperReachMeters: Double = 0.85
 
-    /// Half-width (in world meters) of the attacking teammate's body.
-    /// Used by the deflection check in `stepSimulation` to decide if
-    /// the ball strikes them on its way forward.
-    private let teammateHalfMeters: Double = 0.65
+    /// Half-width (in world meters) of the attacking teammate's body —
+    /// the orange figure.stand in the penalty area, the "second
+    /// attacker" doing the header. Sized very generously (±3.5 m) so
+    /// finding the teammate is trivial; the chapter's challenge lives
+    /// in choosing the SPIN that sends the header into the corner,
+    /// not in pixel-precise delivery to the box.
+    private let teammateHalfMeters: Double = 3.5
+
+    /// Half-depth (in world meters) of the forward zone that triggers
+    /// a header. Used as a band check around `teammateDistance` so a
+    /// single-frame Y crossing miss (a high-spin combo pushes the ball
+    /// past the silhouette laterally on the exact crossing tick, then
+    /// never fires again) doesn't let the ball pass straight through.
+    /// Kept tight (±0.4 m) so the trigger fires right at the teammate
+    /// plane — visually the ball has to "meet" the head, not graze
+    /// loosely either side of it.
+    private let teammateYZoneMeters: Double = 0.4
+
+    /// Reference signed-spin magnitude that maps to the inside of the
+    /// post on a header. Matches the SPIN slider's max in the play
+    /// view (±12). Spin values above this clamp to a full-post target.
+    private let headerSpinMaxReference: Double = 12.0
 
     /// Half-width (in world meters) of the isolated extra defender on
     /// the rebound chapters. Slightly wider than a wall body so the
@@ -573,8 +618,15 @@ final class SoccerSceneNode: SKScene {
 
     private func buildWall() {
         let halfWidth = scenario.goalWidth / 2.0
-        for i in -1...1 {
-            let normX = wallOffsetNorm + Double(i) * wallSpacingNorm
+        // Symmetric distribution around `wallOffsetCentre`: for N=3 the
+        // offsets are -1, 0, +1 in `wallSpacingNorm` units; for N=4
+        // they're -1.5, -0.5, +0.5, +1.5. Same step, so a wider wall
+        // reads as the existing one with an extra body on each flank.
+        let count = scenario.wallDefenderCount
+        let halfRange = Double(count - 1) / 2.0
+        for i in 0..<count {
+            let stepOffset = Double(i) - halfRange
+            let normX = wallOffsetNorm + stepOffset * wallSpacingNorm
             let worldX = normX * halfWidth
             let sprite = makeFigureSprite(systemName: "figure.stand", scale: 0.88)
             sprite.position = transform.scenePoint(world: CGPoint(x: worldX, y: effectiveWallDistance))

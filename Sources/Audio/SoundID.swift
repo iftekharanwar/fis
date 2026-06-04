@@ -23,8 +23,18 @@ enum SoundID: String, Sendable, CaseIterable {
 
     // Soccer
     case kickBall     = "kick-ball"       // boot-meets-ball thud at release
+    case net          = "net"             // net-ripple on a scored goal
 
-    var filename: String { "\(rawValue).wav" }
+    /// File extension on disk. Defaults to `wav` like every other one-
+    /// shot — overridden per-case when a file ships in another format.
+    var fileExtension: String {
+        switch self {
+        case .net:  return "mp3"
+        default:    return "wav"
+        }
+    }
+
+    var filename: String { "\(rawValue).\(fileExtension)" }
 
     /// Linear gain (0...1) applied to the player node.
     var gain: Float {
@@ -47,6 +57,7 @@ enum SoundID: String, Sendable, CaseIterable {
 
         // Soccer
         case .kickBall:     return 0.60   // punchy strike on release
+        case .net:          return 0.75   // the reward — ball hits the net
         }
     }
 
@@ -56,7 +67,7 @@ enum SoundID: String, Sendable, CaseIterable {
             return "Audio/Basketball"
         case .bowRelease, .arrowWhoosh, .targetThud, .bullseyeHit:
             return "Audio/Archery"
-        case .kickBall:
+        case .kickBall, .net:
             return "Audio/Soccer"
         }
     }

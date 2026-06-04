@@ -81,14 +81,28 @@ struct SoccerCallPlayView: View {
         _computeSpin = State(initialValue: 0)
         _computeVelocity = State(initialValue: scenario.ballVelocity)
         _computeAimOffset = State(initialValue: scenario.aimOffset)
-        // Roll the keeper somewhere inside the goal mouth, then place
-        // the wall on the OPPOSITE side of the goal so the two cover
-        // different zones. Magnitudes are randomized so each load
-        // produces a fresh layout while always staying inside the
-        // posts (never out of play).
-        let keeper = Double.random(in: -0.55...0.55)
+        // Lay out the defensive units. Two cases:
+        //
+        //  • No teammate (curve chapters) — keeper rolls anywhere, wall
+        //    sits OPPOSITE the keeper so the two cover different zones
+        //    of the goal mouth.
+        //
+        //  • Teammate in the box (header chapter) — wall sits OPPOSITE
+        //    the teammate so the path to the head is always clear,
+        //    regardless of how wide the wall is. The keeper still rolls
+        //    freely; the player picks SPIN to decide which corner the
+        //    header attacks.
         let wallMagnitude = Double.random(in: 0.15...0.35)
-        let wall = (keeper >= 0 ? -1.0 : 1.0) * wallMagnitude
+        let keeper: Double
+        let wall: Double
+        if scenario.hasTeammate {
+            let teammateSign: Double = scenario.teammateOffset >= 0 ? 1.0 : -1.0
+            wall = -teammateSign * wallMagnitude
+            keeper = Double.random(in: -0.55...0.55)
+        } else {
+            keeper = Double.random(in: -0.55...0.55)
+            wall = (keeper >= 0 ? -1.0 : 1.0) * wallMagnitude
+        }
         _keeperOffset = State(initialValue: keeper)
         _wallOffsetCentre = State(initialValue: wall)
         // The SpriteKit scene is created once and reused across phases.
@@ -632,6 +646,12 @@ struct SoccerCallPlayView: View {
     /// curl → dwell on the result then auto-dismiss.
     private func handleResolvedOutcome(_ outcome: SoccerOutcome) {
         lastResolvedOutcome = outcome
+        // Net-ripple SFX on any scored goal, regardless of phase.
+        if outcome.didScore {
+            Task { @MainActor in
+                AudioService.shared.play(.net)
+            }
+        }
         switch phase {
         case .release:
             let wasCorrect = (userCall == outcome.didScore)
