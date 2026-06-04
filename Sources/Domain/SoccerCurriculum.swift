@@ -1,14 +1,13 @@
 import Foundation
 
-/// Soccer curriculum. Five chapters, each teaching one Magnus-driven
-/// counterintuition real strikers learn the hard way. Chapter 1 ships
-/// with a fully authored lesson; chapters 2–5 are scaffolded so the
-/// ladder is visible on the chapter list while content is in authoring.
+/// Soccer curriculum. Three Magnus-driven chapters — the curriculum
+/// stays on a single physics concept (the sideways shove on a spinning
+/// ball) and walks the player up the difficulty curve: open wall, then
+/// closed-angle wall, then vertical-axis Magnus (the dip).
 ///
-/// Design principle: each chapter introduces a new spin behaviour. The
-/// player picks up a fresh physics mechanic on every free kick — first
-/// the side-spin curve, then topspin dip, then the spin-less knuckle,
-/// then heavy banana spin from a wide angle, then the corner-flag arc.
+/// Design principle: every chapter reinforces the same Magnus rule,
+/// only the geometry around it changes. The player builds one mental
+/// model and applies it across three increasingly tight setups.
 enum SoccerCurriculum {
     static let chapters: [Chapter] = [
         Chapter(
@@ -22,70 +21,24 @@ enum SoccerCurriculum {
             lensReveal: "Every banana shot has the same secret now."
         ),
         Chapter(
-            id: "soc-ch2-dip",
+            id: "soc-ch2-crowding-wall",
             sport: .soccer,
             index: 2,
-            title: "The dip",
-            subtitle: "Topspin doesn't push the ball sideways. It pushes it down — hard.",
-            lesson: scaffold(
-                id: "soc-l2.1-dip",
-                title: "Why a struck shot drops under the bar",
-                oneLiner: "The top of the ball drags through the air; the air shoves the ball into the ground.",
-                seconds: 90
-            ),
-            // Locked: lesson + scenario (soc-dip-001) are authored, but the
-            // chapter stays gated until ready. Empty scenarioIDs renders it
-            // locked (matches archery ch3-5). Restore "soc-dip-001" to ship.
-            scenarioIDs: [],
-            lensReveal: "When a striker drops one over the keeper, you'll see why."
+            title: "The crowding wall",
+            subtitle: "The defenders step IN. The wall is in your face — the curl has to start wide.",
+            lesson: lesson_2_wallUp,
+            scenarioIDs: ["soc-curve-002"],
+            lensReveal: "Tight angles will read open to you now."
         ),
         Chapter(
-            id: "soc-ch3-knuckle",
+            id: "soc-ch3-header",
             sport: .soccer,
             index: 3,
-            title: "The knuckle",
-            subtitle: "No spin means no Magnus force — and the ball wobbles unpredictably.",
-            lesson: scaffold(
-                id: "soc-l3.1-knuckle",
-                title: "Why a clean strike fools the keeper",
-                oneLiner: "With no rotation, the airflow flips chaotically and the ball lurches sideways late.",
-                seconds: 95
-            ),
-            // Locked until ready. Restore "soc-knuckle-001" to ship.
-            scenarioIDs: [],
-            lensReveal: "You'll spot a knuckler before the keeper does."
-        ),
-        Chapter(
-            id: "soc-ch4-banana",
-            sport: .soccer,
-            index: 4,
-            title: "The banana",
-            subtitle: "From a wide angle the goal looks closed — until the curve bends it open.",
-            lesson: scaffold(
-                id: "soc-l4.1-banana",
-                title: "Why a heavy side spin can reach the far corner",
-                oneLiner: "Maximum side spin pulls the flight into a long arc — the keeper steps the wrong way.",
-                seconds: 105
-            ),
-            // Locked until ready. Restore "soc-banana-001" to ship.
-            scenarioIDs: [],
-            lensReveal: "From now on, no angle looks closed to you."
-        ),
-        Chapter(
-            id: "soc-ch5-olympic",
-            sport: .soccer,
-            index: 5,
-            title: "The olympic",
-            subtitle: "A goal scored direct from a corner kick. Pure Magnus, no touch needed.",
-            lesson: scaffold(
-                id: "soc-l5.1-olympic",
-                title: "Why a corner can curl all the way in",
-                oneLiner: "From a 90-degree angle, only an inswinging spin can carry the ball into the net.",
-                seconds: 110
-            ),
-            // Locked until ready. Restore "soc-olympic-001" to ship.
-            scenarioIDs: [],
-            lensReveal: "The Olympic goal isn't luck. It's geometry."
+            title: "The header",
+            subtitle: "Don't shoot AT the goal. Curl the ball onto a teammate's head — the head does the angle.",
+            lesson: lesson_3_header,
+            scenarioIDs: ["soc-header-001"],
+            lensReveal: "Every set-piece header you watch will read different now."
         )
     ]
 
@@ -145,6 +98,101 @@ enum SoccerCurriculum {
                 headline: "Now you call it.",
                 body: "A wall of three defenders. A ball spinning hard around a vertical axis. The foot points to the left of the post — and the air is about to make a decision. Where does it land?",
                 illustration: "soc-l1-07"
+            )
+        ]
+    )
+
+    // MARK: - Lesson 2 — "The crowding wall" as a 5-card story
+    //
+    // Magnus stays the same; the wall encroaches on the kicker. The
+    // lesson points the player at the two levers Magnus exposes — SPIN
+    // and POWER — and reminds them that the new power-scaling means a
+    // harder kick now curls more, not less.
+
+    private static let lesson_2_wallUp = LessonContent(
+        id: "soc-l2.1-crowding-wall",
+        title: "Why a wall in your face changes everything",
+        oneLiner: "The wall stepped IN. Magnus didn't change — but you lost the runway in front of the curl.",
+        estimatedReadSeconds: 85,
+        cards: [
+            // Card 1 — hook: the wall closed in on the kicker
+            .init(
+                headline: "The wall stepped INTO the kick.",
+                body: "Same boot. Same ball. But the defenders are no longer 9 metres out — they've crept toward YOU. From the spot, the wall fills almost the whole opening before the ball has even started to bend.",
+                illustration: "soc-l2-01"
+            ),
+            // Card 2 — same physics, less runway BEFORE the wall
+            .init(
+                headline: "Same rule. Less runway.",
+                body: "Magnus hasn't changed. One side of the ball still cuts, the other still drags, the air still shoves it sideways. What changed is how MUCH of that shove happens BEFORE the wall — and that part is now almost nothing.",
+                illustration: "soc-l2-02"
+            ),
+            // Card 3 — the two real levers
+            .init(
+                headline: "Two dials. SPIN and POWER.",
+                body: "Crank up SPIN and the air gets a bigger lever on the ball. Crank up POWER and the boot brushes more spin AND drives faster airflow — both compound into a bigger curl.",
+                illustration: "soc-l2-03",
+                math: "curve  ∝  spin · power"
+            ),
+            // Card 4 — practical move
+            .init(
+                headline: "Start wide. Finish inside.",
+                body: "Don't aim at the corner — aim PAST the wall on the spin's side. The curl will do the long work behind the wall, between the wall and the goal. The closer the wall sits to you, the wider you have to start.",
+                illustration: "soc-l2-04"
+            ),
+            // Card 5 — close the loop
+            .init(
+                headline: "Now you call it.",
+                body: "A wall almost in the kicker's face. A ball spinning hard. The boot is set. Where does the curl land?",
+                illustration: "soc-l2-05"
+            )
+        ]
+    )
+
+    // MARK: - Lesson 3 — "The header" as a 5-card story
+    //
+    // Magnus stays the engine: the player uses the same curl they
+    // learned in Ch1/Ch2, but the TARGET changes. Instead of bending
+    // the ball into the goal, they bend it onto a teammate's head —
+    // and the head provides the second angle change the defenders
+    // can't account for.
+
+    private static let lesson_3_header = LessonContent(
+        id: "soc-l3.1-header",
+        title: "Why a head turns a closed angle into an open one",
+        oneLiner: "Magnus delivers the ball. The head delivers the goal.",
+        estimatedReadSeconds: 95,
+        cards: [
+            // Card 1 — hook: the direct line is dead, the box is alive
+            .init(
+                headline: "The shot is closed. The BOX isn't.",
+                body: "A wall in front. A keeper behind. The direct lane to goal is sealed. But the six-yard box is open — and a teammate is ghosting in.",
+                illustration: "soc-l3-01"
+            ),
+            // Card 2 — heads change the angle
+            .init(
+                headline: "A head is a second boot.",
+                body: "A header isn't a touch — it's a NEW launch. The ball arrives at one angle; the head sends it off at another. The keeper sets up for the angle you're not taking anymore.",
+                illustration: "soc-l3-02"
+            ),
+            // Card 3 — Magnus delivers the cross
+            .init(
+                headline: "Same Magnus. New target.",
+                body: "The curl you used to bend a ball into the corner can also drop one onto a teammate's forehead. Same physics — pick a point in space, spin the ball, the air finishes the line.",
+                illustration: "soc-l3-03",
+                math: "curve  ∝  spin · power"
+            ),
+            // Card 4 — practical move
+            .init(
+                headline: "Aim AT the head, not at the goal.",
+                body: "Stop thinking about the corner. The corner is the teammate's problem now. Your job is to put the ball onto their head — let the redirect do the geometry the wall is denying you.",
+                illustration: "soc-l3-04"
+            ),
+            // Card 5 — close the loop
+            .init(
+                headline: "Now you call it.",
+                body: "A teammate in the six. A wall in front. The boot is set to curl the ball onto a head — and the head is set to nod it home. Does it find the corner?",
+                illustration: "soc-l3-05"
             )
         ]
     )

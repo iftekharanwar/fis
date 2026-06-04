@@ -77,11 +77,9 @@
 		56163DA5B104364F082CCA17 /* rim-hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 55657A3022D7E039A18756F4 /* rim-hit.wav */; };
 		58BC89208219985DCBF66E68 /* PlayerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A53E3D7433F97610E37D8 /* PlayerProfile.swift */; };
 		5A0CE08400826868FBD6DCC6 /* SwipeBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9D61ABAEB4B270D9F96E21 /* SwipeBack.swift */; };
-		AA0100000000000000000001 /* LessonReaderOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000002 /* LessonReaderOverlay.swift */; };
 		5BC360F3E9CCBC0B5B601ED4 /* bb-c-wing-throw.json in Resources */ = {isa = PBXBuildFile; fileRef = 89E0146E05388213721F8F2D /* bb-c-wing-throw.json */; };
 		5BED9E8FF4136E469B82D48F /* arrow-whoosh.wav in Resources */ = {isa = PBXBuildFile; fileRef = C532B3389C4740D326D4750D /* arrow-whoosh.wav */; };
 		5C907242A1C71713A2597EFE /* MasteryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B021F5E63ADCE5F0F48A01 /* MasteryServiceTests.swift */; };
-		AA0200000000000000000001 /* ArcheryMidflightFreezeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000002 /* ArcheryMidflightFreezeTests.swift */; };
 		5CD3BAD7BDA70191D9A4CEB0 /* bb-3-one-legged.json in Resources */ = {isa = PBXBuildFile; fileRef = 39F47C329819449D28A0239A /* bb-3-one-legged.json */; };
 		601F84B50143F336A5610D2D /* ChapterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F174CF0BA821EEC10A5BBAE9 /* ChapterListView.swift */; };
 		60D880D0E0401274C47BD805 /* ScenarioPreviewCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28676422AE85F34C1F4D603A /* ScenarioPreviewCard.swift */; };
@@ -137,6 +135,8 @@
 		A50A6EC19CA4C118E4EA195D /* SituationDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC0365E997ADDB9388C7A28 /* SituationDefinition.swift */; };
 		A6D1EAC74A881EF854C55FF0 /* NextSituationPickerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CCC4DD8C3D57AACA7580A0 /* NextSituationPickerTests.swift */; };
 		A88D693CFD619C074EDF76FB /* bb-2-shooters-roll.json in Resources */ = {isa = PBXBuildFile; fileRef = 4A41D30A7C1FD02E674EC87D /* bb-2-shooters-roll.json */; };
+		AA0100000000000000000001 /* LessonReaderOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000002 /* LessonReaderOverlay.swift */; };
+		AA0200000000000000000001 /* ArcheryMidflightFreezeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000002 /* ArcheryMidflightFreezeTests.swift */; };
 		AA25C5017A57BB4C92F1BF1C /* bb-1-logo-three.json in Resources */ = {isa = PBXBuildFile; fileRef = 3F21B6D504DF51012F795E95 /* bb-1-logo-three.json */; };
 		AAD7375D99BE871F531A9DF2 /* bb-1-baseline.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FF571A6760A0E4E463D989A /* bb-1-baseline.json */; };
 		AB8D38F20F21416334FB2C8E /* bb-5-corner-pocket.json in Resources */ = {isa = PBXBuildFile; fileRef = FBE4EBA8500C2A2EC9D42570 /* bb-5-corner-pocket.json */; };
@@ -306,7 +306,6 @@
 		53D8BAF455E275B61070AC03 /* bb-b-flat.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-flat.json"; sourceTree = "<group>"; };
 		5455FBB61A5C06098BF7E7E8 /* bb-a-postup.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-postup.json"; sourceTree = "<group>"; };
 		54B021F5E63ADCE5F0F48A01 /* MasteryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasteryServiceTests.swift; sourceTree = "<group>"; };
-		AA0200000000000000000002 /* ArcheryMidflightFreezeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryMidflightFreezeTests.swift; sourceTree = "<group>"; };
 		55657A3022D7E039A18756F4 /* rim-hit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "rim-hit.wav"; sourceTree = "<group>"; };
 		565A53E3D7433F97610E37D8 /* PlayerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfile.swift; sourceTree = "<group>"; };
 		57AA5494B48AAE609BFD9F7D /* LayoutContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutContext.swift; sourceTree = "<group>"; };
@@ -360,6 +359,8 @@
 		A41E94A98B384BA64BFB2F8A /* target-thud.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "target-thud.wav"; sourceTree = "<group>"; };
 		A4B80171FE18F0E24442E27B /* bb-4-elbow-bank.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-4-elbow-bank.json"; sourceTree = "<group>"; };
 		A5887B34B2CC453BE544852F /* ScenarioLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioLoader.swift; sourceTree = "<group>"; };
+		AA0100000000000000000002 /* LessonReaderOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonReaderOverlay.swift; sourceTree = "<group>"; };
+		AA0200000000000000000002 /* ArcheryMidflightFreezeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryMidflightFreezeTests.swift; sourceTree = "<group>"; };
 		AA3556E6D831458921B8B52E /* bb-a-ugly-2.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-ugly-2.json"; sourceTree = "<group>"; };
 		AA9DEAE11EE63EE5C4441CC7 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		ADC86A32163F3391B094CBA2 /* ArcheryCurriculum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryCurriculum.swift; sourceTree = "<group>"; };
@@ -398,7 +399,6 @@
 		DAC015AA73E8226960B1022D /* brand-mark.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "brand-mark.wav"; sourceTree = "<group>"; };
 		DAC0365E997ADDB9388C7A28 /* SituationDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SituationDefinition.swift; sourceTree = "<group>"; };
 		DC9D61ABAEB4B270D9F96E21 /* SwipeBack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeBack.swift; sourceTree = "<group>"; };
-		AA0100000000000000000002 /* LessonReaderOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonReaderOverlay.swift; sourceTree = "<group>"; };
 		DE41AAC818D00E32D8B2B0FD /* ScenarioDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioDefinition.swift; sourceTree = "<group>"; };
 		DEDB5BFF752609FFEBE03DD8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DF1EA282B0724F9FFEF747BF /* bb-a-wing-catch.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-wing-catch.json"; sourceTree = "<group>"; };
@@ -1202,7 +1202,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = PRPH5X7Y2F;
+				DEVELOPMENT_TEAM = 5YH873AVKF;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Arclab;
@@ -1302,7 +1302,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = PRPH5X7Y2F;
+				DEVELOPMENT_TEAM = 5YH873AVKF;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Arclab;

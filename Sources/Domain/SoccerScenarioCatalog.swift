@@ -34,6 +34,54 @@ enum SoccerScenarioCatalog {
             failureMode: .savedByKeeper
         ),
 
+        // Ch3 — header rebound. An orange teammate ghosts into the box
+        // (figure.stand at teammateDistance). The straight line to goal
+        // is closed, but a Magnus-delivered ball onto the teammate's
+        // head reflects laterally and finds the open corner. Mechanic
+        // stays Magnus: spin lets the player pick the spot to land the
+        // cross — the head does the angle change.
+        "soc-header-001": SoccerScenario(
+            id: "soc-header-001",
+            title: "Find the header.",
+            phenomenon: "The header.",
+            explainer: "The defenders close the direct lane to goal. So you don't shoot at the goal — you curl the ball onto your teammate's head in the box. One touch redirects it past the keeper. Magnus delivers; the head finishes.",
+            goalDistance: 26.0,
+            wallDistance: 9.15,
+            goalWidth: 7.32,
+            ballVelocity: 26.0,
+            mechanic: .header,
+            curveDirection: .right,
+            curveAmount: 1.6,
+            aimOffset: 0.45,
+            willScore: true,
+            failureMode: .savedByKeeper,
+            hasTeammate: true,
+            teammateOffset: 0.45,
+            teammateDistance: 18.0
+        ),
+
+        // Ch2 — harder curve. The defenders crowd the kicker, sitting
+        // well inside the regulation 9.15 m mark — almost in the
+        // shooter's face. The wall blocks the direct line before the
+        // Magnus shove has had any flight time to bend the ball, so
+        // the curl has to start much wider and trust a tighter spin.
+        "soc-curve-002": SoccerScenario(
+            id: "soc-curve-002",
+            title: "Bend it past a crowding wall.",
+            phenomenon: "The crowding wall.",
+            explainer: "The defenders stepped INTO the kick — the wall sits almost on top of the spot. Magnus needs distance to bend the ball, and most of that distance now lies behind the wall, not in front. Start the curl wider, let the spin do the long work.",
+            goalDistance: 24.0,
+            wallDistance: 5.5,
+            goalWidth: 7.32,
+            ballVelocity: 28.0,
+            mechanic: .curve,
+            curveDirection: .left,
+            curveAmount: 3.0,
+            aimOffset: 0.0,
+            willScore: true,
+            failureMode: .savedByKeeper
+        ),
+
         // Ch2 — dip / topspin: rotation pulls the ball down vertically.
         "soc-dip-001": SoccerScenario(
             id: "soc-dip-001",

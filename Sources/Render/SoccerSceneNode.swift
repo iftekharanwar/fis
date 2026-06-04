@@ -21,6 +21,14 @@ final class SoccerSceneNode: SKScene {
     /// 0.7 keeps the bend visible without making the shot feel slow.
     private let timeScale: Double = 0.7
 
+    /// Reference forward velocity (m/s) for the Magnus power-scaling.
+    /// At this velocity the SPIN slider value equals the lateral
+    /// displacement in meters at the goal line; above it the same
+    /// slider produces MORE curve, below it less. Models how a harder
+    /// kick both brushes more spin onto the ball AND drives stronger
+    /// airflow → stronger sideways shove → more bend.
+    static let referenceVelocity: Double = 27.0
+
     private var transform: SoccerTransform!
 
     /// HUD chrome reserve at the top of the scene (status bar + CallHUD
@@ -157,10 +165,15 @@ final class SoccerSceneNode: SKScene {
         let vy = power
         let T = scenario.goalDistance / vy
         let vx = aim * halfWidth / T
-        // Magnus acceleration that produces exactly signedSpin meters
-        // of lateral displacement past the no-spin line in time T:
-        //   ½·a·T² = signedSpin  →  a = 2·signedSpin / T²
-        let a = 2 * signedSpin / (T * T)
+        // Magnus shove now scales with the boot's speed: a harder kick
+        // brushes more spin onto the ball AND the faster airflow turns
+        // that spin into a stronger sideways force. So the SPIN slider
+        // is the player's INTENT at reference velocity — actual curve
+        // at the goal line = signedSpin · (power / referenceVelocity).
+        //   ½·a·T² = effectiveCurve  →  a = 2·effectiveCurve / T²
+        let powerFactor = vy / Self.referenceVelocity
+        let effectiveCurve = signedSpin * powerFactor
+        let a = 2 * effectiveCurve / (T * T)
 
         simPosition = .zero
         simVelocity = CGVector(dx: vx, dy: vy)
@@ -692,8 +705,11 @@ final class SoccerSceneNode: SKScene {
         // Aim contribution at the end of the indicator.
         let aimEndX = aim * halfWidth * (length / scenario.goalDistance)
         // SPIN contribution kept SUBTLE — small visual cue, not a full
-        // preview of where the ball will land.
-        let spinEndX = signedSpin * 0.05
+        // preview of where the ball will land. Mirrors the runtime
+        // power-scaling so dialling up POWER widens the indicator's
+        // curl the same way it widens the real flight.
+        let powerFactor = power / Self.referenceVelocity
+        let spinEndX = signedSpin * 0.05 * powerFactor
         let endX = aimEndX + spinEndX
 
         let p0 = transform.scenePoint(world: CGPoint(x: 0, y: startY))

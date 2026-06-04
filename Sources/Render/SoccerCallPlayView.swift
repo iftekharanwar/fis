@@ -60,6 +60,14 @@ struct SoccerCallPlayView: View {
         case compute(attempt: Int)
         case computeAction(attempt: Int)
         case computeVerdict(scored: Bool, attempt: Int)
+        /// Magnus walkthrough — 5 narrative cards that build the formula
+        /// from intuition to the canonical curl. Mirrors archery's
+        /// formulaWalkthrough phase exactly so the lesson cadence reads
+        /// the same across sports.
+        case formulaWalkthrough(step: Int)
+        /// Auto-fired canonical curl that demonstrates the math the
+        /// player just read. Mirrors archery's bonusAttempt.
+        case bonusAttempt
     }
 
     init(scenario: SoccerScenario, chapter: Chapter? = nil, onClose: (() -> Void)? = nil) {
@@ -230,11 +238,12 @@ struct SoccerCallPlayView: View {
     /// the dock, and the pitch grows taller as a result.
     private var bottomDockReserve: CGFloat {
         switch phase {
-        case .stance:                       return 280
-        case .compute:                      return 360
-        case .release, .computeAction:      return 80
-        case .verdict:                      return 480
-        case .computeVerdict:               return 360
+        case .stance:                                       return 280
+        case .compute:                                      return 360
+        case .release, .computeAction, .bonusAttempt:       return 80
+        case .verdict:                                      return 480
+        case .computeVerdict:                               return 360
+        case .formulaWalkthrough:                           return 400
         }
     }
 
@@ -245,7 +254,7 @@ struct SoccerCallPlayView: View {
         switch phase {
         case .stance:
             stanceDock
-        case .release, .computeAction:
+        case .release, .computeAction, .bonusAttempt:
             EmptyView()
         case .verdict(let outcome, let wasCorrect):
             SoccerCallVerdictView(wasCorrect: wasCorrect, outcome: outcome)
@@ -258,6 +267,11 @@ struct SoccerCallPlayView: View {
         case .computeVerdict(let scored, let attempt):
             computeVerdictView(scored: scored, attempt: attempt)
                 .frame(height: 340)
+                .transition(.opacity)
+        case .formulaWalkthrough(let step):
+            walkthroughDock(step: step)
+                .frame(height: 400)
+                .background(Color.arclabBlack)
                 .transition(.opacity)
         }
     }
@@ -404,11 +418,20 @@ struct SoccerCallPlayView: View {
 
             Spacer()
 
-            HStack(spacing: Spacing.md) {
-                if canRetry {
-                    AccentOutlineButton(label: "Retry", action: handleComputeRetry)
+            // Pedagogy ladder mirrors archery: reveal the formula after
+            // either a scoring shot or the third missed attempt, so the
+            // player either earns the math or is handed it before they
+            // burn the remaining tries.
+            VStack(spacing: Spacing.xs) {
+                if scored || attempt >= 3 {
+                    PrimaryButton(label: "Show the math", action: handleShowMath)
                 }
-                SecondaryButton(label: "Done", action: handleClose)
+                HStack(spacing: Spacing.md) {
+                    if canRetry {
+                        AccentOutlineButton(label: "Retry", action: handleComputeRetry)
+                    }
+                    SecondaryButton(label: "Done", action: handleClose)
+                }
             }
             .padding(.horizontal, Spacing.md)
             .padding(.bottom, Spacing.md)
@@ -436,6 +459,158 @@ struct SoccerCallPlayView: View {
         return "The keeper got a hand to it. Try a different line."
     }
 
+    // MARK: - Formula walkthrough (Magnus)
+
+    private static let walkthroughStepCount = 5
+
+    /// Renders one step of the Magnus walkthrough — same layout as the
+    /// archery walkthrough so the lesson cadence reads as a series across
+    /// sports, only the math + body change. The final card swaps the
+    /// "Next" button for "Watch it curl" which fires the bonus attempt.
+    private func walkthroughDock(step: Int) -> some View {
+        let card = walkthroughCard(step: step)
+        let isLast = step >= Self.walkthroughStepCount - 1
+
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("STEP \(step + 1) OF \(Self.walkthroughStepCount)")
+                    .font(.sfMono(size: 11))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+                Spacer()
+                Text("THE PHYSICS")
+                    .font(.sfMono(size: 11))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.md)
+
+            Spacer().frame(height: Spacing.md)
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text(card.headline)
+                    .font(.anton(size: 32))
+                    .foregroundColor(.arclabWhite)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if !card.math.isEmpty {
+                    Text(card.math)
+                        .font(.sfMono(size: 15))
+                        .foregroundColor(.arclabWhite)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if !card.body.isEmpty {
+                    Text(card.body)
+                        .font(.barlowCondensed(size: 15))
+                        .foregroundColor(.arclabMidGrey)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+
+            Spacer()
+
+            PrimaryButton(label: isLast ? "Watch it curl" : "Next", action: handleNextStep)
+                .padding(.horizontal, Spacing.md)
+                .padding(.bottom, Spacing.md)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// 5-card Magnus story. Built from the scenario so the numbers the
+    /// player just experienced are the same numbers the walkthrough
+    /// works with — flight time, curve magnitude, target post.
+    private func walkthroughCard(step: Int) -> WalkthroughCard {
+        let v = Int(scenario.ballVelocity)
+        let d = Int(scenario.goalDistance)
+        let T = scenario.goalDistance / scenario.ballVelocity
+        let tStr = String(format: "%.2f", T)
+        let canonical = canonicalParams
+        let curveAbs = String(format: "%.1f", abs(canonical.spin))
+        let curveSide = canonical.spin >= 0 ? "right" : "left"
+        let wallSide = wallOffsetCentre >= 0 ? "right" : "left"
+
+        switch step {
+        case 0:
+            return WalkthroughCard(
+                headline: "There's a formula for it.",
+                math: "Δx = ½ · a · t²   with   a ∝ ω × v",
+                body: "Spin the ball and the air shoves it sideways — like gravity, only horizontal. The shove is steady, so the longer the flight, the more the ball curls."
+            )
+        case 1:
+            return WalkthroughCard(
+                headline: "Plug in what you know.",
+                math: "v = \(v) m/s   d = \(d) m   spin = your dial",
+                body: "Your boot's already set the speed. The goal is \(d) m away. Only one variable changes between shots — the spin you put on the ball."
+            )
+        case 2:
+            return WalkthroughCard(
+                headline: "Find the flight time.",
+                math: "t = d / v ≈ \(tStr) s",
+                body: "Forward velocity carries the ball \(d) m down the pitch in roughly \(tStr) seconds. That's how long the air has to push."
+            )
+        case 3:
+            if scenario.mechanic == .header && scenario.hasTeammate {
+                let mateDist = Int(scenario.teammateDistance)
+                return WalkthroughCard(
+                    headline: "Now drop it on the head.",
+                    math: "curl onto the teammate at ≈ \(mateDist) m",
+                    body: "Over \(tStr) s, the curl carries the ball from your boot onto your teammate's forehead in the box. The spin only has to deliver a precise point — not a corner. The head does the rest."
+                )
+            }
+            return WalkthroughCard(
+                headline: "Now run the ball.",
+                math: "curve at the goal ≈ \(curveAbs) m \(curveSide)",
+                body: "Over \(tStr) s, the sideways shove bends the ball about \(curveAbs) m \(curveSide) of the straight line. The wall sits on the \(wallSide); the curl carries it around."
+            )
+        case 4:
+            if scenario.mechanic == .header && scenario.hasTeammate {
+                return WalkthroughCard(
+                    headline: "Magnus to the boot. Head to the net.",
+                    math: "spin → onto the head, head → into the corner",
+                    body: "Curl the ball onto your teammate. Let the redirect do the rest. Same air. Same physics. New target."
+                )
+            }
+            return WalkthroughCard(
+                headline: "Curl it home.",
+                math: "spin → \(curveAbs) m of bend at the post",
+                body: "Aim past the wall, on the side the spin pulls from. Let the air bring it back. Same ball, same boot — different finish."
+            )
+        default:
+            return WalkthroughCard(headline: "", math: "", body: "")
+        }
+    }
+
+    private struct WalkthroughCard {
+        let headline: String
+        let math: String
+        let body: String
+    }
+
+    /// Canonical Magnus curl — the answer the walkthrough builds to.
+    /// For curve mechanics: target the corner on the keeper's side
+    /// (with aim = 0, signedSpin · powerFactor = landing offset).
+    /// For the header mechanic: use the authored cross that drops the
+    /// ball onto the teammate — the head's deflection routes it past
+    /// the keeper, so we don't aim at the goal at all.
+    private var canonicalParams: (power: Double, aim: Double, spin: Double) {
+        if scenario.mechanic == .header && scenario.hasTeammate {
+            let spin = scenario.curveDirection.signedHorizontal * scenario.curveAmount
+            return (scenario.ballVelocity, scenario.aimOffset, spin)
+        }
+        let halfWidth = scenario.goalWidth / 2.0
+        let cornerSign: Double = keeperOffset >= 0 ? 1.0 : -1.0
+        let targetX = cornerSign * (halfWidth - 0.5)
+        let powerFactor = scenario.ballVelocity / SoccerSceneNode.referenceVelocity
+        let spin = targetX / powerFactor
+        return (scenario.ballVelocity, 0.0, spin)
+    }
+
     // MARK: - Actions
 
     private func handleCall(yes: Bool) {
@@ -453,7 +628,8 @@ struct SoccerCallPlayView: View {
     @State private var lastResolvedOutcome: SoccerOutcome? = nil
 
     /// Routes physics resolution to the right verdict phase. Call beat
-    /// → `.verdict`, compute beat → `.computeVerdict`.
+    /// → `.verdict`, compute beat → `.computeVerdict`, bonus canonical
+    /// curl → dwell on the result then auto-dismiss.
     private func handleResolvedOutcome(_ outcome: SoccerOutcome) {
         lastResolvedOutcome = outcome
         switch phase {
@@ -466,6 +642,14 @@ struct SoccerCallPlayView: View {
         case .computeAction(let attempt):
             withAnimation(.easeOut(duration: 0.25)) {
                 phase = .computeVerdict(scored: outcome.didScore, attempt: attempt)
+            }
+        case .bonusAttempt:
+            // Linger on the canonical curl so the player sees the math
+            // resolve into a clean finish, then dismiss. Mirrors the
+            // archery bonus dwell.
+            Task {
+                try? await Task.sleep(for: .seconds(1.5))
+                handleClose()
             }
         default:
             break
@@ -506,6 +690,41 @@ struct SoccerCallPlayView: View {
         updateAimIndicator()
     }
 
+    /// Enter the Magnus walkthrough. Hide the aim indicator so the page
+    /// reads clean — the ball returns to the shooter and the cards take
+    /// over the bottom dock.
+    private func handleShowMath() {
+        scene.setGhost(power: nil, aim: 0, signedSpin: 0)
+        scene.resetForNewShot()
+        withAnimation(.easeOut(duration: 0.25)) {
+            phase = .formulaWalkthrough(step: 0)
+        }
+    }
+
+    /// Advance the walkthrough one card. On the last card, swap to the
+    /// bonus attempt and fire the canonical curl so the player WATCHES
+    /// the math resolve.
+    private func handleNextStep() {
+        guard case .formulaWalkthrough(let step) = phase else { return }
+        let next = step + 1
+        if next >= Self.walkthroughStepCount {
+            scene.resetForNewShot()
+            withAnimation(.easeOut(duration: 0.25)) {
+                phase = .bonusAttempt
+            }
+            let params = canonicalParams
+            scene.startSimulation(
+                power: params.power,
+                aim: params.aim,
+                signedSpin: params.spin
+            )
+        } else {
+            withAnimation(.easeOut(duration: 0.25)) {
+                phase = .formulaWalkthrough(step: next)
+            }
+        }
+    }
+
     private func handleClose() {
         onClose?()
     }
@@ -514,15 +733,15 @@ struct SoccerCallPlayView: View {
 
     private var shouldShowClose: Bool {
         switch phase {
-        case .release, .computeAction: return false
-        default:                       return true
+        case .release, .computeAction, .bonusAttempt: return false
+        default:                                      return true
         }
     }
 
     private var hudOpacity: Double {
         switch phase {
-        case .release, .computeAction: return 0.5
-        default:                       return 1.0
+        case .release, .computeAction, .bonusAttempt: return 0.5
+        default:                                      return 1.0
         }
     }
 

@@ -61,6 +61,14 @@ struct SoccerScenario: Sendable, Equatable, Identifiable {
     /// aim to find the actual landing spot.
     let aimOffset: Double
 
+    /// Number of figures in the defensive wall. Defaults to 3 (a
+    /// regulation free-kick wall). Header / set-piece chapters bump
+    /// this to 4 so the defensive line covers a wider arc. The scene
+    /// distributes the figures symmetrically around `wallOffsetCentre`
+    /// using `wallSpacingNorm` as the step, and the collision hitbox
+    /// derives its edges from the same count for consistency.
+    var wallDefenderCount: Int = 3
+
     // MARK: - Authored truth
 
     /// Whether this strike finds the net. Authored per-scenario rather
@@ -112,6 +120,7 @@ struct SoccerScenario: Sendable, Equatable, Identifiable {
         case .knuckle:   return "WILL IT FOOL THE KEEPER?"
         case .banana:    return "WILL IT BEND HOME?"
         case .olympic:   return "WILL IT GO DIRECT?"
+        case .header:    return "WILL HE HEAD IT IN?"
         }
     }
 
@@ -159,9 +168,10 @@ extension SoccerScenario {
     enum Mechanic: String, Sendable, Equatable, CaseIterable {
         case curve     // Ch1: sideways spin curves the ball around the wall
         case dip       // Ch2: topspin pulls the ball down hard
-        case knuckle   // Ch3: no spin → unpredictable flutter
-        case banana    // Ch4: heavy side spin from a wide angle
-        case olympic   // Ch5: extreme spin straight off the corner flag
+        case knuckle   // Ch3 (legacy): no spin → unpredictable flutter
+        case banana    // Ch4 (legacy): heavy side spin from a wide angle
+        case olympic   // Ch5 (legacy): extreme spin straight off the corner flag
+        case header    // Ch3 (current): Magnus delivers the ball onto a teammate's head; the header redirects it past the keeper
 
         var displayName: String {
             switch self {
@@ -170,6 +180,7 @@ extension SoccerScenario {
             case .knuckle:  return "THE KNUCKLE"
             case .banana:   return "THE BANANA"
             case .olympic:  return "THE OLYMPIC"
+            case .header:   return "THE HEADER"
             }
         }
     }
