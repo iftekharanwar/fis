@@ -42,7 +42,7 @@ struct PlayerProfile: Codable, Sendable, Equatable {
     var firstThreeScenariosBriefingHintSeen: Int
 
     /// Gates first-launch routing in PostSplashRouterView (false →
-    /// V3OnboardingView, true → HomeView).
+    /// OnboardingView, true → HomeView).
     var hasSeenOnboarding: Bool
 
     /// v3 mastery model — per-level-type rolling-window progress.

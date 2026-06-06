@@ -128,7 +128,6 @@ struct RootView: View {
             }
         case "home":
             HomeView(
-                onTapTodayCard: { _, _ in },
                 onOpenSport: { _ in },
                 onOpenProfile: {}
             )
@@ -176,10 +175,9 @@ struct RootView: View {
     RootView()
 }
 
-/// v3 playtest harness: same flow as PostSplashRouterView.startLevelTypePush,
-/// but standalone — so the `leveltypes` diagnostic actually goes through the
-/// NextSituationPicker → presentScenario → PlayView chain. Lets us verify
-/// the full natural flow from a single env-var launch.
+/// Legacy v3 playtest harness for the level-type picker. Normal basketball
+/// navigation no longer uses this route, but the `leveltypes` diagnostic still
+/// exercises NextSituationPicker → PlayView from a single env-var launch.
 struct DiagnosticLevelTypePickerWrapper: View {
     @Environment(PlayerProfileStore.self) private var profile
 
@@ -199,8 +197,7 @@ struct DiagnosticLevelTypePickerWrapper: View {
         }
     }
 
-    /// Mirror of PostSplashRouterView.startLevelTypePush — picks via
-    /// NextSituationPicker and presents.
+    /// Diagnostic picker path: pick via NextSituationPicker and present PlayView.
     private func startLevelTypePush(levelType: LevelTypeID) {
         let seedPool: [LevelTypeID: [String]] = Dictionary(
             uniqueKeysWithValues: LevelTypeID.earthChapterTypes.map { lt in

@@ -65,7 +65,8 @@ enum BasketballCurriculum {
             scenarioIDs: ["bb-2-no-spin", "bb-2-shooters-roll", "bb-2-game-six-corner"],
             lensReveal: "When the announcer says 'good rotation,' you know what they see.",
             // v3: Ch 2-5 ship with Level D only until simulation gains spin/fade/bank.
-            levelTypeSeeds: [:]
+            levelTypeSeeds: [:],
+            backgroundImageName: "bb-ch2-bg"
         ),
         Chapter(
             id: "bb-ch3-fade",

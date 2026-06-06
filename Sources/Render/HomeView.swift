@@ -20,9 +20,6 @@ import SwiftUI
 struct HomeView: View {
     @Environment(PlayerProfileStore.self) private var profile
 
-    /// Tap on the CONTINUE card. The router decides whether to present the
-    /// scenario directly or push the chapter view (lesson-gating, etc).
-    let onTapTodayCard: (Chapter, String?) -> Void
     /// Tap a sport row → that sport's chapter list.
     let onOpenSport: (Sport) -> Void
     let onOpenProfile: () -> Void
@@ -32,13 +29,6 @@ struct HomeView: View {
 
     /// Drives the one-shot entrance animation (fade + rise) when Home appears.
     @State private var appeared = false
-
-    private var todayPick: NextUp? {
-        NextUpFinder.compute(
-            chapters: BasketballCurriculum.chapters,
-            completed: profile.profile.completedScenarios
-        )
-    }
 
     var body: some View {
         AdaptiveContentContainer(maxWidth: 700) {
@@ -181,24 +171,6 @@ struct HomeView: View {
             : "Daily question. Tap to answer.")
     }
 
-    @ViewBuilder
-    private var heroBackground: some View {
-        if let name = todayPick?.chapter.backgroundImageName,
-           let uiImage = UIImage(named: name) {
-            // Anchor to the top of the tall source image — the warm, lit area —
-            // since the hero band would otherwise center-crop the dark middle.
-            GeometryReader { geo in
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
-                    .clipped()
-            }
-        } else {
-            posterBackground
-        }
-    }
-
     /// Code-drawn hero backdrop — a dark diagonal gradient lifted by a soft amber
     /// glow and a faint trajectory arc, so the card reads as a premium poster
     /// without a photo. The copy sits on the dark bottom-left, clear of both.
@@ -227,41 +199,6 @@ struct HomeView: View {
                 .stroke(Color.arclabWhite.opacity(0.12), lineWidth: 1.5)
             }
         }
-    }
-
-    private var heroEyebrow: String {
-        guard let pick = todayPick else { return "TODAY" }
-        return "CONTINUE · CHAPTER \(pick.chapter.index)"
-    }
-
-    private var todayHeadline: String {
-        guard let pick = todayPick else { return "ALL CAUGHT UP." }
-        if pick.scenarioId != nil { return pick.chapter.title.uppercased() + "." }
-        return "MORE COMING."
-    }
-
-    private var todaySubhead: String {
-        guard let pick = todayPick else { return "Check back when new chapters land." }
-        if pick.scenarioId != nil { return pick.chapter.subtitle }
-        return "Chapter \(pick.chapter.index) — \(pick.chapter.title.lowercased()). In authoring."
-    }
-
-    private var todayCTA: String {
-        guard let pick = todayPick else { return "—" }
-        return pick.scenarioId != nil ? "PLAY  →" : "PREVIEW  →"
-    }
-
-    private var todayAccessibilityLabel: String {
-        guard let pick = todayPick else { return "Today: nothing yet. Check back later." }
-        if pick.scenarioId != nil {
-            return "Continue: \(pick.chapter.title). \(pick.chapter.subtitle) Tap to play."
-        }
-        return "Continue: Chapter \(pick.chapter.index), \(pick.chapter.title). Coming soon. Tap to preview."
-    }
-
-    private func handleTodayTap() {
-        guard let pick = todayPick else { return }
-        onTapTodayCard(pick.chapter, pick.scenarioId)
     }
 
     // MARK: - SPORTS
@@ -365,7 +302,6 @@ struct HomeView: View {
 
 #Preview {
     HomeView(
-        onTapTodayCard: { _, _ in },
         onOpenSport: { _ in },
         onOpenProfile: {}
     )

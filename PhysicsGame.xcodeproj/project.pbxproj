@@ -146,7 +146,6 @@
 		AFE2269832A071CF72331F0E /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DB4D497A148712CD8D41CF /* HomeView.swift */; };
 		B1533C3DAC8E1B72A07FA2BA /* PlayLayoutMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C23C70E3942EDABBECD3F8 /* PlayLayoutMetrics.swift */; };
 		B1D597D313D7980FDD4BDF43 /* bb-2-no-spin.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C4DF5A374E52813AAB51C62 /* bb-2-no-spin.json */; };
-		B264E0A0009C34E27F3390AF /* NextUpFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1B286B222B5175D551F146 /* NextUpFinder.swift */; };
 		B268A2EE7281E5749DC7E012 /* bullseye-hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 12363103E06E8CC3DEBE96EB /* bullseye-hit.wav */; };
 		B37DE08E75378F1D454EE4A3 /* glass-bounce.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6BC8F61703BCD9389E7C4F26 /* glass-bounce.wav */; };
 		B3F32EBDD3111D5FBFD84EB5 /* bb-c-ugly-1.json in Resources */ = {isa = PBXBuildFile; fileRef = B0A97EAA66EF1E9523C3426D /* bb-c-ugly-1.json */; };
@@ -295,7 +294,6 @@
 		468C92DDFC772CD1A88E40AD /* bb-c-pull-up.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-c-pull-up.json"; sourceTree = "<group>"; };
 		47FA49C260B519FC37179C21 /* ScenarioID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioID.swift; sourceTree = "<group>"; };
 		4A0F6C1850BF81644C3F3AE4 /* bb-b-stepback.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-stepback.json"; sourceTree = "<group>"; };
-		4A1B286B222B5175D551F146 /* NextUpFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextUpFinder.swift; sourceTree = "<group>"; };
 		4A41D30A7C1FD02E674EC87D /* bb-2-shooters-roll.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-2-shooters-roll.json"; sourceTree = "<group>"; };
 		4CD465C6101FFD76CA46E2FF /* DailyQuestionCatalog.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DailyQuestionCatalog.swift; sourceTree = "<group>"; };
 		4DA73619B7B11D150440BA5B /* bb-5-toe-on-line.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-5-toe-on-line.json"; sourceTree = "<group>"; };
@@ -579,7 +577,6 @@
 				D3D5DCBB3126C265F5C05E07 /* DailyScenarioPicker.swift */,
 				427C77A0D7014BDC06B454DF /* LessonContent.swift */,
 				64224DC624A867395EA5AD69 /* NextSituationPicker.swift */,
-				4A1B286B222B5175D551F146 /* NextUpFinder.swift */,
 				C4135AD3FFE28EC94268834B /* Rank.swift */,
 				47FA49C260B519FC37179C21 /* ScenarioID.swift */,
 				87314AE5D3120BC1E36A05C9 /* Sport.swift */,
@@ -1056,7 +1053,6 @@
 				D253BE4153A3E2F7975C19F7 /* MissedView.swift in Sources */,
 				C5141DF8A7BF4D58920CCD78 /* MotionController.swift in Sources */,
 				A2C0315FCC85E5F40DAEDCC4 /* NextSituationPicker.swift in Sources */,
-				B264E0A0009C34E27F3390AF /* NextUpFinder.swift in Sources */,
 				FB8A49C0551FAA4C8FB1D441 /* OnboardingView.swift in Sources */,
 				4CA11326E36DD74EFE10803A /* OutcomeDefinition.swift in Sources */,
 				5283FB042FCD8B0A001AAE23 /* SoccerScenario.swift in Sources */,

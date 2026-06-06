@@ -7,7 +7,7 @@ import SwiftUI
 ///   Home → (DAILY card) → DailyQuestionView
 ///   Home → (PROFILE row) → ProfileView (sheet)
 ///
-/// First-launch users see V3OnboardingView before Home. SportPicker is
+/// First-launch users see OnboardingView before Home. SportPicker is
 /// auto-skipped when only one sport is unlocked (current v3 ship state).
 struct PostSplashRouterView: View {
     @Environment(PlayerProfileStore.self) private var profile
@@ -44,7 +44,6 @@ struct PostSplashRouterView: View {
     private var homeStack: some View {
         NavigationStack(path: $navigationPath) {
             HomeView(
-                onTapTodayCard: handleTapTodayCard,
                 onOpenSport: { sport in navigationPath.append(V2Route.chapterList(sport)) },
                 onOpenProfile: { presentedProfile = true },
                 onOpenDaily: { presentedDaily = true }
@@ -159,67 +158,10 @@ struct PostSplashRouterView: View {
                 placeholder("Chapter not found.")
             }
 
-        case .lesson(let lessonId, let chapterId):
-            if let chapter = chapter(withId: chapterId),
-               chapter.lesson.id == lessonId {
-                LessonView(
-                    lesson: chapter.lesson,
-                    onCompleted: {
-                        // Mark lesson as read, then drop back to the chapter
-                        // screen so the user picks their first scenario.
-                        profile.mutate { $0.completedLessons.insert(lessonId) }
-                        navigationPath.removeLast()
-                    }
-                )
-            } else {
-                placeholder("Lesson not found.")
-            }
         }
     }
 
     // MARK: - Actions
-
-    /// When only one sport is unlocked (v3 ship state), skip past the
-    /// SportPicker straight to that sport's ChapterListView — saves the
-    /// user a redundant tap on a list-of-one. Re-introduces the picker as
-    /// soon as a second sport unlocks.
-    private func handleContinueTap() {
-        let unlockedSports = Sport.allCases.filter(\.isUnlocked)
-        if unlockedSports.count == 1, let only = unlockedSports.first {
-            navigationPath.append(V2Route.chapterList(only))
-        } else {
-            navigationPath.append(V2Route.sportPicker)
-        }
-    }
-
-    private func handleDailyScenarioTap() {
-        // v3 §HomeView — daily card now picks player-relevant scenario via
-        // DailyScenarioPicker (review-due → active level type → opener),
-        // deterministic per-day so the tap delivers exactly what the hero
-        // card promised. Server-picked daily + push notify still TBD for
-        // a later milestone; the picker is the client-side stand-in.
-        let pick = DailyScenarioPicker.pick(
-            for: profile.profile,
-            chapters: BasketballCurriculum.chapters
-        )
-        let chapter = BasketballCurriculum.chapters.first(where: { $0.id == pick.chapterId })
-        presentScenario(id: pick.scenarioId, in: chapter)
-    }
-
-    /// v2.3 Home CONTINUE hero tap. Basketball always goes through its
-    /// chapter screen first; legacy call-surface sports may still present a
-    /// scenario directly when `scenarioId` is non-nil.
-    private func handleTapTodayCard(chapter: Chapter, scenarioId: String?) {
-        if chapter.sport == .basketball {
-            navigationPath.append(V2Route.chapter(chapter.id))
-            return
-        }
-        if let scenarioId {
-            presentScenario(id: scenarioId, in: chapter)
-        } else {
-            navigationPath.append(V2Route.chapter(chapter.id))
-        }
-    }
 
     private func presentScenario(id: String, in chapter: Chapter?) {
         guard let scenario = try? ScenarioLoader.load(ScenarioID(id)) else { return }
@@ -287,5 +229,4 @@ enum V2Route: Hashable {
     case sportPicker
     case chapterList(Sport)              // shows all chapters for a sport
     case chapter(String)                 // chapterId
-    case lesson(String, chapterId: String)  // lessonId
 }
