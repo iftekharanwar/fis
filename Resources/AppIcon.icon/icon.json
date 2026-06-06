@@ -2,13 +2,26 @@
   "fill-specializations" : [
     {
       "value" : {
-        "solid" : "extended-gray:0.00000,1.00000"
+        "linear-gradient" : [
+          "extended-gray:0.00000,1.00000",
+          "display-p3:0.20000,0.20000,0.20000,1.00000"
+        ],
+        "orientation" : {
+          "start" : {
+            "x" : 0.5,
+            "y" : 0
+          },
+          "stop" : {
+            "x" : 0.5,
+            "y" : 0.7
+          }
+        }
       }
     },
     {
       "appearance" : "dark",
       "value" : {
-        "solid" : "display-p3:0.00000,0.00000,0.00000,1.00000"
+        "solid" : "extended-gray:0.00000,1.00000"
       }
     }
   ],
@@ -16,13 +29,81 @@
     {
       "layers" : [
         {
-          "image-name" : "Image.png",
-          "name" : "Image",
+          "image-name" : "SVG Image 4.svg",
+          "name" : "SVG Image 4",
           "position" : {
-            "scale" : 0.82,
+            "scale" : 1,
             "translation-in-points" : [
-              0,
-              0
+              -132.4375,
+              80.25233167004046
+            ]
+          }
+        },
+        {
+          "image-name" : "SVG Image 3.svg",
+          "name" : "SVG Image 3",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              -19.76946341454618,
+              -27.158451387252228
+            ]
+          }
+        },
+        {
+          "glass" : true,
+          "image-name" : "SVG Image 2.svg",
+          "name" : "SVG Image 2",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              128.5,
+              -126.73080067747367
+            ]
+          }
+        },
+        {
+          "glass" : true,
+          "image-name" : "SVG Image.svg",
+          "name" : "SVG Image",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              314.2109375,
+              -222.4453125
+            ]
+          }
+        },
+        {
+          "image-name" : "SVG Image 6.svg",
+          "name" : "SVG Image 6",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              -284.3984375,
+              270.3359375
+            ]
+          }
+        },
+        {
+          "image-name" : "SVG Image 5.svg",
+          "name" : "SVG Image 5",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              -216.2421875,
+              180.1484375
+            ]
+          }
+        },
+        {
+          "image-name" : "SVG Image 7.svg",
+          "name" : "SVG Image 7",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              -330.6640625,
+              352.9609375
             ]
           }
         }
