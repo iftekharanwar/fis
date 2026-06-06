@@ -6,11 +6,23 @@ struct OnboardingView: View {
 
     let onBegin: () -> Void
 
-    @State private var page: OnboardingPage = .feed
+    @State private var page: OnboardingPage
     @State private var appeared: Bool = false
+
+    init(onBegin: @escaping () -> Void) {
+        self.onBegin = onBegin
+        self._page = State(initialValue: Self.initialPageFromEnvironment())
+    }
 
     private var isLastPage: Bool {
         page == OnboardingPage.allCases.last
+    }
+
+    private static func initialPageFromEnvironment() -> OnboardingPage {
+        guard let raw = ProcessInfo.processInfo.environment["ARCLAB_ONBOARDING_PAGE"]?.lowercased() else {
+            return .feed
+        }
+        return OnboardingPage.allCases.first { $0.diagnosticName == raw } ?? .feed
     }
 
     var body: some View {
@@ -31,6 +43,10 @@ struct OnboardingView: View {
                 VStack(spacing: 0) {
                     header
 
+                    titleBlock(for: page)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.top, Spacing.lg)
+
                     Spacer(minLength: 0)
 
                     footer
@@ -46,11 +62,17 @@ struct OnboardingView: View {
 
     private var header: some View {
         HStack {
-            Text("PHISIOS")
-                .font(.sfMono(size: 13, weight: .medium))
-                .foregroundColor(.arclabWhite)
-                .tracking(3.0)
-                .lineLimit(1)
+            Button(action: previousPage) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundColor(.arclabWhite)
+                    .frame(width: Sizing.minTapTarget, height: Sizing.minTapTarget)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(PressableButtonStyle())
+            .disabled(page == .feed)
+            .opacity(page == .feed ? 0 : 1)
+            .accessibilityLabel("Previous onboarding screen.")
 
             Spacer()
 
@@ -71,47 +93,43 @@ struct OnboardingView: View {
         .frame(height: 60)
     }
 
+    private func titleBlock(for item: OnboardingPage) -> some View {
+        VStack(spacing: Spacing.xs) {
+            Text(item.eyebrow)
+                .font(.sfMono(size: 11, weight: .medium))
+                .foregroundColor(.arclabMidGrey)
+                .tracking(2.3)
+                .lineLimit(1)
+
+            Text(item.title)
+                .font(.anton(size: 40))
+                .foregroundColor(.arclabWhite)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.68)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(item.copy)
+                .font(.barlowCondensed(size: 18, italic: true))
+                .foregroundColor(.arclabWhite.opacity(0.72))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, Spacing.xs)
+        }
+        .frame(maxWidth: 460)
+        .frame(maxWidth: .infinity)
+        .shadow(color: Color.arclabBlack.opacity(0.82), radius: 16, x: 0, y: 7)
+        .accessibilityElement(children: .combine)
+    }
+
     private func pageContent(_ item: OnboardingPage) -> some View {
         ZStack {
             OnboardingBackdropImage(imageName: item.imageName)
 
             OnboardingReadabilityScrim()
-
-            AdaptiveContentContainer(maxWidth: 640) {
-                VStack(spacing: 0) {
-                    Spacer(minLength: 0)
-
-                    VStack(spacing: Spacing.xs) {
-                        Text(item.eyebrow)
-                            .font(.sfMono(size: 11, weight: .medium))
-                            .foregroundColor(.arclabMidGrey)
-                            .tracking(2.3)
-                            .lineLimit(1)
-
-                        Text(item.title)
-                            .font(.anton(size: 46))
-                            .foregroundColor(.arclabWhite)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.68)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Text(item.copy)
-                            .font(.barlowCondensed(size: 18, italic: true))
-                            .foregroundColor(.arclabMidGrey)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.78)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.horizontal, Spacing.xs)
-                    }
-                    .frame(maxWidth: 460)
-                    .padding(.horizontal, Spacing.md)
-                    .padding(.bottom, 132)
-                    .shadow(color: Color.arclabBlack.opacity(0.75), radius: 14, x: 0, y: 6)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
         }
         .accessibilityElement(children: .combine)
     }
@@ -120,25 +138,8 @@ struct OnboardingView: View {
         VStack(spacing: Spacing.sm) {
             pageDots
 
-            HStack(spacing: Spacing.sm) {
-                Button(action: previousPage) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(page == .feed ? .arclabBorderGrey : .arclabWhite)
-                        .frame(width: Sizing.pillButtonHeight, height: Sizing.pillButtonHeight)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: Sizing.pillRadius)
-                                .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
-                        )
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(PressableButtonStyle())
-                .disabled(page == .feed)
-                .accessibilityLabel("Previous onboarding screen.")
-
-                AccentButton(label: isLastPage ? "Start" : "Next", action: nextAction)
-                    .accessibilityLabel(isLastPage ? "Start PHISIOS." : "Next onboarding screen.")
-            }
+            AccentButton(label: isLastPage ? "Start" : "Next", action: nextAction)
+                .accessibilityLabel(isLastPage ? "Start PHISIOS." : "Next onboarding screen.")
         }
         .padding(.horizontal, Spacing.md)
         .padding(.bottom, Spacing.xl)
@@ -234,6 +235,15 @@ private enum OnboardingPage: Int, CaseIterable, Identifiable, Hashable {
         case .profile:  return "onboarding-profile"
         }
     }
+
+    var diagnosticName: String {
+        switch self {
+        case .feed:     return "feed"
+        case .sports:   return "sports"
+        case .chapters: return "chapters"
+        case .profile:  return "profile"
+        }
+    }
 }
 
 private struct OnboardingBackdropImage: View {
@@ -245,6 +255,8 @@ private struct OnboardingBackdropImage: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: proxy.size.width, height: proxy.size.height)
+                .scaleEffect(0.80)
+                .offset(y: proxy.size.height * 0.24)
         }
         .background(Color.arclabBlack)
         .ignoresSafeArea()
@@ -257,14 +269,15 @@ private struct OnboardingReadabilityScrim: View {
         VStack(spacing: 0) {
             LinearGradient(
                 colors: [
-                    Color.arclabBlack.opacity(0.68),
-                    Color.arclabBlack.opacity(0.28),
+                    Color.arclabBlack.opacity(0.96),
+                    Color.arclabBlack.opacity(0.86),
+                    Color.arclabBlack.opacity(0.48),
                     Color.arclabBlack.opacity(0)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .frame(height: 150)
+            .frame(height: 340)
 
             Spacer(minLength: 0)
 
