@@ -39,6 +39,8 @@ struct OnboardingView: View {
             .animation(.easeOut(duration: 0.25), value: page)
             .ignoresSafeArea()
 
+            OnboardingBottomBlur()
+
             AdaptiveContentContainer(maxWidth: 640) {
                 VStack(spacing: 0) {
                     header
@@ -294,6 +296,43 @@ private struct OnboardingReadabilityScrim: View {
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
+    }
+}
+
+private struct OnboardingBottomBlur: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    LinearGradient(
+                        colors: [
+                            Color.arclabBlack.opacity(0.10),
+                            Color.arclabBlack.opacity(0.58),
+                            Color.arclabBlack.opacity(0.90)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .mask(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0.00),
+                            .init(color: .white.opacity(0.78), location: 0.34),
+                            .init(color: .white, location: 1.00)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(height: 230)
+        }
+        .ignoresSafeArea(edges: .bottom)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
