@@ -207,6 +207,7 @@ struct DiagnosticLevelTypePickerWrapper: View {
                 (lt, chapter.seeds(for: lt))
             }
         )
+        let difficultyBySituation = difficultyMap(for: seedPool)
         var rng = SystemRandomNumberGenerator()
         let attempts = profile.profile.levelTypeMasteries[
             MasteryService.key(chapterId: chapter.id, levelType: levelType)
@@ -217,6 +218,7 @@ struct DiagnosticLevelTypePickerWrapper: View {
             activeLevelType: levelType,
             seedPool: seedPool,
             masteries: profile.profile.levelTypeMasteries,
+            difficultyBySituation: difficultyBySituation,
             rng: &rng
         ) else {
             print("[arclab/diag] pick=nil")
@@ -228,5 +230,15 @@ struct DiagnosticLevelTypePickerWrapper: View {
             return
         }
         presentedScenario = scenario
+    }
+
+    private func difficultyMap(for seedPool: [LevelTypeID: [String]]) -> [String: DifficultyBucket] {
+        var map: [String: DifficultyBucket] = [:]
+        for scenarioId in seedPool.values.flatMap({ $0 }) {
+            guard let scenario = try? ScenarioLoader.load(ScenarioID(scenarioId)),
+                  let bucket = scenario.meta.difficultyBucket else { continue }
+            map[scenarioId] = bucket
+        }
+        return map
     }
 }

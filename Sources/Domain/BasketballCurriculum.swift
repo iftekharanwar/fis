@@ -102,6 +102,20 @@ enum BasketballCurriculum {
         )
     ]
 
+    /// Current basketball release: each visible practice row maps to one
+    /// fixed gameplay. The broader seed pools remain authored above for
+    /// diagnostics and future expansion, but normal navigation does not cycle
+    /// through them.
+    static let releasedPracticeSeedsByChapter: [String: [LevelTypeID: [String]]] = [
+        "bb-ch1-arc": [
+            .findTheta: ["bb-a-half-court"],
+            .findV: ["bb-b-ugly-1"]
+        ],
+        "bb-ch2-spin": [
+            .findBoth: ["bb-2-game-six-corner"]
+        ]
+    ]
+
     // MARK: - Lesson 1 — THE ARC
     //
     // Illustration slots bb-l1-01 … bb-l1-06 live in the asset catalog and

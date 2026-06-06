@@ -20,6 +20,10 @@ struct ChapterView: View {
         profile.profile.completedLessons.contains(chapter.lesson.id)
     }
 
+    private var practiceScenarioIDs: [String] {
+        chapter.progressScenarioIDs
+    }
+
     var body: some View {
         ZStack(alignment: .top) {
             Color.arclabBlack.ignoresSafeArea()
@@ -181,12 +185,12 @@ struct ChapterView: View {
 
     private var practiceList: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            if chapter.scenarioIDs.isEmpty {
+            if practiceScenarioIDs.isEmpty {
                 emptyPractice
             } else if lessonRead {
                 // Practice unlocks only after the lesson is read — the live
                 // button appears on finish rather than sitting disabled first.
-                ForEach(Array(chapter.scenarioIDs.enumerated()), id: \.offset) { (idx, scenarioId) in
+                ForEach(Array(practiceScenarioIDs.enumerated()), id: \.offset) { (idx, scenarioId) in
                     scenarioRow(index: idx + 1, scenarioId: scenarioId)
                 }
             }
@@ -260,6 +264,13 @@ struct ChapterView: View {
 }
 
 #Preview {
+    ChapterView(
+        chapter: ArcheryCurriculum.chapters[0],
+        onOpenScenario: { _ in }
+    )
+}
+
+#Preview("Basketball Chapter") {
     ChapterView(
         chapter: BasketballCurriculum.chapters[0],
         onOpenScenario: { _ in }

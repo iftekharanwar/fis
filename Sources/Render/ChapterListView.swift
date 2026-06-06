@@ -1,10 +1,10 @@
 import SwiftUI
 import UIKit
 
-/// Chapter list — the bridge between SportPicker and LevelTypePickerView.
+/// Chapter list — the bridge between SportPicker and each sport's chapter view.
 /// Shows every chapter in a sport as a row; tapping a shippable chapter
-/// pushes to its LevelTypePickerView. Ch 2-5 render in a locked state
-/// (dimmed + lock.fill, "Locked. Future chapter.") until they ship.
+/// pushes to the chapter detail screen. Locked chapters render dimmed with
+/// `lock.fill` and "Locked. Future chapter." until they ship.
 struct ChapterListView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -111,16 +111,13 @@ struct ChapterListView: View {
         }
     }
 
-    /// Sport-aware chapter unlock check. Basketball uses v3 mastery state
-    /// (isShippableInV3 — all 4 level types must have seed pools). Archery
-    /// and soccer don't use level types yet, so a chapter is unlocked iff
-    /// it has at least one scenario authored.
+    /// Sport-aware chapter unlock check. Basketball unlocks when the current
+    /// release has level-type practice rows; Archery/Soccer unlock when they
+    /// have at least one authored scenario.
     private func isChapterUnlocked(_ chapter: Chapter) -> Bool {
         switch chapter.sport {
-        case .basketball:
-            return chapter.isShippableInV3
-        case .archery, .soccer:
-            return !chapter.scenarioIDs.isEmpty
+        case .basketball, .archery, .soccer:
+            return chapter.hasPlayablePractice
         case .pool:
             return false
         }

@@ -348,10 +348,10 @@ struct HomeView: View {
         }
     }
 
-    /// Chapters in this sport with at least one completed scenario.
+    /// Chapters in this sport with at least one completed released practice item.
     private func chaptersEarned(_ sport: Sport) -> Int {
         sport.chapters.filter { chapter in
-            chapter.scenarioIDs.contains { profile.profile.completedScenarios[ScenarioID($0)] != nil }
+            chapter.progressScenarioIDs.contains { profile.profile.completedScenarios[ScenarioID($0)] != nil }
         }.count
     }
 

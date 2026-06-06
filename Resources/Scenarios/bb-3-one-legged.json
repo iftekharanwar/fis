@@ -279,7 +279,7 @@
     "hintBottomCopy": "Each hint trims the score.",
     "hintCta": "REVEAL (−{cost}%)",
     "solutionLabel": "SOLUTION",
-    "nextLabel": "NEXT SHOT →",
+    "nextLabel": "DONE →",
     "replayLabel": "REPLAY",
     "tryThisAnswerLabel": "TRY THIS ANSWER →",
     "closeLabel": "✕ CLOSE",

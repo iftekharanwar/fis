@@ -16,11 +16,15 @@ final class NextSituationPickerTests: XCTestCase {
     /// Seeded RNG so picks are reproducible across runs.
     private var rng = SeededRNG(seed: 42)
 
-    private func att(_ id: String, levelType: LevelTypeID = .findTheta) -> AttemptRecord {
+    private func att(
+        _ id: String,
+        levelType: LevelTypeID = .findTheta,
+        bucket: DifficultyBucket = .easy
+    ) -> AttemptRecord {
         AttemptRecord(
             situationId: id, levelTypeId: levelType.rawValue,
             outcome: .swish, isFirstTry: true, hintsUsed: 0,
-            timeToAnswerMs: 5_000, difficultyBucket: .easy,
+            timeToAnswerMs: 5_000, difficultyBucket: bucket,
             wasReview: false, wasInterleaved: false, timestamp: Date()
         )
     }
@@ -110,6 +114,37 @@ final class NextSituationPickerTests: XCTestCase {
                     "Should never interleave before 10 attempts")
                 XCTAssertFalse(pick.isInterleaved)
             }
+        }
+    }
+
+    func test_forces_hard_variant_when_mastery_window_needs_it() {
+        let attempts: [AttemptRecord] = (0..<5).map { att("easy-\($0)") }
+        let masteries: [String: LevelTypeMastery] = [
+            MasteryService.key(chapterId: "ch1", levelType: .findTheta):
+                mastery("ch1.A", attempts: attempts, status: .active)
+        ]
+        let seedPool: [LevelTypeID: [String]] = [
+            .findTheta: ["easy-5", "easy-6", "hard-0", "hard-1"]
+        ]
+        let difficultyBySituation: [String: DifficultyBucket] = [
+            "easy-5": .easy,
+            "easy-6": .easy,
+            "hard-0": .hard,
+            "hard-1": .hard
+        ]
+
+        for _ in 0..<20 {
+            let pick = NextSituationPicker.nextPick(
+                chapterId: "ch1",
+                activeLevelType: .findTheta,
+                seedPool: seedPool,
+                masteries: masteries,
+                difficultyBySituation: difficultyBySituation,
+                rng: &rng
+            )
+            XCTAssertNotNil(pick)
+            XCTAssertEqual(difficultyBySituation[pick!.situationId], .hard)
+            XCTAssertFalse(pick!.isInterleaved)
         }
     }
 

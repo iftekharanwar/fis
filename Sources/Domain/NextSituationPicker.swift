@@ -25,11 +25,25 @@ enum NextSituationPicker {
         activeLevelType: LevelTypeID,
         seedPool: [LevelTypeID: [String]],
         masteries: [String: LevelTypeMastery],
+        difficultyBySituation: [String: DifficultyBucket] = [:],
         rng: inout some RandomNumberGenerator
     ) -> Pick? {
         let activeKey = MasteryService.key(chapterId: chapterId, levelType: activeLevelType)
         let activeMastery = masteries[activeKey]
         let activeAttemptCount = activeMastery?.attemptHistory.count ?? 0
+
+        // Mastery requires a hard variant in the rolling six-attempt window.
+        // Without this assist, a player can make clean shots indefinitely and
+        // still not promote if random selection keeps missing the hard seeds.
+        if let pool = seedPool[activeLevelType],
+           let pick = chooseHardIfNeeded(
+               pool,
+               mastery: activeMastery,
+               difficultyBySituation: difficultyBySituation,
+               rng: &rng
+           ) {
+            return Pick(situationId: pick, levelType: activeLevelType, isInterleaved: false)
+        }
 
         // Rule 3 — after 10+ attempts, 30% interleave from another unlocked type.
         if activeAttemptCount >= 10,
@@ -46,6 +60,7 @@ enum NextSituationPicker {
                let pick = chooseFromPool(
                    pool,
                    avoiding: lastNSituationIds(masteries[MasteryService.key(chapterId: chapterId, levelType: interleaveLT)], n: 5),
+                   difficultyBySituation: difficultyBySituation,
                    rng: &rng
                ) {
                 return Pick(situationId: pick, levelType: interleaveLT, isInterleaved: true)
@@ -58,6 +73,7 @@ enum NextSituationPicker {
         guard let pick = chooseFromPool(
             pool,
             avoiding: lastNSituationIds(activeMastery, n: 5),
+            difficultyBySituation: difficultyBySituation,
             rng: &rng
         ) else { return nil }
         return Pick(situationId: pick, levelType: activeLevelType, isInterleaved: false)
@@ -75,6 +91,7 @@ enum NextSituationPicker {
     private static func chooseFromPool(
         _ pool: [String],
         avoiding: Set<String>,
+        difficultyBySituation: [String: DifficultyBucket],
         rng: inout some RandomNumberGenerator
     ) -> String? {
         guard !pool.isEmpty else { return nil }
@@ -84,5 +101,27 @@ enum NextSituationPicker {
         }
         // Last-5 covered every seed in a small pool — accept a repeat.
         return pool.randomElement(using: &rng)
+    }
+
+    /// If the player has filled five slots of the six-attempt mastery window
+    /// without a hard variant, force the sixth pick to be hard when metadata
+    /// is available. This keeps the mastery gate meaningful without letting
+    /// random selection create a dead-feeling loop.
+    private static func chooseHardIfNeeded(
+        _ pool: [String],
+        mastery: LevelTypeMastery?,
+        difficultyBySituation: [String: DifficultyBucket],
+        rng: inout some RandomNumberGenerator
+    ) -> String? {
+        guard let mastery else { return nil }
+        let recent = Array(mastery.attemptHistory.suffix(LevelTypeMastery.masteryWindowSize - 1))
+        guard recent.count == LevelTypeMastery.masteryWindowSize - 1 else { return nil }
+        guard !recent.contains(where: { $0.difficultyBucket == .hard }) else { return nil }
+
+        let hardPool = pool.filter { difficultyBySituation[$0] == .hard }
+        guard !hardPool.isEmpty else { return nil }
+        let recentlySeen = Set(recent.map(\.situationId))
+        let freshHard = hardPool.filter { !recentlySeen.contains($0) }
+        return freshHard.randomElement(using: &rng) ?? hardPool.randomElement(using: &rng)
     }
 }

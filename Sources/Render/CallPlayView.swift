@@ -38,8 +38,7 @@ struct CallPlayView: View {
     /// live `userCall` to compute `wasCorrect` and transition into verdict.
     @State private var pendingResolution: Phase.Resolution? = nil
 
-    /// Attempt counter for the scoring system (same idea as v1).
-    @State private var attemptCounter: Int = 1
+    /// Guards the one profile write for the call beat.
     @State private var outcomeWritten: Bool = false
 
     /// Compute mode — user-chosen θ (degrees) and v (m/s). Initialized
@@ -207,8 +206,7 @@ struct CallPlayView: View {
                 case .miss:    truthIsSwish = false
                 }
                 let wasCorrect = (userCall == truthIsSwish)
-                // Streak counts the *call beat* (one play per scenario per day).
-                profile.mutate { $0.recordPlayToday() }
+                recordCallOutcome(correct: wasCorrect)
                 phase = .verdict(resolution, wasCorrect: wasCorrect)
             }
             pendingResolution = nil
@@ -657,13 +655,8 @@ struct CallPlayView: View {
     private func verdictOverlay(resolution: Phase.Resolution, wasCorrect: Bool) -> some View {
         switch resolution {
         case .success(let flavor):
-            let earnedXP = computeEarnedXP(flavor: flavor)
-            let isFirstTry = attemptCounter == 1 && flavor == "SWISH"
             CallVerdictView(wasCorrect: wasCorrect, ballWentIn: true)
-                .onAppear {
-                    persistSuccessOutcome(flavor: flavor, isFirstTry: isFirstTry, earnedXP: earnedXP)
-                    playOutcomeSound(success: flavor)
-                }
+                .onAppear { playOutcomeSound(success: flavor) }
         case .miss(let category):
             CallVerdictView(wasCorrect: wasCorrect, ballWentIn: false)
                 .onAppear { playOutcomeSound(miss: category) }
@@ -878,42 +871,28 @@ struct CallPlayView: View {
         }
     }
 
-    // MARK: - Scoring (mirrors v1's PlayView logic)
+    // MARK: - Scoring
 
-    private func persistSuccessOutcome(flavor: String, isFirstTry: Bool, earnedXP: Int) {
+    /// Match archery/soccer: the scenario completes on the call beat, and XP
+    /// is based on whether the prediction was correct. The optional slider
+    /// deep-dive after the verdict is practice, not a second progression loop.
+    private func recordCallOutcome(correct: Bool) {
         guard !outcomeWritten else { return }
         outcomeWritten = true
 
         let id = scenario.scenarioId
+        let base = correct ? 20 : 5
         let now = Date()
         profile.mutate { p in
+            p.recordPlayToday(now: now)
+            let already = p.completedScenarios[id]?.firstCompletedAt != nil
             var record = p.completedScenarios[id] ?? ScenarioRecord.newRecord(now: now)
-            let scoreNow = computeScore(flavor: flavor)
-            record.bestScore = max(record.bestScore, scoreNow)
-            if record.firstCompletedAt == nil {
-                record.firstCompletedAt = now
-            } else {
-                record.replayAfterSuccessFlag = true
-            }
-            if isFirstTry { record.watermarkEarnedFlag = true }
-            record.attemptCounter = 1
+            if record.firstCompletedAt == nil { record.firstCompletedAt = now }
             record.lastPlayedAt = now
+            record.bestScore = max(record.bestScore, base)
             p.completedScenarios[id] = record
-            p.totalXP += earnedXP
+            p.totalXP += already ? max(1, base / 10) : base
             p.recomputeRank()
         }
     }
-
-    private func computeEarnedXP(flavor: String) -> Int {
-        let baseScore = computeScore(flavor: flavor)
-        let alreadyCompleted = (profile.profile.completedScenarios[scenario.scenarioId]?.firstCompletedAt) != nil
-        return alreadyCompleted ? Int((Double(baseScore) * 0.1).rounded()) : baseScore
-    }
-
-    private func computeScore(flavor: String) -> Int {
-        let base = Double(scenario.outcome.baseScore)
-        let multiplier = scenario.outcome.successFlavors.first(where: { $0.id == flavor })?.scoreMultiplier ?? 1.0
-        return Int((base * multiplier).rounded())
-    }
 }
-

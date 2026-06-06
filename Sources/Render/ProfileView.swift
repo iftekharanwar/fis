@@ -231,20 +231,20 @@ struct ProfileView: View {
     }
 
     /// Per-sport progress as (chapters explored, playable chapters). A
-    /// chapter counts as explored once any of its scenarios has a completion
-    /// record. Empty (un-authored) chapters are excluded so the denominator
-    /// reflects what's actually playable today, not a stuck N/5.
+    /// chapter counts as explored once any released practice item has a
+    /// completion record. Empty/unreleased chapters are excluded so the
+    /// denominator reflects what's actually playable today.
     private func sportProgress(_ sport: Sport) -> (done: Int, total: Int) {
-        let playable = sport.chapters.filter { !$0.scenarioIDs.isEmpty }
+        let playable = sport.chapters.filter(\.hasPlayablePractice)
         let done = playable.filter { chapter in
-            chapter.scenarioIDs.contains { profile.profile.completedScenarios[ScenarioID($0)] != nil }
+            chapter.progressScenarioIDs.contains { profile.profile.completedScenarios[ScenarioID($0)] != nil }
         }.count
         return (done, playable.count)
     }
 
     private var unlockedSports: [Sport] {
         Sport.allCases.filter { sport in
-            sport.isUnlocked && sport.chapters.contains { !$0.scenarioIDs.isEmpty }
+            sport.isUnlocked && sport.chapters.contains { $0.hasPlayablePractice }
         }
     }
 

@@ -11,9 +11,9 @@ struct PlayView: View {
 
     /// Optional so diagnostic/standalone launches without a container still compile.
     /// `onClose` fires on user-initiated bail (CLOSE chip or swipe back).
-    /// `onRequestNext` fires on NEXT SHOT after a v3 outcome — router uses
-    /// this to re-pick a fresh seed from the same level-type push instead
-    /// of treating it as a bail. Both default to popping back to the picker.
+    /// `onRequestNext` fires on the v3 outcome action — router uses this to
+    /// advance within a multi-seed push or return to the chapter for a
+    /// single-scenario release. Both default to popping back to the picker.
     var onClose: (() -> Void)? = nil
     var onRequestNext: (() -> Void)? = nil
 
@@ -577,13 +577,16 @@ struct PlayView: View {
         return BasketballCurriculum.chapters.first { $0.id == chapterId }
     }
 
-    /// True iff every Earth-chapter level type (A/B/C/D) of the current
-    /// scenario's chapter is .mastered. Used to decide whether THIS write
-    /// just completed a chapter (compare pre vs post).
+    /// True iff every released level type of the current scenario's chapter
+    /// is .mastered. Broader basketball level types stay available to
+    /// diagnostics until they become player-facing.
     private func chapterIsMastered(in profile: PlayerProfile) -> Bool {
-        guard let chapterId = scenario.meta.chapterId else { return false }
-        return LevelTypeID.earthChapterTypes.allSatisfy { lt in
-            let key = MasteryService.key(chapterId: chapterId, levelType: lt)
+        guard let chapter = currentChapter() else { return false }
+        let levelTypes = chapter.releasedPracticeLevelTypes.isEmpty
+            ? LevelTypeID.earthChapterTypes
+            : chapter.releasedPracticeLevelTypes
+        return levelTypes.allSatisfy { lt in
+            let key = MasteryService.key(chapterId: chapter.id, levelType: lt)
             return profile.levelTypeMasteries[key]?.status == .mastered
         }
     }
@@ -641,13 +644,10 @@ struct PlayView: View {
     }
 
     private func handleNextLevel() {
-        // v3: for scenarios with a level type, pop back to the picker so
-        // NextSituationPicker can surface a fresh seed (avoids replaying
-        // the just-seen scenario; respects the rolling-window variation
-        // rule from GAME_v3_LOCKED.md §2.5). For legacy v2 scenarios with
-        // no level type, fall through to REPLAY.
-        if scenario.meta.levelType != nil {
-            // v3: ask the router for a fresh seed in the same level-type push.
+        // Router-backed launches ask the container to advance or close the
+        // push. Standalone legacy v2 scenarios with no router still replay.
+        if onRequestNext != nil || scenario.meta.levelType != nil {
+            // Ask the router to advance or close the level-type push.
             // Falls back to onClose (then to handleReplay) if no router is
             // wired (diagnostic launches).
             if let onRequestNext {

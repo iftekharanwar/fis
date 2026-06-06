@@ -53,6 +53,49 @@ struct Chapter: Identifiable, Hashable, Sendable {
             !seeds(for: lt).isEmpty
         }
     }
+
+    /// Basketball's current public chapter flow exposes fixed one-play
+    /// practice rows. The broader A/B/C/D seed pools stay authored for
+    /// diagnostics and future release work.
+    var releasedPracticeLevelTypes: [LevelTypeID] {
+        switch sport {
+        case .basketball:
+            return LevelTypeID.earthChapterTypes.filter { !releasedPracticeSeeds(for: $0).isEmpty }
+        case .archery, .soccer, .pool:
+            return []
+        }
+    }
+
+    func releasedPracticeSeeds(for levelType: LevelTypeID) -> [String] {
+        switch sport {
+        case .basketball:
+            guard let released = BasketballCurriculum.releasedPracticeSeedsByChapter[id]?[levelType] else { return [] }
+            let authored = Set(seeds(for: levelType))
+            return released.filter { authored.contains($0) }
+        case .archery, .soccer:
+            return scenarioIDs
+        case .pool:
+            return []
+        }
+    }
+
+    /// Scenario IDs that count toward "started/explored" progress today.
+    /// Legacy sports use their authored scenario list; basketball uses the
+    /// released level-type seed pools instead of the older v2 scenarioIDs.
+    var progressScenarioIDs: [String] {
+        switch sport {
+        case .basketball:
+            return releasedPracticeLevelTypes.flatMap { releasedPracticeSeeds(for: $0) }
+        case .archery, .soccer:
+            return scenarioIDs
+        case .pool:
+            return []
+        }
+    }
+
+    var hasPlayablePractice: Bool {
+        !progressScenarioIDs.isEmpty
+    }
 }
 
 // LessonStub is a typealias to LessonContent — see LessonContent.swift.

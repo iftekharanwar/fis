@@ -7,9 +7,9 @@ import UIKit
 /// full-bleed poster reader, and the same left/right tap paging drives the
 /// story cards. Closing collapses it back.
 ///
-/// Hosted via the `.lessonReader(...)` modifier so both `ChapterView`
-/// (archery / soccer) and `LevelTypePickerView` (basketball) get the identical
-/// interaction. The host owns the `isPresented` binding and decides what to do
+/// Hosted via the `.lessonReader(...)` modifier so `ChapterView`,
+/// `BasketballChapterView`, and diagnostics get the identical interaction.
+/// The host owns the `isPresented` binding and decides what to do
 /// on close — `onClose(finished:)` reports whether the reader was finished
 /// (reached the end / tapped Begin) vs. dismissed early, so the host applies
 /// the first-play gating (mark the lesson read only on finish).

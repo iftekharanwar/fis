@@ -33,7 +33,7 @@ struct DailyScenarioPicker {
     /// Pick today's scenario for the given player.
     /// - Parameter today: usually `Date()`. Pass a fixed date in tests.
     /// - Parameter chapters: the curriculum to draw from. Picks only from
-    ///   `isShippableInV3` chapters so we never surface a Ch 2-5 placeholder.
+    ///   chapters with released practice so we never surface a placeholder.
     static func pick(
         for profile: PlayerProfile,
         chapters: [Chapter],
@@ -41,11 +41,11 @@ struct DailyScenarioPicker {
         calendar: Calendar = .current
     ) -> Pick {
         let masteries = profile.levelTypeMasteries
-        let shippable = chapters.filter { $0.isShippableInV3 }
+        let shippable = chapters.filter(\.hasPlayablePractice)
+        let fallbackScenarioId = shippable.first?.progressScenarioIDs.first ?? "bb-a-half-court"
         // Fallback target — guarantees a valid pick even with empty state.
-        // bb-1-baseline is the universally-shipped Ch 1 free throw.
         let fallback = Pick(
-            scenarioId: "bb-1-baseline",
+            scenarioId: fallbackScenarioId,
             chapterId: shippable.first?.id ?? "bb-ch1-arc",
             kind: .opener
         )
@@ -68,8 +68,9 @@ struct DailyScenarioPicker {
                 let chapterId = String(masteryKey[..<dotIdx])
                 let ltRaw = String(masteryKey[masteryKey.index(after: dotIdx)...])
                 guard let chapter = shippable.first(where: { $0.id == chapterId }),
-                      let lt = LevelTypeID(rawValue: ltRaw) else { continue }
-                let seeds = chapter.seeds(for: lt)
+                      let lt = LevelTypeID(rawValue: ltRaw),
+                      chapter.releasedPracticeLevelTypes.contains(lt) else { continue }
+                let seeds = chapter.releasedPracticeSeeds(for: lt)
                 if let pick = seeds.randomElement(using: &rng) {
                     return Pick(scenarioId: pick, chapterId: chapterId, kind: .review)
                 }
@@ -79,11 +80,11 @@ struct DailyScenarioPicker {
         // Tier 2 — pick from the player's *active* level type: the first
         // unlocked level type in chapter order that isn't yet mastered.
         for chapter in shippable {
-            for lt in LevelTypeID.earthChapterTypes {
+            for lt in chapter.releasedPracticeLevelTypes {
                 let key = MasteryService.key(chapterId: chapter.id, levelType: lt)
                 let status = masteries[key]?.status ?? .active
                 if status != .mastered {
-                    let seeds = chapter.seeds(for: lt)
+                    let seeds = chapter.releasedPracticeSeeds(for: lt)
                     if let pick = seeds.randomElement(using: &rng) {
                         return Pick(scenarioId: pick, chapterId: chapter.id, kind: .active)
                     }
@@ -94,7 +95,8 @@ struct DailyScenarioPicker {
         // Tier 3 — everything mastered (rare end-state). Re-surface the
         // opener as a victory lap; the review tier should usually catch
         // this case but it's possible everything is fresh-mastered today.
-        let seeds = firstChapter.seeds(for: .findTheta)
+        let openerLevelType = firstChapter.releasedPracticeLevelTypes.first ?? .findTheta
+        let seeds = firstChapter.releasedPracticeSeeds(for: openerLevelType)
         if let pick = seeds.randomElement(using: &rng) {
             return Pick(scenarioId: pick, chapterId: firstChapter.id, kind: .opener)
         }
