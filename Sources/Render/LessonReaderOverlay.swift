@@ -57,6 +57,10 @@ struct LessonReaderOverlay: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
+        // This reader is one fixed (non-scrolling) poster per card; cap the
+        // largest accessibility steps so a card's text + full-size illustration
+        // still fit together instead of the picture getting squeezed.
+        .dynamicTypeSize(.large ... .accessibility1)
         .overlay {
             if showCoachmark {
                 coachmarkOverlay.transition(.opacity)
@@ -123,7 +127,12 @@ struct LessonReaderOverlay: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxHeight: 220)
+                    // A stable size band + high layout priority so the
+                    // illustration holds its size instead of being squeezed
+                    // smaller when the text grows with Dynamic Type.
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 180, maxHeight: 220)
+                    .layoutPriority(1)
                     .clipShape(RoundedRectangle(cornerRadius: Sizing.cardRadius))
                     .padding(.bottom, Spacing.lg)
             }
