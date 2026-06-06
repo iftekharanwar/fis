@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "dq-soccer-knuckle.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

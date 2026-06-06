@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "dq-soccer-altitude.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

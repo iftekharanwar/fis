@@ -96,8 +96,13 @@ struct PostSplashRouterView: View {
             ProfileView()
         }
         // Daily Question — one small physics question a day, full-screen.
+        // A brand-new player gets Day 1 (illustrated); regulars get the
+        // date-based daily.
         .fullScreenCover(isPresented: $presentedDaily) {
-            DailyQuestionView(onClose: { presentedDaily = false })
+            DailyQuestionView(
+                onClose: { presentedDaily = false },
+                question: DailyQuestionPicker.current(for: profile.profile)
+            )
         }
     }
 

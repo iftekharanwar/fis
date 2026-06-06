@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "dq-archery-twozero.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

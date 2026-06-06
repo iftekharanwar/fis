@@ -229,3 +229,77 @@ final class RankRungTests: XCTestCase {
         XCTAssertGreaterThan(remaining ?? 0, 0)
     }
 }
+
+/// Regression tests for the Daily Question surfacing logic.
+///
+/// The card derives its question from the player profile, and *answering
+/// mutates that profile* — which makes SwiftUI re-evaluate the view's
+/// initializer with fresh state. If the picker isn't stable across that
+/// mutation, the question visibly swaps to a different one underneath the
+/// revealed answer (the "tapped an answer, saw another question's reveal" bug).
+@MainActor
+final class DailyQuestionPickerTests: XCTestCase {
+
+    /// A fixed day whose date-rotation pick is *not* the brand-new-player lead
+    /// question — so the stability checks are meaningful (a stable picker has
+    /// to actively hold the lead rather than coincidentally match the date).
+    private let fixedDate = Date(timeIntervalSince1970: 1_000_000_000)
+
+    func test_questionIsStableAcrossAnswering() throws {
+        var profile = PlayerProfile.newProfile()
+        let before = try XCTUnwrap(
+            DailyQuestionPicker.current(for: profile, on: fixedDate),
+            "expected a lead question for a fresh profile"
+        )
+
+        // Answering sets lastDailyAnsweredDate/Pick/ID on the profile.
+        profile.recordDailyAnswer(pick: 0, questionID: before.id, now: fixedDate)
+
+        // The surfaced question must NOT change — this is the swap bug.
+        let after = DailyQuestionPicker.current(for: profile, on: fixedDate)
+        XCTAssertEqual(after?.id, before.id,
+            "Daily question changed after answering — it must stay stable for the day")
+    }
+
+    func test_reopenSameDayReturnsTheExactAnsweredQuestion() throws {
+        var profile = PlayerProfile.newProfile()
+        let lead = try XCTUnwrap(DailyQuestionPicker.current(for: profile, on: fixedDate))
+        let rotation = DailyQuestionPicker.todays(on: fixedDate)
+        XCTAssertNotEqual(lead.id, rotation?.id,
+            "test setup expects the lead and the date-rotation to differ on this day")
+
+        profile.recordDailyAnswer(pick: 1, questionID: lead.id, now: fixedDate)
+
+        let reopened = DailyQuestionPicker.current(for: profile, on: fixedDate)
+        XCTAssertEqual(reopened?.id, lead.id,
+            "Re-opening the daily must restore the exact question that was answered")
+    }
+
+    func test_nextDayResumesTheDateRotation() throws {
+        var profile = PlayerProfile.newProfile()
+        let lead = try XCTUnwrap(DailyQuestionPicker.current(for: profile, on: fixedDate))
+        profile.recordDailyAnswer(pick: 0, questionID: lead.id, now: fixedDate)
+
+        let nextDay = fixedDate.addingTimeInterval(86_400)
+        let tomorrow = DailyQuestionPicker.current(for: profile, on: nextDay)
+        XCTAssertEqual(tomorrow?.id, DailyQuestionPicker.todays(on: nextDay)?.id,
+            "A new day should resume the normal date-based rotation")
+    }
+
+    func test_answeredQuestionIDPersistsAcrossReload() async throws {
+        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("DQPickerTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let fileURL = tempDir.appendingPathComponent("PlayerProfile.v1.json")
+
+        let storeA = PlayerProfileStore(fileURL: fileURL, debounceInterval: 0)
+        storeA.mutate { $0.recordDailyAnswer(pick: 2, questionID: "dq-03") }
+        await storeA.flushPendingWritesForTest()
+
+        // Simulate app kill → fresh load: the new optional field round-trips.
+        let storeB = PlayerProfileStore(fileURL: fileURL, debounceInterval: 0)
+        XCTAssertEqual(storeB.profile.lastDailyAnsweredQuestionID, "dq-03")
+        XCTAssertEqual(storeB.profile.lastDailyAnsweredPick, 2)
+    }
+}

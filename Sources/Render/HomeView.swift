@@ -104,7 +104,7 @@ struct HomeView: View {
     /// between "answer" and the answered "back tomorrow" state.
     private var heroCard: some View {
         let answered = profile.profile.hasAnsweredDailyToday()
-        let sportName = DailyQuestionPicker.todays()?.sport.displayName ?? "TODAY"
+        let sportName = DailyQuestionPicker.current(for: profile.profile)?.sport.displayName ?? "TODAY"
         return Button(action: onOpenDaily) {
             ZStack(alignment: .bottomLeading) {
                 posterBackground

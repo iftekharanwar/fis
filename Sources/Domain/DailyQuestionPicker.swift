@@ -25,4 +25,38 @@ enum DailyQuestionPicker {
         guard !questions.isEmpty else { return nil }
         return questions[index(for: date, count: questions.count, calendar: calendar)]
     }
+
+    /// The question to surface for this player right now. The result is
+    /// **stable across the act of answering** — critically, answering mutates
+    /// the profile, and any view deriving its question from the profile must
+    /// not see it swap to a different question mid-session.
+    ///
+    /// Resolution order:
+    ///  1. Already answered today → the *exact* question they answered (by id),
+    ///     so re-opening (or a state refresh while the card is up) restores the
+    ///     right reveal rather than jumping to a different question.
+    ///  2. Brand-new player (never answered any daily) → lead with an
+    ///     illustrated **basketball** question — a strong first impression and a
+    ///     clean demo.
+    ///  3. Otherwise → the normal date-based rotation.
+    static func current(
+        for profile: PlayerProfile,
+        on date: Date = Date(),
+        calendar: Calendar = .current
+    ) -> DailyQuestion? {
+        if profile.hasAnsweredDailyToday(now: date, calendar: calendar) {
+            if let id = profile.lastDailyAnsweredQuestionID,
+               let answered = DailyQuestionCatalog.question(withID: id) {
+                return answered
+            }
+            // Pre-id profiles (answered before we persisted the id): fall back
+            // to the date rotation so they at least see today's question.
+            return todays(on: date, calendar: calendar)
+        }
+        if profile.lastDailyAnsweredDate == nil,
+           let lead = DailyQuestionCatalog.all.first(where: { $0.sport == .basketball && $0.imageName != nil }) {
+            return lead
+        }
+        return todays(on: date, calendar: calendar)
+    }
 }

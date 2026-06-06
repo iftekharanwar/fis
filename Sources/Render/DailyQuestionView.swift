@@ -12,8 +12,12 @@ struct DailyQuestionView: View {
 
     var onClose: (() -> Void)? = nil
 
-    /// Today's question. Resolved once at init so it can't change mid-session.
-    private let question: DailyQuestion?
+    /// Today's question — frozen at first init via `@State`. The card derives
+    /// from profile state that *answering mutates*, which makes SwiftUI
+    /// re-evaluate this view's initializer; holding the question in `@State`
+    /// means that re-init keeps the original value instead of swapping in a
+    /// different question underneath the revealed answer.
+    @State private var question: DailyQuestion?
 
     @State private var revealed: Bool = false
     @State private var pick: Int? = nil
@@ -21,7 +25,7 @@ struct DailyQuestionView: View {
 
     init(onClose: (() -> Void)? = nil, question: DailyQuestion? = DailyQuestionPicker.todays()) {
         self.onClose = onClose
-        self.question = question
+        self._question = State(initialValue: question)
     }
 
     var body: some View {
@@ -45,7 +49,7 @@ struct DailyQuestionView: View {
         .dynamicTypeSize(.large ... .accessibility2)
         .sensoryFeedback(trigger: answerHaptic) { _, _ in
             guard let pick, let question else { return .impact(weight: .light) }
-            return question.isCorrect(pick) ? .success : .warning
+            return question.isDisplayPickCorrect(pick) ? .success : .warning
         }
         .onAppear(perform: restoreIfAnswered)
     }
@@ -71,7 +75,7 @@ struct DailyQuestionView: View {
                 Spacer().frame(height: Spacing.lg)
 
                 VStack(spacing: Spacing.xs) {
-                    ForEach(q.options.indices, id: \.self) { idx in
+                    ForEach(q.displayOptions.indices, id: \.self) { idx in
                         optionRow(q, idx)
                     }
                 }
@@ -117,7 +121,7 @@ struct DailyQuestionView: View {
     // MARK: - Options
 
     private func optionRow(_ q: DailyQuestion, _ idx: Int) -> some View {
-        let isAnswer = idx == q.answerIndex
+        let isAnswer = idx == q.displayAnswerIndex
         let isPick = pick == idx
         let showCorrect = revealed && isAnswer
         let showWrongPick = revealed && isPick && !isAnswer
@@ -130,7 +134,7 @@ struct DailyQuestionView: View {
 
         return Button(action: { choose(q, idx) }) {
             HStack(alignment: .top, spacing: Spacing.sm) {
-                Text(q.options[idx])
+                Text(q.displayOptions[idx])
                     .font(.barlowCondensed(size: 16))
                     .foregroundColor(textColor)
                     .multilineTextAlignment(.leading)
@@ -161,7 +165,7 @@ struct DailyQuestionView: View {
     // MARK: - Reveal
 
     private func revealBlock(_ q: DailyQuestion) -> some View {
-        let correct = pick.map(q.isCorrect) ?? false
+        let correct = pick.map(q.isDisplayPickCorrect) ?? false
         return VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: Spacing.lg)
 
@@ -243,7 +247,7 @@ struct DailyQuestionView: View {
         guard !revealed else { return }
         pick = idx
         answerHaptic += 1
-        profile.mutate { $0.recordDailyAnswer(pick: idx) }
+        profile.mutate { $0.recordDailyAnswer(pick: idx, questionID: q.id) }
         withAnimation(.easeOut(duration: 0.3)) { revealed = true }
     }
 

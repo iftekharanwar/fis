@@ -61,6 +61,13 @@ struct PlayerProfile: Codable, Sendable, Equatable {
     /// re-open can show the same revealed state (with their pick marked).
     var lastDailyAnsweredPick: Int? = nil
 
+    /// The id of the question the player last answered. Lets the picker hand
+    /// back the *exact* question they answered today — so a re-open (or any
+    /// state refresh while the card is on screen) restores the right reveal
+    /// instead of swapping in a different question. Additive optional; old
+    /// profiles decode it as nil with no migration.
+    var lastDailyAnsweredQuestionID: String? = nil
+
     static func newProfile() -> PlayerProfile {
         PlayerProfile(
             profileSchemaVersion: PlayerProfile.currentSchemaVersion,
@@ -111,9 +118,10 @@ struct PlayerProfile: Codable, Sendable, Equatable {
     /// Record today's Daily answer: remember the pick + that it was answered,
     /// and count it toward the streak (answering the daily keeps it alive, the
     /// same as playing a scenario). Idempotent within a day via `recordPlayToday`.
-    mutating func recordDailyAnswer(pick: Int, now: Date = Date(), calendar: Calendar = .current) {
+    mutating func recordDailyAnswer(pick: Int, questionID: String? = nil, now: Date = Date(), calendar: Calendar = .current) {
         lastDailyAnsweredDate = calendar.startOfDay(for: now)
         lastDailyAnsweredPick = pick
+        lastDailyAnsweredQuestionID = questionID
         recordPlayToday(now: now, calendar: calendar)
     }
 }

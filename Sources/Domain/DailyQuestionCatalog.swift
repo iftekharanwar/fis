@@ -417,17 +417,23 @@ enum DailyQuestionCatalog {
         ),
 
         DailyQuestion(
-            id: "dq-30", day: 30, sport: .basketball, principle: "Momentum & bounce",
-            prompt: "Drop a basketball and a same-weight beanbag from the same height. At the instant they hit, which one pushes harder on the floor?",
+            id: "dq-30", day: 30, sport: .basketball, principle: "Momentum",
+            prompt: "A guard sprinting at full speed crashes into a defender who's planted and perfectly still. Who's more likely to hit the floor?",
             options: [
-                "The beanbag — it lands with a dead thud",
-                "The basketball — it bounces back",
-                "Exactly the same — same weight, same drop",
+                "The defender who got hit",
+                "The sprinting guard",
+                "They both go down the same",
             ],
             answerIndex: 1,
-            why: "Bouncing back means the ball reverses direction — a far bigger change in momentum than the beanbag that just stops, so it shoves the floor harder.",
-            funFact: "It's why a small bouncy ball can crack a tile a beanbag never would.",
+            why: "The planted defender barely budges, so the guard's own forward momentum rebounds back into him — he's the one thrown off balance.",
+            funFact: "That's the whole physics of \u{201C}taking a charge.\u{201D}",
             imageName: nil
         ),
     ]
+
+    /// Look up a question by its stable id (e.g. "dq-03"). Used to restore the
+    /// exact question a player answered today.
+    static func question(withID id: String) -> DailyQuestion? {
+        all.first { $0.id == id }
+    }
 }
