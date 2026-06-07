@@ -10,7 +10,7 @@ import Foundation
 ///      refresh is exactly the daily card's job.
 ///   2. **In-progress active level type** — pick a fresh seed from the
 ///      level type the player is currently grinding on.
-///   3. **Brand-new player** — first chapter's first Level A seed.
+///   3. **Brand-new player** — first chapter's first released practice seed.
 ///
 /// The pick is deterministic per (player, calendar day) — same player sees
 /// the same daily card all day, then it rotates at local midnight. The
@@ -42,7 +42,7 @@ struct DailyScenarioPicker {
     ) -> Pick {
         let masteries = profile.levelTypeMasteries
         let shippable = chapters.filter(\.hasPlayablePractice)
-        let fallbackScenarioId = shippable.first?.progressScenarioIDs.first ?? "bb-a-half-court"
+        let fallbackScenarioId = shippable.first?.progressScenarioIDs.first ?? "bb-c-wing-throw"
         // Fallback target — guarantees a valid pick even with empty state.
         let fallback = Pick(
             scenarioId: fallbackScenarioId,
@@ -95,7 +95,7 @@ struct DailyScenarioPicker {
         // Tier 3 — everything mastered (rare end-state). Re-surface the
         // opener as a victory lap; the review tier should usually catch
         // this case but it's possible everything is fresh-mastered today.
-        let openerLevelType = firstChapter.releasedPracticeLevelTypes.first ?? .findTheta
+        let openerLevelType = firstChapter.releasedPracticeLevelTypes.first ?? .findD
         let seeds = firstChapter.releasedPracticeSeeds(for: openerLevelType)
         if let pick = seeds.randomElement(using: &rng) {
             return Pick(scenarioId: pick, chapterId: firstChapter.id, kind: .opener)

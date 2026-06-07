@@ -201,7 +201,7 @@ struct DiagnosticLevelTypePickerWrapper: View {
     private func startLevelTypePush(levelType: LevelTypeID) {
         let seedPool: [LevelTypeID: [String]] = Dictionary(
             uniqueKeysWithValues: LevelTypeID.earthChapterTypes.map { lt in
-                (lt, chapter.seeds(for: lt))
+                (lt, chapter.releasedPracticeSeeds(for: lt))
             }
         )
         let difficultyBySituation = difficultyMap(for: seedPool)

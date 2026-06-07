@@ -71,6 +71,10 @@ struct LevelTypePickerView: View {
         default:  lt = nil
         }
         if let lt {
+            guard isUnlocked(lt) else {
+                print("[arclab/picker] requested locked levelType=\(lt.rawValue) (ARCLAB_PICK_LEVEL_TYPE=\(raw))")
+                return
+            }
             print("[arclab/picker] auto-selecting levelType=\(lt.rawValue) (ARCLAB_PICK_LEVEL_TYPE=\(raw))")
             // Small delay so the picker appears on screen first.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -177,10 +181,13 @@ struct LevelTypePickerView: View {
         "\(chapter.id).\(lt.rawValue)"
     }
 
-    /// v3 progression: A is always unlocked; B+ require prior to be MASTERED.
-    /// Per locked spec §2.4 — preview attempts after 3 attempts on prior are
-    /// allowed in the runtime but not surfaced from this picker yet.
+    /// Basketball release gating: only level types with released practice
+    /// seeds are tappable. Other sports keep the original v3 progression.
     private func isUnlocked(_ lt: LevelTypeID) -> Bool {
+        if chapter.sport == .basketball {
+            return !chapter.releasedPracticeSeeds(for: lt).isEmpty
+        }
+
         switch lt {
         case .findTheta:
             return true

@@ -25,6 +25,20 @@ final class ScenarioEngineTests: XCTestCase {
         XCTAssertEqual(scenario.solution?.workedSteps.count, 3)
     }
 
+    func test_basketballRelease_exposesOnlyDistanceScenario() throws {
+        let chapters = BasketballCurriculum.chapters
+        let playable = chapters.filter(\.hasPlayablePractice)
+
+        XCTAssertEqual(playable.map(\.id), ["bb-ch1-arc"])
+
+        let chapter = try XCTUnwrap(chapters.first { $0.id == "bb-ch1-arc" })
+        XCTAssertEqual(chapter.releasedPracticeLevelTypes, [.findD])
+        XCTAssertEqual(chapter.progressScenarioIDs, ["bb-c-wing-throw"])
+
+        let locked = chapters.filter { $0.id != "bb-ch1-arc" }
+        XCTAssertTrue(locked.allSatisfy { !$0.hasPlayablePractice })
+    }
+
     func test_referenceScenario_v11FieldsPresent() throws {
         let s = try loadReferenceScenario()
         XCTAssertFalse(s.voice.hintBottomCopy.isEmpty)
