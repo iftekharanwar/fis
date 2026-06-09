@@ -144,7 +144,10 @@ struct RootView: View {
             // The "you called it right and it went in" success path.
             CallVerdictView(wasCorrect: true, ballWentIn: true)
         case "callplay":
-            if let scenario = try? ScenarioLoader.load("bb-1-baseline") {
+            // Optional ARCLAB_SCENARIO picks any bundled scenario so content
+            // releases can be eyeballed on the call surface before shipping.
+            let scenarioId = ProcessInfo.processInfo.environment["ARCLAB_SCENARIO"] ?? "bb-1-baseline"
+            if let scenario = try? ScenarioLoader.load(ScenarioID(scenarioId)) {
                 CallPlayView(scenario: scenario, onClose: {})
             } else {
                 Color.arclabBlack

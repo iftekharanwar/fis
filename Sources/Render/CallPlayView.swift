@@ -263,7 +263,11 @@ struct CallPlayView: View {
         // matches v1 OUTCOME; release/finish are full-screen.
         let desiredBottom: CGFloat
         switch phase {
-        case .stance, .frozen, .compute:                          desiredBottom = metrics.bottomReserveIdle
+        case .stance, .frozen:                                    desiredBottom = metrics.bottomReserveIdle
+        // The compute dock carries the givens strip (64pt) + one VStack gap
+        // (16pt) on top of the idle dock, so the scene must cede that much
+        // extra or the shooter/floor get covered.
+        case .compute:                                            desiredBottom = metrics.bottomReserveIdle + 80
         case .release, .finish, .computeAction, .bonusAttempt:    desiredBottom = metrics.bottomReserveAction
         case .verdict, .computeVerdict, .formulaWalkthrough,
              .replayPrompt:                                       desiredBottom = metrics.bottomReserveOutcome
@@ -434,6 +438,11 @@ struct CallPlayView: View {
                     .tracking(2.0)
             }
 
+            // The world the player is shooting into. Without these numbers
+            // the sliders are blind dial-turning; with them, picking θ/v is
+            // informed estimation.
+            VariableStrip(variables: computeGivens)
+
             sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
             sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
 
@@ -445,6 +454,22 @@ struct CallPlayView: View {
         .padding(.bottom, Spacing.lg)
         .frame(maxWidth: .infinity)
         .background(Color.arclabBlack)
+    }
+
+    /// Environment givens for the compute dock: hoop distance from the sim
+    /// world plus the scenario's situation variables — minus θ and v, which
+    /// the sliders control (showing their canonical values would hand the
+    /// player the answer).
+    private var computeGivens: [SituationDefinition.VariableSpec] {
+        var givens: [SituationDefinition.VariableSpec] = []
+        if let d = CallWalkthrough.targetDistance(of: scenario),
+           !scenario.situation.variables.contains(where: { $0.symbol == "d" }) {
+            givens.append(.init(symbol: "d", value: d, unit: "m", label: "DIST"))
+        }
+        givens += scenario.situation.variables.filter {
+            $0.symbol != "theta" && $0.symbol != "v"
+        }
+        return givens
     }
 
     private func sliderRow(
