@@ -34,8 +34,12 @@ final class ScenarioEngineTests: XCTestCase {
         XCTAssertEqual(playable.map(\.id), ["bb-ch1-arc"])
 
         let chapter = try XCTUnwrap(chapters.first { $0.id == "bb-ch1-arc" })
-        XCTAssertEqual(chapter.releasedPracticeLevelTypes, [.findD])
+        XCTAssertEqual(chapter.releasedPracticeLevelTypes, [.findTheta, .findV, .findD])
         XCTAssertEqual(chapter.progressScenarioIDs, [
+            "bb-a-freethrow",
+            "bb-a-elbow-r",
+            "bb-b-freethrow",
+            "bb-b-rainbow",
             "bb-c-wing-throw",
             "bb-c-freethrow",
             "bb-c-elbow",
