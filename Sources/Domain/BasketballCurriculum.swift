@@ -103,12 +103,19 @@ enum BasketballCurriculum {
         )
     ]
 
-    /// Current basketball release: one fixed distance gameplay. The broader
-    /// seed pools remain authored above for diagnostics and future expansion,
-    /// but normal navigation does not cycle through them.
+    /// Current basketball release: Ch 1 Level C (find d) practice. Wave 1
+    /// adds three more authored seeds — two mid-range EASY situations and a
+    /// short MEDIUM floater — all smoke-tested and ghost-arc-verified in CI.
+    /// The broader seed pools remain authored above for diagnostics and
+    /// future waves; normal navigation does not cycle through them yet.
     static let releasedPracticeSeedsByChapter: [String: [LevelTypeID: [String]]] = [
         "bb-ch1-arc": [
-            .findD: ["bb-c-wing-throw"]
+            .findD: [
+                "bb-c-wing-throw",
+                "bb-c-freethrow",
+                "bb-c-elbow",
+                "bb-c-high-floater"
+            ]
         ]
     ]
 

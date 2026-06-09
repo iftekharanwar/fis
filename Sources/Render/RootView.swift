@@ -89,6 +89,13 @@ struct RootView: View {
             DiagnosticLevelTypePickerWrapper(
                 chapter: BasketballCurriculum.chapters[0]
             )
+        case "chapter-bb1":
+            // Wave verification: Ch 1's chapter screen with its released
+            // practice rows (requires the lesson marked read in the profile).
+            ChapterView(
+                chapter: BasketballCurriculum.chapters[0],
+                onOpenScenario: { _ in }
+            )
         case "chapterlist":
             // v3 diagnostic: the chapter list for Basketball (showing lock states).
             ChapterListView(

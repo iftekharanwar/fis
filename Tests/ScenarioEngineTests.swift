@@ -25,7 +25,9 @@ final class ScenarioEngineTests: XCTestCase {
         XCTAssertEqual(scenario.solution?.workedSteps.count, 3)
     }
 
-    func test_basketballRelease_exposesOnlyDistanceScenario() throws {
+    func test_basketballRelease_manifest() throws {
+        // The public release manifest. Deliberately pinned: growing this
+        // list is a conscious release decision, not a side effect.
         let chapters = BasketballCurriculum.chapters
         let playable = chapters.filter(\.hasPlayablePractice)
 
@@ -33,7 +35,12 @@ final class ScenarioEngineTests: XCTestCase {
 
         let chapter = try XCTUnwrap(chapters.first { $0.id == "bb-ch1-arc" })
         XCTAssertEqual(chapter.releasedPracticeLevelTypes, [.findD])
-        XCTAssertEqual(chapter.progressScenarioIDs, ["bb-c-wing-throw"])
+        XCTAssertEqual(chapter.progressScenarioIDs, [
+            "bb-c-wing-throw",
+            "bb-c-freethrow",
+            "bb-c-elbow",
+            "bb-c-high-floater"
+        ])
 
         let locked = chapters.filter { $0.id != "bb-ch1-arc" }
         XCTAssertTrue(locked.allSatisfy { !$0.hasPlayablePractice })
