@@ -57,10 +57,13 @@ final class ScenarioEngineTests: XCTestCase {
         XCTAssertNotNil(s.animations.outcome.miss.tintBackgroundHexAirball)
     }
 
-    func test_referenceScenario_voiceLowercaseMS() throws {
+    func test_referenceScenario_velocityStatLabel() throws {
+        // The stat cell's VALUE already carries the unit ("8.2 m/s",
+        // formatted in SwishView), so the label underneath is the quantity
+        // name — matching ANGLE/PTS. The voice doc's lowercase-m/s rule
+        // applies to the unit in the value, not this label.
         let s = try loadReferenceScenario()
-        XCTAssertEqual(s.voice.success.statLabels.v, "m/s",
-                       "Per CONCEPT.md Voice doc, velocity label is lowercase m/s, not 'M / S'.")
+        XCTAssertEqual(s.voice.success.statLabels.v, "SPEED")
     }
 
     // MARK: - (b) Validation error has useful path

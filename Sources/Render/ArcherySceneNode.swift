@@ -265,10 +265,9 @@ final class ArcherySceneNode: SKScene {
         } else {
             activeSpineMismatch = scenario.spineMismatch
         }
-        // Release pair — bowRelease layers over arrowWhoosh. bowRelease
-        // currently has no asset on disk and no-ops gracefully; arrowWhoosh
-        // carries the moment until the twang sample lands.
-        audio?.play(.bowRelease)
+        // Release — arrowWhoosh carries the moment. A layered bowstring
+        // twang (bow-release.wav) is planned; re-add a SoundID case for it
+        // when the sample lands.
         audio?.play(.arrowWhoosh)
         restingArrowNode?.isHidden = true
         flightArrowNode?.isHidden = false
