@@ -41,6 +41,11 @@ struct CallPlayView: View {
     /// Guards the one profile write for the call beat.
     @State private var outcomeWritten: Bool = false
 
+    /// The shot fired on the CALL beat. Picked once per view instance —
+    /// either the canonical (scores) or a verified perturbed miss — so the
+    /// YES/NO call is a genuine read instead of always-YES.
+    @State private var callShot: ProjectileAnswer? = nil
+
     /// Compute mode — user-chosen θ (degrees) and v (m/s). Initialized
     /// near plausible values on first entry; persist across attempts so a
     /// user tweaking up/down doesn't have to restart from zero.
@@ -151,7 +156,8 @@ struct CallPlayView: View {
                         actualWentIn: actualWentIn(resolution),
                         phenomenon: revealPhenomenon,
                         explainer: revealExplainer,
-                        onTryCompute: handleTryCompute
+                        onTryCompute: handleTryCompute,
+                        onShowMath: handleShowMath
                     )
                     if useSideDock {
                         HStack(spacing: 0) {
@@ -527,20 +533,24 @@ struct CallPlayView: View {
 
     // MARK: - Formula walkthrough
 
-    /// Single-card derivation walkthrough. Five steps, advanced by tapping
-    /// NEXT. Pulls the scenario's actual constants so the math feels
-    /// concrete, not abstract. After the last step, transitions to the
-    /// `.bonusAttempt` phase where the canonical shot plays out.
-    private static let walkthroughStepCount = 5
+    /// Single-card derivation walkthrough, advanced by tapping NEXT. Cards
+    /// are generated from the scenario's authored solution + ghost arc
+    /// (CallWalkthrough), so the math always matches the simulated shot.
+    /// After the last step, transitions to the `.bonusAttempt` phase where
+    /// the canonical shot plays out.
+    private var walkthroughCards: [CallWalkthrough.Card] {
+        CallWalkthrough(scenario: scenario).cards
+    }
 
     private func walkthroughDock(step: Int) -> some View {
-        let card = walkthroughCard(step: step)
-        let isLast = step >= Self.walkthroughStepCount - 1
+        let cards = walkthroughCards
+        let card = cards[min(step, cards.count - 1)]
+        let isLast = step >= cards.count - 1
 
         return VStack(alignment: .leading, spacing: 0) {
             // Step indicator
             HStack {
-                Text("STEP \(step + 1) OF \(Self.walkthroughStepCount)")
+                Text("STEP \(step + 1) OF \(cards.count)")
                     .font(.sfMono(size: 11))
                     .foregroundColor(.arclabMidGrey)
                     .tracking(2.0)
@@ -589,68 +599,6 @@ struct CallPlayView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// The 5-step derivation for BB-01 (projectile free throw). Future
-    /// scenarios with different physics get their own walkthroughs; for
-    /// now this is hardcoded to the only authored scenario.
-    private func walkthroughCard(step: Int) -> WalkthroughCard {
-        let h = String(format: "%.1f", scenarioReleaseHeight)
-        let g = String(format: "%.1f", scenarioGravity)
-        let d = String(format: "%.1f", scenarioDistance)
-        let hh = String(format: "%.2f", hoopHeight)
-
-        switch step {
-        case 0:
-            return WalkthroughCard(
-                headline: "There's a formula for it.",
-                math: "y(t) = h + v · sin(θ) · t − ½ · g · t²",
-                body: "Gravity pulls the ball down. Nothing else acts on it. Every shot is the same shape — and it has one equation."
-            )
-        case 1:
-            return WalkthroughCard(
-                headline: "Plug in what you know.",
-                math: "h = \(h)m   g = \(g) m/s²   d = \(d)m",
-                body: "Your release sits at \(h)m. Gravity is constant. The hoop is \(d)m down the floor. None of that changes — only your angle and speed do."
-            )
-        case 2:
-            return WalkthroughCard(
-                headline: "When does the ball reach the hoop?",
-                math: "t = d / (v · cos(θ))",
-                body: "Horizontally the ball moves at v·cos(θ). To cover \(d)m it takes that many seconds. That's your t at the rim."
-            )
-        case 3:
-            return WalkthroughCard(
-                headline: "Make y equal the rim.",
-                math: "\(hh) = \(h) + v · sin(θ) · t − ½ · \(g) · t²",
-                body: "At the hoop, y should be \(hh)m. One equation, two unknowns (θ and v). Pick a comfortable angle and v drops out."
-            )
-        case 4:
-            return WalkthroughCard(
-                headline: "θ ≈ 52°, v ≈ 7.5 m/s.",
-                math: "",
-                body: "That's the shot. Tap below to watch what the formula calls for — the canonical swish."
-            )
-        default:
-            return WalkthroughCard(headline: "", math: "", body: "")
-        }
-    }
-
-    private struct WalkthroughCard {
-        let headline: String
-        let math: String
-        let body: String
-    }
-
-    // MARK: - Scenario variable lookup (used by walkthrough)
-
-    private var hoopHeight: Double  { scenarioVariable(symbol: "h_h") ?? 3.05 }
-    private var scenarioDistance: Double { scenarioVariable(symbol: "d") ?? 4.6 }
-    private var scenarioReleaseHeight: Double { scenarioVariable(symbol: "h_r") ?? 2.0 }
-    private var scenarioGravity: Double { scenarioVariable(symbol: "g") ?? 9.8 }
-
-    private func scenarioVariable(symbol: String) -> Double? {
-        scenario.situation.variables.first(where: { $0.symbol == symbol })?.value
-    }
-
     @ViewBuilder
     private func verdictOverlay(resolution: Phase.Resolution, wasCorrect: Bool) -> some View {
         switch resolution {
@@ -666,6 +614,10 @@ struct CallPlayView: View {
     // MARK: - Scene wiring
 
     private func configureScene() {
+        if callShot == nil {
+            var rng = SystemRandomNumberGenerator()
+            callShot = CallShotPicker.pick(for: scenario, using: &rng).answer
+        }
         scene.audio = audio
         scene.onReachedApex = { [weak scene] in
             Task { @MainActor in
@@ -702,7 +654,7 @@ struct CallPlayView: View {
         phase = .release
         releaseHapticCount += 1   // medium impact — the player launched the ball
         scene.startSimulation(
-            answer: ProjectileAnswer(thetaDegrees: canonicalTheta, velocity: canonicalVelocity),
+            answer: callShot ?? ProjectileAnswer(thetaDegrees: canonicalTheta, velocity: canonicalVelocity),
             pauseAtApex: true
         )
     }
@@ -785,7 +737,7 @@ struct CallPlayView: View {
     private func handleNextStep() {
         guard case .formulaWalkthrough(let step) = phase else { return }
         let next = step + 1
-        if next >= Self.walkthroughStepCount {
+        if next >= walkthroughCards.count {
             // Fire the canonical shot; bonusAttempt phase suppresses the
             // dock so user watches the swish play out clean.
             scene.resetForNewShot()

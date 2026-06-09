@@ -278,4 +278,102 @@ final class ScenarioEngineTests: XCTestCase {
     private func answer(from dict: [String: Double]) -> ProjectileAnswer {
         ProjectileAnswer(thetaDegrees: dict["theta"] ?? 0, velocity: dict["v"] ?? 0)
     }
+
+    // MARK: - (e) Call-surface guards
+
+    /// The walkthrough's answer card must show the ghost-arc values — and
+    /// that answer must actually score. Guards against the math screen
+    /// drifting from the simulated shot (the hardcoded "θ ≈ 52°, v ≈ 7.5"
+    /// regression caught on bb-c-wing-throw).
+    func test_callWalkthrough_answerCard_matchesGhostArc_everyScenario() throws {
+        for scenario in try allBundleScenarios() {
+            guard let ghost = scenario.outcome.ghostArc?.answer,
+                  let theta = ghost["theta"], let v = ghost["v"] else { continue }
+            let stem = scenario.scenarioId.rawValue
+
+            let cards = CallWalkthrough(scenario: scenario).cards
+            let final = try XCTUnwrap(cards.last)
+            XCTAssertTrue(final.math.contains(CallWalkthrough.trim(theta)),
+                          "[\(stem)] answer card must show ghost-arc θ, got: \(final.math)")
+            XCTAssertTrue(final.math.contains(CallWalkthrough.trim(v)),
+                          "[\(stem)] answer card must show ghost-arc v, got: \(final.math)")
+
+            let outcome = runProjectile(scenario, answer: ProjectileAnswer(thetaDegrees: theta, velocity: v))
+            guard case .success = outcome else {
+                XCTFail("[\(stem)] ghost-arc answer misses — the walkthrough would teach a shot that doesn't score")
+                continue
+            }
+        }
+    }
+
+    /// The released Level C scenario asks for d — the walkthrough must lead
+    /// with the real hoop distance from the sim world, not a defaulted
+    /// variable lookup.
+    func test_callWalkthrough_wingThrow_leadsWithRealHoopDistance() throws {
+        let scenario = try loadScenario("bb-c-wing-throw")
+        let d = try XCTUnwrap(CallWalkthrough.targetDistance(of: scenario))
+        XCTAssertEqual(d, 5.82, accuracy: 0.001)
+
+        let final = try XCTUnwrap(CallWalkthrough(scenario: scenario).cards.last)
+        XCTAssertTrue(final.headline.contains("5.82"),
+                      "find-d answer card should lead with d, got: \(final.headline)")
+        XCTAssertFalse(final.headline.contains("52"),
+                       "the hardcoded free-throw answer must be gone, got: \(final.headline)")
+    }
+
+    /// The call beat must be a genuine read: across many picks the shot
+    /// sometimes scores and sometimes misses, and `goesIn` always agrees
+    /// with what the simulation resolves.
+    func test_callShotPicker_variesCall_andVerdictMatchesSimulation() throws {
+        let scenario = try loadScenario("bb-c-wing-throw")
+        var rng = SeededLCG(seed: 7)
+        var sawIn = false
+        var sawMiss = false
+
+        for _ in 0..<40 {
+            let pick = CallShotPicker.pick(for: scenario, using: &rng)
+            switch runProjectile(scenario, answer: pick.answer) {
+            case .success:
+                XCTAssertTrue(pick.goesIn, "pick claimed a miss but the shot scored")
+                sawIn = true
+            case .miss:
+                XCTAssertFalse(pick.goesIn, "pick claimed a make but the shot missed")
+                sawMiss = true
+            case .inFlight:
+                XCTFail("call shot never resolved")
+            }
+        }
+        XCTAssertTrue(sawIn, "expected some call shots to score")
+        XCTAssertTrue(sawMiss, "expected some call shots to miss — always-YES regression")
+    }
+
+    // MARK: - Call-guard helpers
+
+    private func loadScenario(_ stem: String) throws -> ScenarioDefinition {
+        let bundle = Bundle(for: type(of: self))
+        let url = try XCTUnwrap(bundle.url(forResource: stem, withExtension: "json"),
+                                "\(stem).json not found in test bundle")
+        return try ScenarioLoader.decode(Data(contentsOf: url), scenarioId: ScenarioID(stem))
+    }
+
+    private func allBundleScenarios() throws -> [ScenarioDefinition] {
+        let bundle = Bundle(for: type(of: self))
+        let urls = (bundle.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? [])
+            .filter { $0.lastPathComponent.hasPrefix("bb-") }
+        XCTAssertGreaterThan(urls.count, 1, "Expected multiple scenarios in bundle.")
+        return try urls.map { url in
+            let stem = url.deletingPathExtension().lastPathComponent
+            return try ScenarioLoader.decode(Data(contentsOf: url), scenarioId: ScenarioID(stem))
+        }
+    }
+}
+
+/// Deterministic RNG for the picker test.
+private struct SeededLCG: RandomNumberGenerator {
+    private var state: UInt64
+    init(seed: UInt64) { self.state = seed }
+    mutating func next() -> UInt64 {
+        state = state &* 6364136223846793005 &+ 1442695040888963407
+        return state
+    }
 }
