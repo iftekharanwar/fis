@@ -641,7 +641,13 @@ struct CallPlayView: View {
     private func configureScene() {
         if callShot == nil {
             var rng = SystemRandomNumberGenerator()
-            callShot = CallShotPicker.pick(for: scenario, using: &rng).answer
+            let pick = CallShotPicker.pick(
+                for: scenario,
+                using: &rng,
+                recentTruths: CallShotPicker.recentTruths
+            )
+            CallShotPicker.recentTruths = Array((CallShotPicker.recentTruths + [pick.goesIn]).suffix(4))
+            callShot = pick.answer
         }
         scene.audio = audio
         scene.onReachedApex = { [weak scene] in

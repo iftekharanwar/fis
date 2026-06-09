@@ -332,29 +332,50 @@ final class ScenarioEngineTests: XCTestCase {
     }
 
     /// The call beat must be a genuine read: across many picks the shot
-    /// sometimes scores and sometimes misses, and `goesIn` always agrees
-    /// with what the simulation resolves.
+    /// sometimes scores and sometimes misses, `goesIn` always agrees with
+    /// what the simulation resolves, and (with history threaded like the
+    /// view does) the truth never repeats three times in a row.
     func test_callShotPicker_variesCall_andVerdictMatchesSimulation() throws {
         let scenario = try loadScenario("bb-c-wing-throw")
         var rng = SeededLCG(seed: 7)
-        var sawIn = false
-        var sawMiss = false
+        var history: [Bool] = []
+        var truths: [Bool] = []
 
         for _ in 0..<40 {
-            let pick = CallShotPicker.pick(for: scenario, using: &rng)
+            let pick = CallShotPicker.pick(for: scenario, using: &rng, recentTruths: history)
+            history = Array((history + [pick.goesIn]).suffix(4))
+            truths.append(pick.goesIn)
             switch runProjectile(scenario, answer: pick.answer) {
             case .success:
                 XCTAssertTrue(pick.goesIn, "pick claimed a miss but the shot scored")
-                sawIn = true
             case .miss:
                 XCTAssertFalse(pick.goesIn, "pick claimed a make but the shot missed")
-                sawMiss = true
             case .inFlight:
                 XCTFail("call shot never resolved")
             }
         }
-        XCTAssertTrue(sawIn, "expected some call shots to score")
-        XCTAssertTrue(sawMiss, "expected some call shots to miss — always-YES regression")
+        XCTAssertTrue(truths.contains(true), "expected some call shots to score")
+        XCTAssertTrue(truths.contains(false), "expected some call shots to miss — always-YES regression")
+        for i in 2..<truths.count {
+            XCTAssertFalse(truths[i] == truths[i - 1] && truths[i - 1] == truths[i - 2],
+                           "streak-breaker failed: same truth three times at index \(i)")
+        }
+    }
+
+    /// Streak-breaker edge: two identical truths force the opposite next.
+    func test_callShotPicker_breaksStreaksDeterministically() throws {
+        let scenario = try loadScenario("bb-c-wing-throw")
+        for seed in UInt64(1)...10 {
+            var rng = SeededLCG(seed: seed)
+            XCTAssertFalse(
+                CallShotPicker.pick(for: scenario, using: &rng, recentTruths: [true, true]).goesIn,
+                "after two makes the call shot must miss (seed \(seed))"
+            )
+            XCTAssertTrue(
+                CallShotPicker.pick(for: scenario, using: &rng, recentTruths: [false, false]).goesIn,
+                "after two misses the call shot must score (seed \(seed))"
+            )
+        }
     }
 
     // MARK: - Call-guard helpers

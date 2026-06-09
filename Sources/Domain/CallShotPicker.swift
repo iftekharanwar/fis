@@ -5,15 +5,26 @@ import Foundation
 /// YES the right call forever. Half the time this picker perturbs the
 /// velocity and verifies via a headless simulation run that the shot really
 /// misses — so the call is a genuine read, not a ritual.
+///
+/// Streak-breaker: a fair coin still throws runs (1 in 8 sessions see the
+/// same truth three times straight), which players read as rigged. Callers
+/// pass the recent truth history; after two identical truths the picker
+/// forces the opposite, so the truth never repeats three times in a row
+/// while staying 50/50 overall.
 enum CallShotPicker {
     struct Pick: Equatable, Sendable {
         let answer: ProjectileAnswer
         let goesIn: Bool
     }
 
+    /// Session-scoped truth history (true = went in), newest last. Owned
+    /// here so every call surface shares one streak.
+    @MainActor static var recentTruths: [Bool] = []
+
     static func pick(
         for scenario: ScenarioDefinition,
-        using rng: inout some RandomNumberGenerator
+        using rng: inout some RandomNumberGenerator,
+        recentTruths: [Bool] = []
     ) -> Pick {
         guard case .projectile2D(_, let params) = scenario.simulation,
               let ghost = scenario.outcome.ghostArc,
@@ -25,7 +36,15 @@ enum CallShotPicker {
         }
 
         let canonical = ProjectileAnswer(thetaDegrees: theta, velocity: v)
-        guard Bool.random(using: &rng) else {
+
+        let wantIn: Bool
+        let lastTwo = recentTruths.suffix(2)
+        if lastTwo.count == 2, lastTwo.first == lastTwo.last, let last = lastTwo.last {
+            wantIn = !last   // break the streak
+        } else {
+            wantIn = Bool.random(using: &rng)
+        }
+        if wantIn {
             return Pick(answer: canonical, goesIn: true)
         }
 
