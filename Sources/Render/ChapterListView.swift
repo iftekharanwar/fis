@@ -77,19 +77,29 @@ struct ChapterListView: View {
     }
 
     private var heading: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("FIVE CHAPTERS.")
+        let count = chapters.count
+        return VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("\(chapterCountWord.uppercased()) CHAPTER\(count == 1 ? "" : "S").")
                 .font(.anton(size: 32))
                 .foregroundColor(.arclabWhite)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
 
-            Text("Five lenses on the same game.")
+            Text("\(chapterCountWord.capitalized) \(count == 1 ? "lens" : "lenses") on the same game.")
                 .font(.barlowCondensed(size: 14, italic: true))
                 .foregroundColor(.arclabMidGrey)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Chapter count spelled out for the editorial heading ("FIVE", "TEN").
+    /// Falls back to the numeral for counts outside the small authored range.
+    private var chapterCountWord: String {
+        let words = ["zero", "one", "two", "three", "four", "five", "six",
+                     "seven", "eight", "nine", "ten", "eleven", "twelve"]
+        let n = chapters.count
+        return n < words.count ? words[n] : "\(n)"
     }
 
     private var chapterList: some View {
@@ -116,7 +126,7 @@ struct ChapterListView: View {
     /// have at least one authored scenario.
     private func isChapterUnlocked(_ chapter: Chapter) -> Bool {
         switch chapter.sport {
-        case .basketball, .archery, .soccer:
+        case .basketball, .archery, .soccer, .formula1:
             return chapter.hasPlayablePractice
         case .pool:
             return false

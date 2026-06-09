@@ -31,6 +31,9 @@ struct PostSplashRouterView: View {
     @State private var presentedProfile: Bool = false
     /// Daily Question — presented full-screen from the Home DAILY card.
     @State private var presentedDaily: Bool = false
+    /// F1 ships lesson-first: the playable corner isn't built yet, so a
+    /// scenario tap on an F1 chapter raises this honest "coming soon" alert.
+    @State private var f1ScenarioComingSoon: Bool = false
 
     var body: some View {
         if profile.profile.hasSeenOnboarding {
@@ -104,6 +107,13 @@ struct PostSplashRouterView: View {
                 question: DailyQuestionPicker.current(for: profile.profile)
             )
         }
+        // F1 lesson-first: scenario taps on F1 chapters land here until the
+        // playable corner ships.
+        .alert("Coming soon", isPresented: $f1ScenarioComingSoon) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("The corner is coming soon — the lesson is ready now.")
+        }
     }
 
     // MARK: - Route dispatch
@@ -153,6 +163,14 @@ struct PostSplashRouterView: View {
                         onOpenScenario: { scenarioId in
                             startSoccerPush(chapter: chapter, scenarioId: scenarioId)
                         }
+                    )
+                case .formula1:
+                    // F1 ships lesson-first: the chapter + lesson read now;
+                    // the playable corner (F1CallPlayView) lands next pass.
+                    // Until then a scenario tap surfaces an honest "coming soon".
+                    ChapterView(
+                        chapter: chapter,
+                        onOpenScenario: { _ in f1ScenarioComingSoon = true }
                     )
                 case .pool:
                     // Locked sports shouldn't reach here, but render an
