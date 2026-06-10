@@ -16,6 +16,11 @@ enum PersistenceKeys {
 
     /// nil = follow system; true/false = explicit override.
     static let reduceMotionOverride = "arclab.reduceMotionOverride"
+
+    /// Accessibility — high-legibility text palette (brighter secondary grey,
+    /// softened white). Off by default; the iOS "Increase Contrast" system
+    /// setting activates the same palette without this override.
+    static let highLegibilityEnabled = "arclab.highLegibilityEnabled"
 }
 
 /// Property wrapper for typed UserDefaults access from non-View code.

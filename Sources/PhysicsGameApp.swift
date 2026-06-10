@@ -13,6 +13,8 @@ struct PhysicsGameApp: App {
 
     @State private var audio = AudioService.shared
 
+    @State private var accessibility = AccessibilitySettings.shared
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -21,6 +23,7 @@ struct PhysicsGameApp: App {
                 .environment(spotter)
                 .environment(subscription)
                 .environment(audio)
+                .environment(accessibility)
                 .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         }
     }

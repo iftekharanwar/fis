@@ -13,18 +13,40 @@ extension Color {
     /// `#000000` — full-bleed background everywhere.
     static let arclabBlack = Color(red: 0, green: 0, blue: 0)
 
-    /// `#FFFFFF` — primary type.
-    static let arclabWhite = Color(red: 1, green: 1, blue: 1)
+    /// `#FFFFFF` — primary type. High Legibility: `#E6E6E6` (~16.8:1) — pure
+    /// white on pure black is the worst halation case for astigmatic readers
+    /// (glyphs "glow" and merge); softening the white cuts the bloom while
+    /// keeping display-level contrast.
+    @MainActor
+    static var arclabWhite: Color {
+        AccessibilitySettings.shared.highLegibilityActive
+            ? Color(hex: 0xE6E6E6)
+            : Color(red: 1, green: 1, blue: 1)
+    }
 
     /// `#8A8A8A` — muted labels, captions, mid-grey. **One value only**;
     /// no second mid-grey allowed (per audit fix on 2026-05-19). Raised from
     /// `#6B6B6B` on 2026-05-29: the old value was 3.9:1 on black, under the
     /// WCAG AA 4.5:1 floor for body text. `#8A8A8A` clears it (~6:1) while
     /// staying perceptibly muted next to `arclabWhite`.
-    static let arclabMidGrey = Color(hex: 0x8A8A8A)
+    /// High Legibility: `#B4B4B4` (~10.1:1, WCAG AAA) — the 6:1 default passes
+    /// AA with zero margin, and astigmatism feedback confirmed it reads dim
+    /// next to white type.
+    @MainActor
+    static var arclabMidGrey: Color {
+        AccessibilitySettings.shared.highLegibilityActive
+            ? Color(hex: 0xB4B4B4)
+            : Color(hex: 0x8A8A8A)
+    }
 
-    /// `#3A3A3A` — 1pt rules and chip borders.
-    static let arclabBorderGrey = Color(hex: 0x3A3A3A)
+    /// `#3A3A3A` — 1pt rules and chip borders. High Legibility: `#5C5C5C`
+    /// (~3.1:1) so bordered controls clear the WCAG 1.4.11 non-text floor.
+    @MainActor
+    static var arclabBorderGrey: Color {
+        AccessibilitySettings.shared.highLegibilityActive
+            ? Color(hex: 0x5C5C5C)
+            : Color(hex: 0x3A3A3A)
+    }
 
     /// `#FF3037` — **sacred to MISS state.** Do not use on any non-loss surface.
     static let arclabCrimson = Color(hex: 0xFF3037)

@@ -5,7 +5,8 @@ import SwiftUI
 ///        → lesson reader → practice row → call verdict
 ///        → optional sliders/math deep-dive
 ///   Home → (DAILY card) → DailyQuestionView
-///   Home → (PROFILE row) → ProfileView (sheet)
+///   Home → (PROFILE pill) → ProfileView (sheet)
+///   Home → (gear chip) → SettingsView (sheet)
 ///
 /// First-launch users see OnboardingView before Home. SportPicker is
 /// auto-skipped when only one sport is unlocked (current v3 ship state).
@@ -29,6 +30,8 @@ struct PostSplashRouterView: View {
     @State private var pushedSoccerScenario: SoccerScenario?
     @State private var pushedSoccerChapter: Chapter?
     @State private var presentedProfile: Bool = false
+    /// Settings — presented from the Home gear chip (top-right).
+    @State private var presentedSettings: Bool = false
     /// Daily Question — presented full-screen from the Home DAILY card.
     @State private var presentedDaily: Bool = false
 
@@ -46,7 +49,8 @@ struct PostSplashRouterView: View {
             HomeView(
                 onOpenSport: { sport in navigationPath.append(V2Route.chapterList(sport)) },
                 onOpenProfile: { presentedProfile = true },
-                onOpenDaily: { presentedDaily = true }
+                onOpenDaily: { presentedDaily = true },
+                onOpenSettings: { presentedSettings = true }
             )
             .navigationDestination(for: V2Route.self) { route in
                 destination(for: route)
@@ -94,6 +98,9 @@ struct PostSplashRouterView: View {
         }
         .sheet(isPresented: $presentedProfile) {
             ProfileView()
+        }
+        .sheet(isPresented: $presentedSettings) {
+            SettingsView()
         }
         // Daily Question — one small physics question a day, full-screen.
         // A brand-new player gets Day 1 (illustrated); regulars get the
