@@ -61,7 +61,7 @@ struct Chapter: Identifiable, Hashable, Sendable {
         switch sport {
         case .basketball:
             return LevelTypeID.earthChapterTypes.filter { !releasedPracticeSeeds(for: $0).isEmpty }
-        case .archery, .soccer, .pool:
+        case .archery, .soccer, .formula1, .pool:
             return []
         }
     }
@@ -72,7 +72,7 @@ struct Chapter: Identifiable, Hashable, Sendable {
             guard let released = BasketballCurriculum.releasedPracticeSeedsByChapter[id]?[levelType] else { return [] }
             let authored = Set(seeds(for: levelType))
             return released.filter { authored.contains($0) }
-        case .archery, .soccer:
+        case .archery, .soccer, .formula1:
             return scenarioIDs
         case .pool:
             return []
@@ -86,7 +86,7 @@ struct Chapter: Identifiable, Hashable, Sendable {
         switch sport {
         case .basketball:
             return releasedPracticeLevelTypes.flatMap { releasedPracticeSeeds(for: $0) }
-        case .archery, .soccer:
+        case .archery, .soccer, .formula1:
             return scenarioIDs
         case .pool:
             return []
