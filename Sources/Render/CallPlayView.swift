@@ -402,17 +402,29 @@ struct CallPlayView: View {
 
     private var stanceDock: some View {
         VStack(spacing: Spacing.sm) {
-            Text("CALL IT.")
+            // The scenario's own voice opens the beat — every situation
+            // introduces itself instead of a generic prompt.
+            Text(scenario.voice.intro.headline)
                 .font(.anton(size: 32))
                 .foregroundColor(.arclabWhite)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Spacing.md)
+                .lineLimit(2)
+                .minimumScaleFactor(0.7)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("TAP TO RELEASE")
+            Text(scenario.voice.intro.subhead)
+                .font(.barlowCondensed(size: 16, italic: true))
+                .foregroundColor(.arclabWhite.opacity(0.82))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Spacing.md)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("CALL IT — TAP TO RELEASE")
                 .font(.sfMono(size: 11))
                 .foregroundColor(.arclabMidGrey)
                 .tracking(2.0)
+                .padding(.top, Spacing.xxs)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 220)

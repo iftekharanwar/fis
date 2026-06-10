@@ -24,7 +24,7 @@
     "d"
   ],
   "situation": {
-    "outcome": "Predict where the ball lands at hoop height.",
+    "outcome": "Stand where this shot scores.",
     "questionRevealed": "Find the distance d where the ball crosses hoop height on the descent.",
     "variables": [
       {
@@ -265,7 +265,7 @@
   "voice": {
     "intro": {
       "headline": "WING THROW.",
-      "subhead": "Wing release at 48°. Where does it land?"
+      "subhead": "The shot is set — 48 degrees, full pace. Stand where it drops."
     },
     "success": {
       "headlineByFlavor": {
