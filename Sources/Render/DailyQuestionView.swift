@@ -119,10 +119,10 @@ struct DailyQuestionView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 170)
                 .padding(.top, Spacing.md)
-                // Without this VoiceOver reads the raw asset filename. The
-                // question text carries the content; a curated alt-text field
-                // can upgrade this in the vision pass.
-                .accessibilityHidden(true)
+                // Curated alt text when the art informs; hidden otherwise —
+                // VoiceOver must never read the raw asset filename.
+                .accessibilityLabel(q.imageAlt ?? "")
+                .accessibilityHidden(q.imageAlt == nil)
         }
     }
 

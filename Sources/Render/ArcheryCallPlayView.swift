@@ -133,6 +133,13 @@ struct ArcheryCallPlayView: View {
                 SpriteView(scene: scene, preferredFramesPerSecond: 60)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+                    // SKScene content never reaches the accessibility tree —
+                    // narrate it: static geometry in the label, the live
+                    // phase read in the value (the YES/NO call evidence).
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(SceneNarration.archeryLabel(scenario))
+                    .accessibilityValue(sceneAccessibilityValue)
+                    .accessibilityIgnoresInvertColors()
 
                 VStack(spacing: 0) {
                     CallHUD(onClose: shouldShowClose ? onClose : nil)
@@ -350,6 +357,26 @@ struct ArcheryCallPlayView: View {
     /// Stance — loose the arrow. The call moved mid-flight (CONCEPT parity
     /// with basketball): the user releases first, then predicts while the
     /// arrow hangs frozen.
+    /// The live scene description VoiceOver reads off the range canvas.
+    private var sceneAccessibilityValue: String {
+        switch phase {
+        case .stance:
+            return "Archer at full draw. No arrow in the air."
+        case .release:
+            return "Arrow in flight."
+        case .frozen:
+            return SceneNarration.archeryFrozenRead(scenario)
+        case .verdict:
+            return "Arrow landed."
+        case .compute, .computeAction:
+            return "Your shot is set on the sliders below."
+        case .computeVerdict:
+            return "Your shot resolved."
+        case .formulaWalkthrough, .bonusAttempt, .replayPrompt:
+            return "Reviewing the physics."
+        }
+    }
+
     private var stanceDock: some View {
         // A real Button (not a bare tap gesture) so VoiceOver, Switch Control
         // and Voice Control all get an actionable, labeled target — this is
@@ -391,9 +418,9 @@ struct ArcheryCallPlayView: View {
                 .minimumScaleFactor(0.7)
                 .fixedSize(horizontal: false, vertical: true)
                 // The dock swaps in silently mid-flight — move VoiceOver here
-                // so the prompt is spoken, two swipes from YES/NO. (Scene
-                // read gets richer in the scene-narration pass.)
-                .accessibilityLabel("\(scenario.stancePrompt) The arrow is frozen mid-flight. Yes and No buttons below.")
+                // so the focus speech delivers the prompt AND the mid-flight
+                // read, two swipes from YES/NO.
+                .accessibilityLabel("\(scenario.stancePrompt) \(SceneNarration.archeryFrozenRead(scenario)) Yes and No buttons below.")
                 .accessibilityFocused($callPromptFocused)
 
             HStack(spacing: Spacing.md) {

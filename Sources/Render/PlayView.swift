@@ -17,6 +17,10 @@ struct PlayView: View {
     var onClose: (() -> Void)? = nil
     var onRequestNext: (() -> Void)? = nil
 
+    /// Kept from init so VoiceOver scene narration can describe the court at
+    /// the view layer (the scene itself is invisible to the accessibility tree).
+    private let projectileParams: Projectile2DParams
+
     /// @State so the scene isn't recreated on every SwiftUI re-render.
     @State private var scene: PlaySceneNode
 
@@ -76,9 +80,24 @@ struct PlayView: View {
         guard case .projectile2D(_, let params) = scenario.simulation else {
             fatalError("PlayView currently supports only PROJECTILE_2D scenarios")
         }
+        self.projectileParams = params
         // SpriteView resizes via didChangeSize once the SwiftUI layout pass settles.
         let initialSize = CGSize(width: 393, height: 340)
         _scene = State(initialValue: PlaySceneNode(projectileParams: params, size: initialSize))
+    }
+
+    /// The live scene description VoiceOver reads off the court canvas.
+    private var sceneAccessibilityValue: String {
+        switch phase {
+        case .idle:
+            return "Shooter at the line, waiting on your numbers."
+        case .action:
+            return "Ball in flight."
+        case .outcome(.success):
+            return "Ball went through the net."
+        case .outcome(.miss):
+            return "Shot missed."
+        }
     }
 
     var body: some View {
@@ -103,6 +122,12 @@ struct PlayView: View {
                 SpriteView(scene: scene, preferredFramesPerSecond: 60)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)  // input overlays own taps
+                    // SKScene content never reaches the accessibility tree —
+                    // narrate the court so the numpad inputs have context.
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(SceneNarration.basketballLabel(params: projectileParams))
+                    .accessibilityValue(sceneAccessibilityValue)
+                    .accessibilityIgnoresInvertColors()
 
                 // HUD overlay (top). Spacer is non-hit-testing so it doesn't
                 // swallow taps belonging to the bottom overlay or the scene.

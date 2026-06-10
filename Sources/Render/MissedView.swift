@@ -115,20 +115,36 @@ struct MissedView: View {
             .frame(maxWidth: .infinity)
 
             // Locked-style on an enabled control so VoiceOver tap order stays intact (HIG pattern).
+            // Audit fix: the old 0.3-opacity treatment fell to ~1.4:1 — invisible
+            // to low vision — and the unlock rule lived only in the VoiceOver
+            // label. Full-strength grey + a lock glyph + the rule in print.
             Button(action: handleSolutionTap) {
-                Text(scenario.voice.solutionLabel)
-                    .font(.sfMono(size: 16, weight: .medium))
-                    .foregroundColor(.arclabMidGrey)
-                    .opacity(isSolutionUnlocked ? 1.0 : 0.3)
-                    .tracking(2.5)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: Sizing.pillButtonHeight)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Sizing.cornerRadius)
-                            .stroke(Color.arclabBorderGrey.opacity(isSolutionUnlocked ? 1.0 : 0.3),
-                                    lineWidth: Sizing.borderWidth)
-                    )
-                    .contentShape(Rectangle())
+                VStack(spacing: 2) {
+                    HStack(spacing: Spacing.xxs) {
+                        if !isSolutionUnlocked {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.arclabMidGrey)
+                        }
+                        Text(scenario.voice.solutionLabel)
+                            .font(.sfMono(size: 16, weight: .medium))
+                            .foregroundColor(.arclabMidGrey)
+                            .tracking(2.5)
+                    }
+                    if !isSolutionUnlocked {
+                        Text("AFTER ATTEMPT 3")
+                            .font(.sfMono(size: 9))
+                            .foregroundColor(.arclabMidGrey)
+                            .tracking(1.5)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: Sizing.pillButtonHeight)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Sizing.cornerRadius)
+                        .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
+                )
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .frame(maxWidth: 160)

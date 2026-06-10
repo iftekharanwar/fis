@@ -52,18 +52,19 @@ struct PlayInputSingleFieldView: View {
     }
 
     private var shootButton: some View {
+        // Audit fix: the 0.3-opacity disabled treatment fell to ~1:1 —
+        // invisible to low vision. White-vs-grey text carries the state at
+        // full contrast; the border stays printed.
         Button(action: handleShoot) {
             Text(scenario.input.submitLabel)
                 .font(.sfMono(size: 16, weight: .medium))
-                .foregroundColor(.arclabWhite)
-                .opacity(isShootEnabled ? 1.0 : 0.3)
+                .foregroundColor(isShootEnabled ? .arclabWhite : .arclabMidGrey)
                 .tracking(3.2)
                 .frame(maxWidth: .infinity)
                 .frame(height: Sizing.pillButtonHeight)
                 .overlay(
                     RoundedRectangle(cornerRadius: Sizing.cornerRadius)
-                        .stroke(Color.arclabBorderGrey.opacity(isShootEnabled ? 1.0 : 0.3),
-                                lineWidth: Sizing.borderWidth)
+                        .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
                 )
                 .contentShape(Rectangle())
         }

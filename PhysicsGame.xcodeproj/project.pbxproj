@@ -108,6 +108,7 @@
 		7D758BBE536C88A3282FEA59 /* Announce.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6E2C068BB289AF521DB892 /* Announce.swift */; };
 		7E82A371F0E2595AEC45F5EC /* MasteryGateTakeoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E18DFCC8141F0EF72A1DEA0 /* MasteryGateTakeoverView.swift */; };
 		7F150A76BB9ABDB1B1808142 /* brand-mark.wav in Resources */ = {isa = PBXBuildFile; fileRef = DAC015AA73E8226960B1022D /* brand-mark.wav */; };
+		830C038B78B0B8E90746DC2F /* SceneNarration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289AFB3C40A9F738E3ECD991 /* SceneNarration.swift */; };
 		848AAFA08C36A7E13FCD0618 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9DEAE11EE63EE5C4441CC7 /* ProfileView.swift */; };
 		84DB8625238A6A1E8BEC74C2 /* glass-bounce.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6BC8F61703BCD9389E7C4F26 /* glass-bounce.wav */; };
 		857BB8E8A51C5ED41BC14AD8 /* ParameterSliderRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2947C92078FB730F37570C /* ParameterSliderRow.swift */; };
@@ -228,6 +229,7 @@
 		EABEB6393C5C2E4D33CB4E34 /* bb-c-flat-throw.json in Resources */ = {isa = PBXBuildFile; fileRef = F731D8863B9DC56E47830FC3 /* bb-c-flat-throw.json */; };
 		EAC0D096F5374DF97D82BC11 /* DailyScenarioPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D5DCBB3126C265F5C05E07 /* DailyScenarioPicker.swift */; };
 		EAFFD42F8D90C1A8C7DB3951 /* ScenarioDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE41AAC818D00E32D8B2B0FD /* ScenarioDefinition.swift */; };
+		EBEA9554BDFBE4F7F85ADBAA /* SceneNarrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 466F52200919A292B9295C38 /* SceneNarrationTests.swift */; };
 		EC9D97778454F8B9909D98F8 /* bb-c-half-court.json in Resources */ = {isa = PBXBuildFile; fileRef = BA3C986838C0215DA43A64C1 /* bb-c-half-court.json */; };
 		EE1E645F15B31D64FEE9B2BD /* airball.wav in Resources */ = {isa = PBXBuildFile; fileRef = E47AA15346583018EED15CFF /* airball.wav */; };
 		EED8294D5F7AFAB0608576F2 /* PlaySceneNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07EF9C90BFBFEEC9EE121655 /* PlaySceneNode.swift */; };
@@ -277,6 +279,7 @@
 		1B542C55649D4DAB4C0160AA /* LevelTypePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelTypePickerView.swift; sourceTree = "<group>"; };
 		21B6B10987B09CE527846D9F /* SwishView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwishView.swift; sourceTree = "<group>"; };
 		28676422AE85F34C1F4D603A /* ScenarioPreviewCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioPreviewCard.swift; sourceTree = "<group>"; };
+		289AFB3C40A9F738E3ECD991 /* SceneNarration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneNarration.swift; sourceTree = "<group>"; };
 		2A5833299255849F9E9838E4 /* bb-a-tall-release.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-tall-release.json"; sourceTree = "<group>"; };
 		2D02EF98AD8477BD0CE70809 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2FEA2FE05CD12743E19DB4D8 /* SportsIQTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsIQTier.swift; sourceTree = "<group>"; };
@@ -302,6 +305,7 @@
 		4488B1CF1D7455CF53F9E4CA /* ChapterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterView.swift; sourceTree = "<group>"; };
 		44C621D65E074641B4D9EE7D /* InputDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputDefinition.swift; sourceTree = "<group>"; };
 		44F71F82B3B1C2AF0FDB00A6 /* SoccerSceneNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoccerSceneNode.swift; sourceTree = "<group>"; };
+		466F52200919A292B9295C38 /* SceneNarrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneNarrationTests.swift; sourceTree = "<group>"; };
 		468C92DDFC772CD1A88E40AD /* bb-c-pull-up.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-c-pull-up.json"; sourceTree = "<group>"; };
 		47FA49C260B519FC37179C21 /* ScenarioID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioID.swift; sourceTree = "<group>"; };
 		4A0F6C1850BF81644C3F3AE4 /* bb-b-stepback.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-b-stepback.json"; sourceTree = "<group>"; };
@@ -546,6 +550,7 @@
 				61CE2A33E8DD01D1176406D0 /* RootView.swift */,
 				765243C5C2D983166D8DC344 /* ScenarioBackgroundView.swift */,
 				28676422AE85F34C1F4D603A /* ScenarioPreviewCard.swift */,
+				289AFB3C40A9F738E3ECD991 /* SceneNarration.swift */,
 				6817918E6569DF91A1BDCC1F /* SettingsView.swift */,
 				9E881DD9982709E12BF33787 /* SoccerCallPlayView.swift */,
 				5D3F54FA0153860F91E91A3A /* SoccerCallVerdictView.swift */,
@@ -754,6 +759,7 @@
 				85CCC4DD8C3D57AACA7580A0 /* NextSituationPickerTests.swift */,
 				CAEA9B3ED5D445AAC1D85138 /* PlayerProfileStoreTests.swift */,
 				600FF17AE0E433530E691868 /* ScenarioEngineTests.swift */,
+				466F52200919A292B9295C38 /* SceneNarrationTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1037,6 +1043,7 @@
 				A6D1EAC74A881EF854C55FF0 /* NextSituationPickerTests.swift in Sources */,
 				E9FAFB27F65BB0B4E1A82A3C /* PlayerProfileStoreTests.swift in Sources */,
 				54E1B51806DAA22B8F5B442F /* ScenarioEngineTests.swift in Sources */,
+				EBEA9554BDFBE4F7F85ADBAA /* SceneNarrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1117,6 +1124,7 @@
 				60D880D0E0401274C47BD805 /* ScenarioPreviewCard.swift in Sources */,
 				428CE4CA1294A8153B2339EC /* ScenarioRecord.swift in Sources */,
 				C96B940356EB7F956A1A64C8 /* ScenarioSession.swift in Sources */,
+				830C038B78B0B8E90746DC2F /* SceneNarration.swift in Sources */,
 				38F9D71F84AF34ECA5526E37 /* SettingsView.swift in Sources */,
 				42DAF86344D10DD6F0080A18 /* SimulationConfig.swift in Sources */,
 				CC097283E05CCD708ED75428 /* SimulationModule.swift in Sources */,

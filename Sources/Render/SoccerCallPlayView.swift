@@ -114,6 +114,13 @@ struct SoccerCallPlayView: View {
                 SpriteView(scene: scene, preferredFramesPerSecond: 60)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+                    // SKScene content never reaches the accessibility tree —
+                    // narrate it. Soccer's call happens at stance, so the
+                    // stance read carries the full evidence (aim/spin/curve).
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(SceneNarration.soccerLabel(scenario, keeperOffset: keeperOffset))
+                    .accessibilityValue(sceneAccessibilityValue)
+                    .accessibilityIgnoresInvertColors()
 
                 VStack(spacing: 0) {
                     CallHUD(onClose: shouldShowClose ? onClose : nil)
@@ -265,6 +272,22 @@ struct SoccerCallPlayView: View {
         }
     }
 
+    /// The live scene description VoiceOver reads off the pitch canvas.
+    private var sceneAccessibilityValue: String {
+        switch phase {
+        case .stance:
+            return SceneNarration.soccerStanceRead(scenario)
+        case .release:
+            return "Ball in flight."
+        case .verdict:
+            return "Strike resolved."
+        case .compute, .computeAction:
+            return "Your strike is set on the sliders below."
+        case .computeVerdict:
+            return "Your strike resolved."
+        }
+    }
+
     private var stanceDock: some View {
         VStack(spacing: Spacing.sm) {
             Text(scenario.stancePrompt)
@@ -275,6 +298,10 @@ struct SoccerCallPlayView: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.7)
                 .fixedSize(horizontal: false, vertical: true)
+                // Soccer's call happens here at stance — fold the kick read
+                // into the prompt so the evidence is one element away from
+                // the YES/NO buttons.
+                .accessibilityLabel("\(scenario.stancePrompt) \(SceneNarration.soccerStanceRead(scenario)) Yes and No buttons below.")
 
             HStack(spacing: Spacing.md) {
                 PrimaryButton(label: "Yes", action: { handleCall(yes: true) })

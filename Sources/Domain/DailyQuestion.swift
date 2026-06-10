@@ -24,6 +24,11 @@ struct DailyQuestion: Identifiable, Equatable, Sendable {
     /// clean type-only card. Lets us ship before any image is generated.
     let imageName: String?
 
+    /// VoiceOver description of the illustration, for art that carries
+    /// information beyond the prompt text. nil = treated as decorative
+    /// (hidden from screen readers — never the raw asset filename).
+    var imageAlt: String? = nil
+
     func isCorrect(_ pick: Int) -> Bool { pick == answerIndex }
 }
 

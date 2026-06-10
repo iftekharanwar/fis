@@ -217,16 +217,18 @@ private struct LevelTypeRow: View {
     var body: some View {
         Button(action: handleTap) {
             HStack(alignment: .center, spacing: Spacing.md) {
+                // Locked rows stay at full mid-grey (audit: stacking opacity
+                // on mid-grey fell to ~2.4:1 — unreadable for low vision).
+                // White-vs-grey title + the lock glyph carry the state.
                 Text(levelType.shortLabel)
                     .font(.anton(size: 28))
-                    .foregroundColor(isUnlocked ? .arclabMidGrey : .arclabMidGrey.opacity(0.4))
+                    .foregroundColor(.arclabMidGrey)
                     .frame(width: 36, alignment: .leading)
 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(levelType.title)
                         .font(.anton(size: 22))
                         .foregroundColor(isUnlocked ? .arclabWhite : .arclabMidGrey)
-                        .opacity(isUnlocked ? 1.0 : 0.5)
                         .lineLimit(1)
 
                     Text(levelType.subtitle)

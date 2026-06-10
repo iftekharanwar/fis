@@ -23,6 +23,10 @@ struct CallPlayView: View {
     let chapter: Chapter?
     var onClose: (() -> Void)? = nil
 
+    /// Kept from init so VoiceOver scene narration can compute reads at the
+    /// view layer (the scene itself is invisible to the accessibility tree).
+    private let projectileParams: Projectile2DParams
+
     /// @State so the scene isn't recreated on every SwiftUI re-render.
     @State private var scene: PlaySceneNode
 
@@ -102,6 +106,7 @@ struct CallPlayView: View {
         guard case .projectile2D(_, let params) = scenario.simulation else {
             fatalError("CallPlayView currently supports only PROJECTILE_2D scenarios")
         }
+        self.projectileParams = params
         let initialSize = CGSize(width: 393, height: 340)
         _scene = State(initialValue: PlaySceneNode(projectileParams: params, size: initialSize))
     }
@@ -127,6 +132,13 @@ struct CallPlayView: View {
                 SpriteView(scene: scene, preferredFramesPerSecond: 60)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+                    // SKScene content never reaches the accessibility tree —
+                    // narrate it: static geometry in the label, the live
+                    // phase read in the value (the YES/NO call evidence).
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(SceneNarration.basketballLabel(params: projectileParams))
+                    .accessibilityValue(sceneAccessibilityValue)
+                    .accessibilityIgnoresInvertColors()
 
                 // HUD (top) — quiet v2.1 chrome: close affordance only,
                 // no variable strip (call beat must be intuitive, not data-leaked).
@@ -376,6 +388,36 @@ struct CallPlayView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// The live scene description VoiceOver reads off the court canvas.
+    private var sceneAccessibilityValue: String {
+        switch phase {
+        case .stance:
+            return "Shooter at the line, dribbling. No shot in the air."
+        case .release, .finish:
+            return "Ball in flight."
+        case .frozen:
+            return frozenSceneRead
+        case .verdict:
+            return "Shot resolved."
+        case .compute, .computeAction:
+            return "Your shot: \(Int(computeTheta.rounded())) degrees at "
+                + String(format: "%.1f", computeVelocity) + " meters per second."
+        case .computeVerdict:
+            return "Your shot resolved."
+        case .formulaWalkthrough, .bonusAttempt, .replayPrompt:
+            return "Reviewing the physics."
+        }
+    }
+
+    /// The apex read for the frozen beat — same evidence a sighted player
+    /// judges, bucketed by SceneNarration so the answer never leaks.
+    private var frozenSceneRead: String {
+        guard let shot = callShot else {
+            return "The ball is frozen at the top of its arc."
+        }
+        return SceneNarration.basketballFrozenRead(params: projectileParams, shot: shot)
+    }
+
     private var stanceDock: some View {
         // A real Button (not a bare tap gesture) so VoiceOver, Switch Control
         // and Voice Control all get an actionable, labeled target — this is
@@ -412,10 +454,9 @@ struct CallPlayView: View {
                 .foregroundColor(.arclabMidGrey)
                 .tracking(2.0)
                 // The dock swaps in silently mid-flight — move VoiceOver here
-                // so the focus speech delivers the prompt, two swipes from
-                // YES/NO. (The scene read in this label gets richer in the
-                // scene-narration pass.)
-                .accessibilityLabel("Call it. The ball is frozen at the top of its arc. Will it go in? Yes and No buttons below.")
+                // so the focus speech delivers the prompt AND the apex read,
+                // two swipes from YES/NO.
+                .accessibilityLabel("Call it. \(frozenSceneRead) Will it go in? Yes and No buttons below.")
                 .accessibilityFocused($callPromptFocused)
 
             HStack(spacing: Spacing.md) {
