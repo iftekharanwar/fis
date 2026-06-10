@@ -52,24 +52,25 @@ struct PlayInputSingleFieldView: View {
     }
 
     private var shootButton: some View {
+        // Audit fix: the 0.3-opacity disabled treatment fell to ~1:1 —
+        // invisible to low vision. White-vs-grey text carries the state at
+        // full contrast; the border stays printed.
         Button(action: handleShoot) {
             Text(scenario.input.submitLabel)
                 .font(.sfMono(size: 16, weight: .medium))
-                .foregroundColor(.arclabWhite)
-                .opacity(isShootEnabled ? 1.0 : 0.3)
+                .foregroundColor(isShootEnabled ? .arclabWhite : .arclabMidGrey)
                 .tracking(3.2)
                 .frame(maxWidth: .infinity)
                 .frame(height: Sizing.pillButtonHeight)
                 .overlay(
                     RoundedRectangle(cornerRadius: Sizing.cornerRadius)
-                        .stroke(Color.arclabBorderGrey.opacity(isShootEnabled ? 1.0 : 0.3),
-                                lineWidth: Sizing.borderWidth)
+                        .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
                 )
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .heavy), trigger: shootTapsCount, condition: { _, _ in isShootEnabled })
-        .sensoryFeedback(.warning, trigger: shootTapsCount, condition: { _, _ in !isShootEnabled })
+        .gameHaptic(.impact(weight: .heavy), trigger: shootTapsCount, condition: { _, _ in isShootEnabled })
+        .gameHaptic(.warning, trigger: shootTapsCount, condition: { _, _ in !isShootEnabled })
         .accessibilityLabel(isShootEnabled ? "Shoot. Commit your answer." : "Shoot, awaiting input. Fill the field.")
     }
 
@@ -211,12 +212,22 @@ private struct NumpadButton: View {
         } label: {
             label
                 .frame(maxWidth: .infinity)
-                .frame(height: 44)
+                .frame(minHeight: 44)
                 .overlay(borderOverlay)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .light), trigger: tapCount)
+        .gameHaptic(.impact(weight: .light), trigger: tapCount)
+        .accessibilityLabel(accessibilityName)
+    }
+
+    /// "delete" for the glyph key; digits read themselves ("5", "point").
+    private var accessibilityName: String {
+        switch key {
+        case .digit("."): return "decimal point"
+        case .digit(let d): return d
+        case .backspace: return "delete"
+        }
     }
 
     @ViewBuilder

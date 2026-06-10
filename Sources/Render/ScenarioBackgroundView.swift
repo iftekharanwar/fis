@@ -17,6 +17,11 @@ struct ScenarioBackgroundView: View {
                         .frame(width: geo.size.width, height: geo.size.height)
                         .clipped()
                         .opacity(opacity)
+                        // Decorative backdrop — keep it out of the a11y tree
+                        // and don't let Smart Invert turn the photo to a
+                        // negative.
+                        .accessibilityHidden(true)
+                        .accessibilityIgnoresInvertColors()
                 }
 
                 // Vignette protects corner typography from the bright light-shaft on the plate.

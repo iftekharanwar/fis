@@ -61,7 +61,7 @@ private struct CloseChip: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .light), trigger: tapCount)
+        .gameHaptic(.impact(weight: .light), trigger: tapCount)
         .accessibilityLabel("Close. Return to level select.")
     }
 
@@ -93,6 +93,10 @@ private struct VariableInlineCell: View {
                     .lineLimit(1)
             }
         }
+        // One phrase ("Distance, 4.6 meters"); otherwise VoiceOver reads the
+        // abbreviation, the number, and the unit as three separate stops.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(variable.label), \(formattedValue) \(variable.unit)")
     }
 
     private var formattedValue: String {

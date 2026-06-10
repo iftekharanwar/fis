@@ -13,13 +13,18 @@ struct SwishView: View {
     let onNextLevel: () -> Void
     let onReplay: () -> Void
 
-    @State private var verbScale: CGFloat = UIAccessibility.isReduceMotionEnabled ? 1.0 : 0.85
+    /// Live motion policy (the old one-shot `UIAccessibility` reads in these
+    /// initializers froze the value at first render and missed the in-app
+    /// override entirely).
+    @Environment(AccessibilitySettings.self) private var accessibility
+
+    @State private var verbScale: CGFloat = 0.85
 
     /// Count-up progress per stat cell (0...1). Drives the interpolation from
     /// 0 to the cell's final value on appear. Staggered for celebration rhythm.
-    @State private var thetaCount: Double = UIAccessibility.isReduceMotionEnabled ? 1 : 0
-    @State private var velocityCount: Double = UIAccessibility.isReduceMotionEnabled ? 1 : 0
-    @State private var scoreCount: Double = UIAccessibility.isReduceMotionEnabled ? 1 : 0
+    @State private var thetaCount: Double = 0
+    @State private var velocityCount: Double = 0
+    @State private var scoreCount: Double = 0
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -50,7 +55,22 @@ struct SwishView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack)
         .onAppear {
-            guard !UIAccessibility.isReduceMotionEnabled else { return }
+            // Announce the final values (never the animated counts) — the
+            // outcome swap is an in-place transition VoiceOver can't see.
+            Announce.post(
+                "\(scenario.voice.success.headlineByFlavor[flavor] ?? flavor). "
+                + "\(scenario.voice.success.subheadByFlavor[flavor] ?? "") "
+                + "\(Int(theta.rounded())) degrees, "
+                + String(format: "%.1f meters per second", velocity)
+                + ", plus \(score) points, plus \(xpGained) XP."
+            )
+            guard !accessibility.reduceMotionActive else {
+                verbScale = 1.0
+                thetaCount = 1
+                velocityCount = 1
+                scoreCount = 1
+                return
+            }
             withAnimation(.spring(response: 0.42, dampingFraction: 0.62)) {
                 verbScale = 1.0
             }
@@ -116,6 +136,9 @@ struct SwishView: View {
                 .tracking(1.1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        // Read "<value> <label>" as one phrase, not two stops. (The full
+        // outcome is also announced on appear; this is for scrub-back.)
+        .accessibilityElement(children: .combine)
     }
 
     private var divider: some View {
@@ -150,7 +173,7 @@ struct SwishView: View {
             }
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity)
-            .sensoryFeedback(.impact(weight: .heavy), trigger: false)
+            .gameHaptic(.impact(weight: .heavy), trigger: false)
 
             Button(action: onReplay) {
                 Text(scenario.voice.replayLabel)

@@ -13,12 +13,15 @@ struct PressableButtonStyle: ButtonStyle {
     var haptic: SensoryFeedback = .impact(weight: .light)
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        // One read gates every button-press haptic app-wide; captured at
+        // body time so the nonisolated condition closure stays Sendable.
+        let hapticsOn = AccessibilitySettings.shared.hapticsEnabled
+        return configuration.label
             .scaleEffect(configuration.isPressed ? pressedScale : 1.0)
             .opacity(configuration.isPressed ? pressedOpacity : 1.0)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
             .sensoryFeedback(haptic, trigger: configuration.isPressed) { _, pressed in
-                pressed  // fire on press-down only, not on release
+                pressed && hapticsOn  // fire on press-down only, not on release
             }
     }
 }

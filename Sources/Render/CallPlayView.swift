@@ -13,6 +13,7 @@ import SpriteKit
 struct CallPlayView: View {
     @Environment(PlayerProfileStore.self) private var profile
     @Environment(AudioService.self) private var audio
+    @Environment(AccessibilitySettings.self) private var accessibility
     @Environment(\.horizontalSizeClass) private var hSizeClass
 
     let scenario: ScenarioDefinition
@@ -22,6 +23,9 @@ struct CallPlayView: View {
     /// Optional so diagnostic / standalone launches still compile.
     let chapter: Chapter?
     var onClose: (() -> Void)? = nil
+
+    /// Kept from init so VoiceOver scene narration can compute reads at the
+    /// view layer (the scene itself is invisible to the accessibility tree).
 
     /// @State so the scene isn't recreated on every SwiftUI re-render.
     @State private var scene: PlaySceneNode
@@ -62,6 +66,10 @@ struct CallPlayView: View {
 
     /// Medium impact on RELEASE — the physical "ball leaving the hand" beat.
     @State private var releaseHapticCount: Int = 0
+
+    /// Moves VoiceOver to the CALL IT prompt when the frozen dock swaps in —
+    /// without it the phase change is silent and focus dies with the old dock.
+    @AccessibilityFocusState private var callPromptFocused: Bool
 
     /// Max attempts in compute mode before returning to chapter.
     private let computeMaxAttempts = 5
@@ -135,6 +143,13 @@ struct CallPlayView: View {
                 SpriteView(scene: scene, preferredFramesPerSecond: 60)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+                    // SKScene content never reaches the accessibility tree —
+                    // narrate it: static geometry in the label, the live
+                    // phase read in the value (the YES/NO call evidence).
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(SceneNarration.basketballLabel(params: projParams))
+                    .accessibilityValue(sceneAccessibilityValue)
+                    .accessibilityIgnoresInvertColors()
 
                 // HUD (top) — quiet v2.1 chrome: close affordance only,
                 // no variable strip (call beat must be intuitive, not data-leaked).
@@ -196,10 +211,15 @@ struct CallPlayView: View {
         ) {
             onClose?()
         }
-        .sensoryFeedback(.impact(weight: .medium), trigger: releaseHapticCount)
+        .gameHaptic(.impact(weight: .medium), trigger: releaseHapticCount)
         .onAppear {
+            scene.setReduceMotion(accessibility.reduceMotionActive)
             configureScene()
             startAutoplayIfRequested()
+        }
+        // Mid-session toggles (Settings or iOS) retune the running scene.
+        .onChange(of: accessibility.reduceMotionActive) { _, on in
+            scene.setReduceMotion(on)
         }
         .onChange(of: pendingResolution) { _, new in
             // Finalize the verdict here so live SwiftUI state (userCall,
@@ -401,38 +421,75 @@ struct CallPlayView: View {
     }
 
     private var stanceDock: some View {
-        VStack(spacing: Spacing.sm) {
-            // The scenario's own voice opens the beat — every situation
-            // introduces itself instead of a generic prompt.
-            Text(scenario.voice.intro.headline)
-                .font(.anton(size: 32))
-                .foregroundColor(.arclabWhite)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.md)
-                .lineLimit(2)
-                .minimumScaleFactor(0.7)
-                .fixedSize(horizontal: false, vertical: true)
+        // A real Button (not a bare tap gesture) so VoiceOver, Switch Control
+        // and Voice Control all get an actionable, labeled target. The
+        // scenario's own voice opens the beat — every situation introduces
+        // itself instead of a generic prompt.
+        Button(action: handleRelease) {
+            VStack(spacing: Spacing.sm) {
+                Text(scenario.voice.intro.headline)
+                    .font(.anton(size: 32))
+                    .foregroundColor(.arclabWhite)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.md)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Text(scenario.voice.intro.subhead)
-                .font(.barlowCondensed(size: 16, italic: true))
-                .foregroundColor(.arclabWhite.opacity(0.82))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.md)
-                .fixedSize(horizontal: false, vertical: true)
+                Text(scenario.voice.intro.subhead)
+                    .font(.barlowCondensed(size: 16, italic: true))
+                    .foregroundColor(.arclabWhite.opacity(0.82))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.md)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Text("CALL IT — TAP TO RELEASE")
-                .font(.sfMono(size: 11))
-                .foregroundColor(.arclabMidGrey)
-                .tracking(2.0)
-                .padding(.top, Spacing.xxs)
+                Text("CALL IT — TAP TO RELEASE")
+                    .font(.sfMono(size: 11))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+                    .padding(.top, Spacing.xxs)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 220)
+            .padding(.bottom, Spacing.lg)
+            .background(Color.arclabBlack)
+            .contentShape(Rectangle())
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 220)
-        .padding(.bottom, Spacing.lg)
-        .background(Color.arclabBlack)
-        .contentShape(Rectangle())
-        .onTapGesture { handleRelease() }
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel("\(scenario.voice.intro.headline) \(scenario.voice.intro.subhead) Release the shot. The ball flies and freezes mid-flight; then you call whether it goes in.")
         .transition(.opacity)
+    }
+
+    /// The live scene description VoiceOver reads off the court canvas.
+    private var sceneAccessibilityValue: String {
+        switch phase {
+        case .stance:
+            return "Shooter at the line, dribbling. No shot in the air."
+        case .release, .finish:
+            return "Ball in flight."
+        case .frozen:
+            return frozenSceneRead
+        case .verdict:
+            return "Shot resolved."
+        case .compute, .computeAction:
+            return isRangeMode
+                ? "Standing \(String(format: "%.2f", rangeD)) meters from the hoop. The shot is given."
+                : "Your shot: \(Int(computeTheta.rounded())) degrees at "
+                    + String(format: "%.1f", computeVelocity) + " meters per second."
+        case .computeVerdict:
+            return "Your shot resolved."
+        case .formulaWalkthrough, .bonusAttempt, .replayPrompt:
+            return "Reviewing the physics."
+        }
+    }
+
+    /// The apex read for the frozen beat — same evidence a sighted player
+    /// judges, bucketed by SceneNarration so the answer never leaks.
+    private var frozenSceneRead: String {
+        guard let shot = callShot else {
+            return "The ball is frozen at the top of its arc."
+        }
+        return SceneNarration.basketballFrozenRead(params: projParams, shot: shot)
     }
 
     private var callDock: some View {
@@ -441,6 +498,11 @@ struct CallPlayView: View {
                 .font(.sfMono(size: 11))
                 .foregroundColor(.arclabMidGrey)
                 .tracking(2.0)
+                // The dock swaps in silently mid-flight — move VoiceOver here
+                // so the focus speech delivers the prompt AND the apex read,
+                // two swipes from YES/NO.
+                .accessibilityLabel("Call it. \(frozenSceneRead) Will it go in? Yes and No buttons below.")
+                .accessibilityFocused($callPromptFocused)
 
             HStack(spacing: Spacing.md) {
                 PrimaryButton(label: "Yes", action: { handleCall(yes: true) })
@@ -453,6 +515,7 @@ struct CallPlayView: View {
         .padding(.bottom, Spacing.lg)
         .background(Color.arclabBlack)
         .transition(.opacity)
+        .onAppear { callPromptFocused = true }
     }
 
     // MARK: - Compute mode (easy)
@@ -486,18 +549,38 @@ struct CallPlayView: View {
             // unknown.
             switch CallComputePlan.lock(for: scenario) {
             case .velocity(let v):
-                sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
+                ParameterSliderRow(
+                    label: "ANGLE", spokenName: "Launch angle",
+                    unit: "°", spokenUnit: "degrees",
+                    value: $computeTheta, range: 15...80, format: "%.0f", step: 1
+                )
                 givenRow(label: "SPEED", unit: "m/s", value: v, format: "%.1f")
             case .theta(let theta):
                 givenRow(label: "ANGLE", unit: "°", value: theta, format: "%.0f")
-                sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+                ParameterSliderRow(
+                    label: "SPEED", spokenName: "Launch speed",
+                    unit: "m/s", spokenUnit: "meters per second",
+                    value: $computeVelocity, range: 3...15, format: "%.1f", step: 0.5
+                )
             case .range:
                 givenRow(label: "ANGLE", unit: "°", value: rangeRound?.answer.thetaDegrees ?? 0, format: "%.0f")
                 givenRow(label: "SPEED", unit: "m/s", value: rangeRound?.answer.velocity ?? 0, format: "%.2f")
-                sliderRow(label: "RANGE", unit: "m", value: $rangeD, range: rangeBounds, format: "%.2f")
+                ParameterSliderRow(
+                    label: "RANGE", spokenName: "Distance from the hoop",
+                    unit: "m", spokenUnit: "meters",
+                    value: $rangeD, range: rangeBounds, format: "%.2f", step: 0.05
+                )
             case .none:
-                sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
-                sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+                ParameterSliderRow(
+                    label: "ANGLE", spokenName: "Launch angle",
+                    unit: "°", spokenUnit: "degrees",
+                    value: $computeTheta, range: 15...80, format: "%.0f", step: 1
+                )
+                ParameterSliderRow(
+                    label: "SPEED", spokenName: "Launch speed",
+                    unit: "m/s", spokenUnit: "meters per second",
+                    value: $computeVelocity, range: 3...15, format: "%.1f", step: 0.5
+                )
             }
 
             PrimaryButton(label: isRangeMode ? "Shoot from here" : "Shoot", action: handleComputeShoot)
@@ -567,34 +650,6 @@ struct CallPlayView: View {
         }
     }
 
-    private func sliderRow(
-        label: String,
-        unit: String,
-        value: Binding<Double>,
-        range: ClosedRange<Double>,
-        format: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            HStack(alignment: .lastTextBaseline) {
-                Text(label)
-                    .font(.sfMono(size: 10))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(2.0)
-                Spacer()
-                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                    Text(String(format: format, value.wrappedValue))
-                        .font(.sfMono(size: 18, weight: .medium))
-                        .foregroundColor(.arclabWhite)
-                    Text(unit)
-                        .font(.sfMono(size: 11))
-                        .foregroundColor(.arclabMidGrey)
-                }
-            }
-            Slider(value: value, in: range)
-                .tint(.arclabWhite)
-        }
-    }
-
     /// Compute outcome view — clean call-first-styled verdict for the
     /// user's *own* shot, with retry/next CTAs.
     private func computeVerdictView(resolution: Phase.Resolution, attempt: Int) -> some View {
@@ -649,6 +704,11 @@ struct CallPlayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background((madeIt ? Color.arclabBlack : Color.arclabMissTint).ignoresSafeArea())
+        .announceOnAppear {
+            madeIt
+                ? "Got it. Your numbers landed the shot."
+                : "Missed, attempt \(attempt) of \(computeMaxAttempts). Buttons below to retry or see the math."
+        }
     }
 
     // MARK: - Formula walkthrough

@@ -15,6 +15,7 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(PlayerProfileStore.self) private var profile
+    @Environment(AccessibilitySettings.self) private var accessibility
 
     /// Sports IQ count-up: animates from the value last seen on this screen to
     /// the current one on open, so the player watches what they gained.
@@ -123,6 +124,12 @@ struct ProfileView: View {
         displayedIQ = start
         profile.mutate { $0.lastSeenIQ = current }
         guard current != start else { displayedIQ = current; return }
+        // Reduce Motion: show the gained value outright, no count-up roll.
+        guard !accessibility.reduceMotionActive else {
+            displayedIQ = current
+            iqDelta = max(0, current - start)
+            return
+        }
         withAnimation(.easeOut(duration: 0.9)) {
             displayedIQ = current
             iqDelta = max(0, current - start)

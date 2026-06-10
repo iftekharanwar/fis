@@ -184,6 +184,8 @@ struct RootView: View {
             }
         case "profile":
             ProfileView()
+        case "settings":
+            SettingsView()
         case "dailyquestion":
             // Daily Question — one bite-size physics question a day.
             DailyQuestionView(onClose: {})

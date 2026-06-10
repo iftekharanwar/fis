@@ -32,6 +32,7 @@ struct RevealOverlay: View {
     /// scenarios (Ch2) to show "IT FLEW CLEAN" / "IT WOBBLED" instead.
     var outcomeLabelOverride: String? = nil
 
+    @Environment(AccessibilitySettings.self) private var accessibility
     @State private var visible: Bool = false
     @State private var slideUpHapticCount: Int = 0
 
@@ -41,7 +42,8 @@ struct RevealOverlay: View {
 
             card
                 .padding(.horizontal, Spacing.md)
-                .offset(y: visible ? 0 : 40)
+                // Reduce Motion: drop the rise, keep the fade.
+                .offset(y: visible || accessibility.reduceMotionActive ? 0 : 40)
                 .opacity(visible ? 1 : 0)
                 .padding(.bottom, Spacing.md)
         }
@@ -66,11 +68,19 @@ struct RevealOverlay: View {
                 try? await Task.sleep(for: .milliseconds(900))
                 withAnimation(.easeOut(duration: 0.4)) { visible = true }
                 slideUpHapticCount += 1
+                // Queued so it speaks after the verdict announcement finishes.
+                Announce.post(
+                    "\(wasCorrect ? "Right call" : "Wrong call"), "
+                    + "\(outcomeLabelOverride ?? (actualWentIn ? "it went in" : "it missed")). "
+                    + "\(phenomenon). \(explainer) "
+                    + "Buttons below: Try it yourself\(onShowMath != nil ? ", and Show the math" : "").",
+                    priority: .queued
+                )
             }
         }
         // Soft tick when the reveal card slides up — like a polished sheet
         // settling into place. Light weight to not compete with the verdict.
-        .sensoryFeedback(.impact(weight: .light), trigger: slideUpHapticCount)
+        .gameHaptic(.impact(weight: .light), trigger: slideUpHapticCount)
     }
 
     // MARK: - Card

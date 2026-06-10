@@ -52,6 +52,10 @@ struct VariableCell: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, Spacing.sm)
+        // Read as one phrase ("Distance, 4.6 meters") instead of three
+        // fragments VoiceOver would otherwise stop on separately.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(variable.label), \(formattedValue) \(variable.unit)")
     }
 
     private var formattedValue: String {
