@@ -477,6 +477,10 @@ struct CallPlayView: View {
                 : "Your shot: \(Int(computeTheta.rounded())) degrees at "
                     + String(format: "%.1f", computeVelocity) + " meters per second."
         case .computeVerdict:
+            if isRangeMode, let round = rangeRound {
+                return "Your shot resolved. The spot that works is marked on the floor, "
+                    + String(format: "%.2f", round.crossingD) + " meters from the hoop."
+            }
             return "Your shot resolved."
         case .formulaWalkthrough, .bonusAttempt, .replayPrompt:
             return "Reviewing the physics."
@@ -554,17 +558,17 @@ struct CallPlayView: View {
                     unit: "°", spokenUnit: "degrees",
                     value: $computeTheta, range: 15...80, format: "%.0f", step: 1
                 )
-                givenRow(label: "SPEED", unit: "m/s", value: v, format: "%.1f")
+                givenRow(label: "SPEED", spokenName: "Launch speed", unit: "m/s", spokenUnit: "meters per second", value: v, format: "%.1f")
             case .theta(let theta):
-                givenRow(label: "ANGLE", unit: "°", value: theta, format: "%.0f")
+                givenRow(label: "ANGLE", spokenName: "Launch angle", unit: "°", spokenUnit: "degrees", value: theta, format: "%.0f")
                 ParameterSliderRow(
                     label: "SPEED", spokenName: "Launch speed",
                     unit: "m/s", spokenUnit: "meters per second",
                     value: $computeVelocity, range: 3...15, format: "%.1f", step: 0.5
                 )
             case .range:
-                givenRow(label: "ANGLE", unit: "°", value: rangeRound?.answer.thetaDegrees ?? 0, format: "%.0f")
-                givenRow(label: "SPEED", unit: "m/s", value: rangeRound?.answer.velocity ?? 0, format: "%.2f")
+                givenRow(label: "ANGLE", spokenName: "Launch angle", unit: "°", spokenUnit: "degrees", value: rangeRound?.answer.thetaDegrees ?? 0, format: "%.0f")
+                givenRow(label: "SPEED", spokenName: "Launch speed", unit: "m/s", spokenUnit: "meters per second", value: rangeRound?.answer.velocity ?? 0, format: "%.2f")
                 ParameterSliderRow(
                     label: "RANGE", spokenName: "Distance from the hoop",
                     unit: "m", spokenUnit: "meters",
@@ -611,10 +615,14 @@ struct CallPlayView: View {
     }
 
     /// A locked given — same header layout as a slider row, but the track
-    /// is a static hairline and the value never moves.
+    /// is a static hairline and the value never moves. Reads as one spoken
+    /// element ("Launch speed, given, 7.5 meters per second") so VoiceOver
+    /// users hear the constraint, not three fragments.
     private func givenRow(
         label: String,
+        spokenName: String,
         unit: String,
+        spokenUnit: String,
         value: Double,
         format: String
     ) -> some View {
@@ -648,6 +656,8 @@ struct CallPlayView: View {
                 .frame(height: 3)
                 .padding(.vertical, 13)   // match the slider track's vertical footprint
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(spokenName), given, \(String(format: format, value)) \(spokenUnit).")
     }
 
     /// Compute outcome view — clean call-first-styled verdict for the

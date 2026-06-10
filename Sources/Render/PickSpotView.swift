@@ -52,6 +52,9 @@ struct PickSpotView: View {
             SpriteView(scene: scene, preferredFramesPerSecond: 60)
                 .ignoresSafeArea()
                 .allowsHitTesting(false)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Basketball court. You stand where you choose; the given shot fires from there.")
+                .accessibilityValue(sceneRead)
 
             VStack(spacing: 0) {
                 CallHUD(onClose: onClose)
@@ -113,28 +116,14 @@ struct PickSpotView: View {
 
             VariableStrip(variables: environmentGivens)
 
-            givenLine(label: "ANGLE", value: String(format: "%.0f", round?.answer.thetaDegrees ?? 0), unit: "°")
-            givenLine(label: "SPEED", value: String(format: "%.2f", round?.answer.velocity ?? 0), unit: "m/s")
+            givenLine(label: "ANGLE", value: String(format: "%.0f", round?.answer.thetaDegrees ?? 0), unit: "°", spokenName: "Launch angle", spokenUnit: "degrees")
+            givenLine(label: "SPEED", value: String(format: "%.2f", round?.answer.velocity ?? 0), unit: "m/s", spokenName: "Launch speed", spokenUnit: "meters per second")
 
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                HStack(alignment: .lastTextBaseline) {
-                    Text("RANGE")
-                        .font(.sfMono(size: 10))
-                        .foregroundColor(.arclabMidGrey)
-                        .tracking(2.0)
-                    Spacer()
-                    HStack(alignment: .lastTextBaseline, spacing: 2) {
-                        Text(String(format: "%.2f", rangeD))
-                            .font(.sfMono(size: 18, weight: .medium))
-                            .foregroundColor(.arclabWhite)
-                        Text("m")
-                            .font(.sfMono(size: 11))
-                            .foregroundColor(.arclabMidGrey)
-                    }
-                }
-                Slider(value: $rangeD, in: rangeBounds, step: 0.05)
-                    .tint(.arclabWhite)
-            }
+            ParameterSliderRow(
+                label: "RANGE", spokenName: "Distance from the hoop",
+                unit: "m", spokenUnit: "meters",
+                value: $rangeD, range: rangeBounds, format: "%.2f", step: 0.05
+            )
 
             PrimaryButton(label: "Shoot from here", action: handleShoot)
                 .padding(.top, Spacing.xs)
@@ -188,7 +177,7 @@ struct PickSpotView: View {
                       round.crossingD, abs(offBy), direction)
     }
 
-    private func givenLine(label: String, value: String, unit: String) -> some View {
+    private func givenLine(label: String, value: String, unit: String, spokenName: String = "", spokenUnit: String = "") -> some View {
         HStack(alignment: .lastTextBaseline) {
             Text(label)
                 .font(.sfMono(size: 10))
@@ -213,6 +202,8 @@ struct PickSpotView: View {
                     .foregroundColor(.arclabMidGrey)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(spokenName.isEmpty ? label : spokenName), given, \(value) \(spokenUnit.isEmpty ? unit : spokenUnit).")
     }
 
     /// World numbers that aren't the unknown: hoop height, release height,
@@ -220,6 +211,21 @@ struct PickSpotView: View {
     private var environmentGivens: [SituationDefinition.VariableSpec] {
         scenario.situation.variables.filter {
             $0.symbol != "theta" && $0.symbol != "v" && $0.symbol != "d"
+        }
+    }
+
+    /// Scene description for VoiceOver, per phase.
+    private var sceneRead: String {
+        switch phase {
+        case .pick:
+            return "Standing \(String(format: "%.2f", rangeD)) meters from the hoop. The shot is given."
+        case .flight:
+            return "Ball in flight."
+        case .verdict(_, let madeIt):
+            return madeIt
+                ? "It went in. That spot is yours."
+                : "It missed. The spot that works is marked on the floor at "
+                    + String(format: "%.2f", round?.crossingD ?? 0) + " meters."
         }
     }
 
