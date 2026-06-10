@@ -24,6 +24,9 @@ enum PersistenceKeys {
     /// setting activates the same palette without this override.
     static let highLegibilityEnabled = "arclab.highLegibilityEnabled"
 
+    /// In-app Bold Text override (AccessibilitySettings.boldTextActive).
+    static let boldTextEnabled = "arclab.boldTextEnabled"
+
     /// Game sound master switch. Default ON; read by AudioService.
     static let soundEnabled = "arclab.soundEnabled"
 }
