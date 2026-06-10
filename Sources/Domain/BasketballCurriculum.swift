@@ -113,7 +113,10 @@ enum BasketballCurriculum {
         "bb-ch1-arc": [
             .findTheta: ["bb-a-freethrow"],
             .findV: ["bb-b-stepback"],
-            .findD: ["bb-c-wing-throw"]
+            .findD: ["bb-c-wing-throw"],
+            // Level D caps the chapter: angle, speed, and distance were each
+            // found alone — the logo three asks for everything at once.
+            .findBoth: ["bb-1-logo-three"]
         ]
     ]
 
