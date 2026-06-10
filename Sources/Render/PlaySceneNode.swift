@@ -289,6 +289,7 @@ final class PlaySceneNode: SKScene {
     }
 
     private func repositionNodes() {
+        let ballWasVisible = ballNode?.isHidden == false
         removeAllChildren()
         buildSceneGraph()
         if let distance = spotMarkerDistance {
@@ -306,6 +307,15 @@ final class PlaySceneNode: SKScene {
             if let last = snapshotHistory.last {
                 ballNode?.position = transform.scenePoint(world: last.ballPosition)
             }
+        }
+        // buildSceneGraph recreates the flight ball hidden and can restart
+        // the idle dribble. If a shot was in flight (or at rest after the
+        // outcome), restore that state — otherwise the player sees the trail
+        // drawing while the ball seemingly never leaves the hand.
+        if ballWasVisible {
+            ballNode?.isHidden = false
+            pauseIdleDribble()
+            hideDribbleBall()
         }
     }
 
