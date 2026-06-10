@@ -28,13 +28,24 @@ struct PickSpotChallenge: Equatable, Sendable {
         if attempt > 1 {
             factors = [0.94, 1.06, 0.92, 1.08, 0.96, 1.04].shuffled(using: &rng) + [1.0]
         }
+        let playable = playableRange(params: params)
         for factor in factors {
             let candidate = ProjectileAnswer(thetaDegrees: theta, velocity: v * factor)
-            if let d = crossingDistance(params: params, answer: candidate) {
+            if let d = crossingDistance(params: params, answer: candidate),
+               playable.contains(d) {
                 return PickSpotChallenge(answer: candidate, crossingD: d)
             }
         }
         return nil
+    }
+
+    /// Ranges a shooter can actually stand at: at least 1m out, and far
+    /// enough from the world's left edge to stay on the visible court.
+    /// Both the round dealer and the range slider use this, so every
+    /// dealt round is answerable.
+    static func playableRange(params: Projectile2DParams) -> ClosedRange<Double> {
+        let maxRange = params.target.center[0] - params.world.xMin - 0.4
+        return 1.0...max(maxRange, 2.0)
     }
 
     /// Descent crossing of the target height, linearly interpolated between

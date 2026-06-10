@@ -1,14 +1,15 @@
 import SwiftUI
 import SpriteKit
 
-/// PROTOTYPE — Level C "pick the spot" beat, reachable only via the
+/// PROTOTYPE — Level C "find your range" beat, reachable only via the
 /// ARCLAB_LAUNCH_TO=pickspot diagnostic.
 ///
 /// The shot is fully given (θ and v render as locked GIVEN rows — values
-/// vary per round so the visible hoop isn't a cheat-sheet). The player
-/// slides a floor marker to call where the ball crosses hoop height on
-/// the descent, commits, and watches the given shot fly. Hit = within
-/// the rim's inner radius of the true crossing.
+/// vary per round so repetition can't be eyeballed). The slider moves the
+/// SHOOTER along the baseline; commit fires the given shot from where the
+/// player chose to stand, and the rim decides. After a miss, a chevron
+/// drops on the spot that would have worked, so the error reads as a
+/// distance on the floor.
 struct PickSpotView: View {
     @Environment(AudioService.self) private var audio
 
@@ -18,16 +19,17 @@ struct PickSpotView: View {
     @State private var scene: PlaySceneNode
     @State private var phase: Phase = .pick(attempt: 1)
     @State private var round: PickSpotChallenge?
-    @State private var markerD: Double
+    /// Player-chosen shooter-to-hoop distance in meters.
+    @State private var rangeD: Double
     @State private var pickHapticCount: Int = 0
 
-    private let markerRange: ClosedRange<Double>
+    private let rangeBounds: ClosedRange<Double>
     private let params: Projectile2DParams
 
     enum Phase: Equatable {
         case pick(attempt: Int)
         case flight(attempt: Int)
-        case verdict(attempt: Int, hit: Bool, offBy: Double)
+        case verdict(attempt: Int, madeIt: Bool)
     }
 
     init(scenario: ScenarioDefinition, onClose: (() -> Void)? = nil) {
@@ -37,13 +39,10 @@ struct PickSpotView: View {
             fatalError("PickSpotView currently supports only PROJECTILE_2D scenarios")
         }
         params = p
-        // Marker range from the scenario's authored d input field when
-        // present, clamped to the visible world so the marker stays on court.
-        let field = scenario.input.fields.first(where: { $0.name == "d" })
-        let lo = max(field?.min ?? 0.5, 0.5)
-        let hi = min(field?.max ?? (p.world.xMax - 0.5), p.world.xMax - 0.5)
-        markerRange = lo...max(hi, lo + 1)
-        _markerD = State(initialValue: (lo + hi) / 2)
+        // Same playable band the round dealer guarantees answers within.
+        rangeBounds = PickSpotChallenge.playableRange(params: p)
+        let mid = (rangeBounds.lowerBound + rangeBounds.upperBound) / 2
+        _rangeD = State(initialValue: (mid * 20).rounded() / 20)
         _scene = State(initialValue: PlaySceneNode(projectileParams: p, size: CGSize(width: 393, height: 340)))
     }
 
@@ -73,12 +72,12 @@ struct PickSpotView: View {
             if ProcessInfo.processInfo.environment["ARCLAB_AUTOPLAY"] == "1" {
                 Task {
                     try? await Task.sleep(for: .seconds(2))
-                    handlePick()
+                    handleShoot()
                 }
             }
         }
-        .onChange(of: markerD) { _, new in
-            scene.setSpotMarker(distanceMeters: new)
+        .onChange(of: rangeD) { _, _ in
+            moveShooter()
         }
     }
 
@@ -92,8 +91,8 @@ struct PickSpotView: View {
                 .background(Color.arclabBlack)
         case .flight:
             EmptyView()
-        case .verdict(let attempt, let hit, let offBy):
-            verdictDock(attempt: attempt, hit: hit, offBy: offBy)
+        case .verdict(let attempt, let madeIt):
+            verdictDock(attempt: attempt, madeIt: madeIt)
                 .background(Color.arclabBlack)
         }
     }
@@ -101,7 +100,7 @@ struct PickSpotView: View {
     private func pickDock(attempt: Int) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
-                Text("CALL THE SPOT")
+                Text("FIND YOUR RANGE")
                     .font(.sfMono(size: 11))
                     .foregroundColor(.arclabMidGrey)
                     .tracking(2.0)
@@ -119,13 +118,13 @@ struct PickSpotView: View {
 
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack(alignment: .lastTextBaseline) {
-                    Text("DISTANCE")
+                    Text("RANGE")
                         .font(.sfMono(size: 10))
                         .foregroundColor(.arclabMidGrey)
                         .tracking(2.0)
                     Spacer()
                     HStack(alignment: .lastTextBaseline, spacing: 2) {
-                        Text(String(format: "%.2f", markerD))
+                        Text(String(format: "%.2f", rangeD))
                             .font(.sfMono(size: 18, weight: .medium))
                             .foregroundColor(.arclabWhite)
                         Text("m")
@@ -133,11 +132,11 @@ struct PickSpotView: View {
                             .foregroundColor(.arclabMidGrey)
                     }
                 }
-                Slider(value: $markerD, in: markerRange, step: 0.05)
+                Slider(value: $rangeD, in: rangeBounds, step: 0.05)
                     .tint(.arclabWhite)
             }
 
-            PrimaryButton(label: "Call it", action: handlePick)
+            PrimaryButton(label: "Shoot from here", action: handleShoot)
                 .padding(.top, Spacing.xs)
         }
         .padding(.horizontal, Spacing.md)
@@ -146,11 +145,11 @@ struct PickSpotView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func verdictDock(attempt: Int, hit: Bool, offBy: Double) -> some View {
+    private func verdictDock(attempt: Int, madeIt: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: Spacing.lg)
 
-            Text(hit ? "CALLED IT." : "OFF THE SPOT.")
+            Text(madeIt ? "IN RANGE." : "OUT OF RANGE.")
                 .font(.anton(size: 56))
                 .foregroundColor(.arclabWhite)
                 .padding(.horizontal, Spacing.md)
@@ -159,9 +158,7 @@ struct PickSpotView: View {
 
             Spacer().frame(height: Spacing.sm)
 
-            Text(hit
-                 ? String(format: "Within the rim. It crossed at %.2f m.", round?.crossingD ?? 0)
-                 : String(format: "It crossed at %.2f m — your call was off by %.2f m.", round?.crossingD ?? 0, offBy))
+            Text(verdictBody(madeIt: madeIt))
                 .font(.barlowCondensed(size: 16, italic: true))
                 .foregroundColor(.arclabMidGrey)
                 .padding(.horizontal, Spacing.md)
@@ -178,6 +175,17 @@ struct PickSpotView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: 320)
+    }
+
+    private func verdictBody(madeIt: Bool) -> String {
+        guard let round else { return "" }
+        if madeIt {
+            return String(format: "That spot is yours. This shot lives at %.2f m.", round.crossingD)
+        }
+        let offBy = rangeD - round.crossingD
+        let direction = offBy > 0 ? "deep" : "close"
+        return String(format: "This shot lives at %.2f m — you stood %.2f m too %@.",
+                      round.crossingD, abs(offBy), direction)
     }
 
     private func givenLine(label: String, value: String, unit: String) -> some View {
@@ -221,10 +229,10 @@ struct PickSpotView: View {
         scene.audio = audio
         // Prototype-fixed reserves: CallHUD up top, pick dock below.
         scene.applyUIReserve(top: 60, bottom: 430, safeTop: 60, safeBottom: 430)
-        scene.onOutcomeResolved = { _, _ in
+        scene.onOutcomeResolved = { outcome, _ in
             Task { @MainActor in
                 scene.freezeForOutcome()
-                resolveVerdict()
+                resolveVerdict(outcome: outcome)
             }
         }
         startRound(attempt: 1)
@@ -234,23 +242,39 @@ struct PickSpotView: View {
         var rng = SystemRandomNumberGenerator()
         round = PickSpotChallenge.round(for: scenario, attempt: attempt, using: &rng)
         scene.resetForNewShot()
-        scene.setSpotMarker(distanceMeters: markerD)
+        scene.setSpotMarker(distanceMeters: nil)
+        moveShooter()
         withAnimation(.easeOut(duration: 0.25)) { phase = .pick(attempt: attempt) }
     }
 
-    private func handlePick() {
+    /// Stand the shooter `rangeD` meters from the hoop.
+    private func moveShooter() {
+        let desiredX = params.target.center[0] - rangeD
+        scene.setReleaseOffset(desiredX - params.releasePosition[0])
+    }
+
+    private func handleShoot() {
         guard case .pick(let attempt) = phase, let round else { return }
         pickHapticCount += 1
         phase = .flight(attempt: attempt)
         scene.startSimulation(answer: round.answer, pauseAtApex: false)
     }
 
-    private func resolveVerdict() {
+    private func resolveVerdict(outcome: ProjectileOutcome) {
         guard case .flight(let attempt) = phase, let round else { return }
-        let hit = PickSpotChallenge.isHit(markerD: markerD, crossingD: round.crossingD, params: params)
-        let offBy = abs(markerD - round.crossingD)
+        let madeIt: Bool
+        switch outcome {
+        case .success: madeIt = true
+        case .miss, .inFlight: madeIt = false
+        }
+        if !madeIt {
+            // Drop the chevron on the spot that would have worked, so the
+            // error reads as a distance on the floor.
+            let correctX = params.target.center[0] - round.crossingD
+            scene.setSpotMarker(distanceMeters: correctX - params.releasePosition[0])
+        }
         withAnimation(.easeOut(duration: 0.25)) {
-            phase = .verdict(attempt: attempt, hit: hit, offBy: offBy)
+            phase = .verdict(attempt: attempt, madeIt: madeIt)
         }
     }
 }

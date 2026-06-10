@@ -441,6 +441,15 @@ final class ScenarioEngineTests: XCTestCase {
         XCTAssertGreaterThan(abs(round2.crossingD - round1.crossingD), 0.05,
                              "perturbed round must move the crossing point")
 
+        // Every dealt round must be answerable on the slider: 30 retries,
+        // all inside the playable band shared with the range slider.
+        let playable = PickSpotChallenge.playableRange(params: params)
+        for n in 2...30 {
+            let r = try XCTUnwrap(PickSpotChallenge.round(for: scenario, attempt: n, using: &rng))
+            XCTAssertTrue(playable.contains(r.crossingD),
+                          "round \(n) answer \(r.crossingD) is outside the playable band \(playable)")
+        }
+
         XCTAssertTrue(PickSpotChallenge.isHit(markerD: round1.crossingD + 0.2,
                                               crossingD: round1.crossingD, params: params))
         XCTAssertFalse(PickSpotChallenge.isHit(markerD: round1.crossingD + 0.3,
