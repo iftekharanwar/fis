@@ -382,6 +382,37 @@ final class ScenarioEngineTests: XCTestCase {
         }
     }
 
+    /// The compute dock must lock the given quantity per level type: A
+    /// locks the given speed (solve θ), B locks the given angle (solve v),
+    /// C keeps both sliders free. A question needs a real unknown.
+    func test_callComputePlan_locksTheGivenPerLevelType() throws {
+        XCTAssertEqual(
+            CallComputePlan.lock(for: try loadScenario("bb-a-freethrow")),
+            .velocity(7.5)
+        )
+        XCTAssertEqual(
+            CallComputePlan.lock(for: try loadScenario("bb-b-rainbow")),
+            .theta(65.0)
+        )
+        XCTAssertEqual(
+            CallComputePlan.lock(for: try loadScenario("bb-c-wing-throw")),
+            .none
+        )
+        // Every released A/B seed must resolve a lock — a missing given
+        // would silently degrade the question back to the sandbox.
+        let chapter = try XCTUnwrap(BasketballCurriculum.chapters.first { $0.id == "bb-ch1-arc" })
+        for id in chapter.releasedPracticeSeeds(for: .findTheta) {
+            if case .velocity = CallComputePlan.lock(for: try loadScenario(id)) {} else {
+                XCTFail("[\(id)] released Level A seed has no locked speed")
+            }
+        }
+        for id in chapter.releasedPracticeSeeds(for: .findV) {
+            if case .theta = CallComputePlan.lock(for: try loadScenario(id)) {} else {
+                XCTFail("[\(id)] released Level B seed has no locked angle")
+            }
+        }
+    }
+
     // MARK: - Call-guard helpers
 
     private func loadScenario(_ stem: String) throws -> ScenarioDefinition {

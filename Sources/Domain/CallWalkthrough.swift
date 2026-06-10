@@ -108,3 +108,37 @@ struct CallWalkthrough: Equatable, Sendable {
         return s
     }
 }
+
+// MARK: - Compute-dock input plan
+
+/// Which compute-dock input is locked for a scenario. A question is only a
+/// question if something is fixed: Level A (find θ) locks the given speed,
+/// Level B (find v) locks the given angle. Everything else (Level C/D, no
+/// level type) keeps both sliders free — the feel-the-trade-off sandbox.
+enum CallComputePlan {
+    enum Lock: Equatable, Sendable {
+        case none
+        case theta(Double)      // angle is given — solve for speed
+        case velocity(Double)   // speed is given — solve for angle
+    }
+
+    static func lock(for scenario: ScenarioDefinition) -> Lock {
+        switch scenario.meta.levelType {
+        case .findTheta:
+            guard let v = given("v", in: scenario) else { return .none }
+            return .velocity(v)
+        case .findV:
+            guard let theta = given("theta", in: scenario) else { return .none }
+            return .theta(theta)
+        default:
+            return .none
+        }
+    }
+
+    /// The authored given from the situation variables, falling back to the
+    /// ghost arc (the same value the call shot is built from).
+    private static func given(_ symbol: String, in scenario: ScenarioDefinition) -> Double? {
+        scenario.situation.variables.first(where: { $0.symbol == symbol })?.value
+            ?? scenario.outcome.ghostArc?.answer[symbol]
+    }
+}

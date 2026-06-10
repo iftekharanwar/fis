@@ -443,8 +443,20 @@ struct CallPlayView: View {
             // informed estimation.
             VariableStrip(variables: computeGivens)
 
-            sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
-            sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+            // Level A locks the given speed (solve for lift); Level B locks
+            // the given angle (solve for pace). The locked quantity renders
+            // as a fixed given so the question has a real unknown.
+            switch CallComputePlan.lock(for: scenario) {
+            case .velocity(let v):
+                sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
+                givenRow(label: "SPEED", unit: "m/s", value: v, format: "%.1f")
+            case .theta(let theta):
+                givenRow(label: "ANGLE", unit: "°", value: theta, format: "%.0f")
+                sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+            case .none:
+                sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
+                sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+            }
 
             PrimaryButton(label: "Shoot", action: handleComputeShoot)
                 .padding(.top, Spacing.xs)
@@ -470,6 +482,46 @@ struct CallPlayView: View {
             $0.symbol != "theta" && $0.symbol != "v"
         }
         return givens
+    }
+
+    /// A locked given — same header layout as a slider row, but the track
+    /// is a static hairline and the value never moves.
+    private func givenRow(
+        label: String,
+        unit: String,
+        value: Double,
+        format: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            HStack(alignment: .lastTextBaseline) {
+                Text(label)
+                    .font(.sfMono(size: 10))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+                Text("GIVEN")
+                    .font(.sfMono(size: 9))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+                    .padding(.horizontal, Spacing.xxs)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 3)
+                            .stroke(Color.arclabBorderGrey, lineWidth: 1)
+                    )
+                Spacer()
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                    Text(String(format: format, value))
+                        .font(.sfMono(size: 18, weight: .medium))
+                        .foregroundColor(.arclabWhite)
+                    Text(unit)
+                        .font(.sfMono(size: 11))
+                        .foregroundColor(.arclabMidGrey)
+                }
+            }
+            Capsule()
+                .fill(Color.arclabBorderGrey)
+                .frame(height: 3)
+                .padding(.vertical, 13)   // match the slider track's vertical footprint
+        }
     }
 
     private func sliderRow(
@@ -649,6 +701,7 @@ struct CallPlayView: View {
             CallShotPicker.recentTruths = Array((CallShotPicker.recentTruths + [pick.goesIn]).suffix(4))
             callShot = pick.answer
         }
+        syncLockedGiven()
         scene.audio = audio
         scene.onReachedApex = { [weak scene] in
             Task { @MainActor in
@@ -710,8 +763,19 @@ struct CallPlayView: View {
         // Fresh slider values for a clean run at the challenge.
         computeTheta = 50.0
         computeVelocity = 7.0
+        syncLockedGiven()
         scene.resetForNewShot()
         withAnimation(.easeOut(duration: 0.25)) { phase = .compute(attempt: 1) }
+    }
+
+    /// Pin the locked given into the fired state so SHOOT uses the
+    /// scenario's value, not the slider default the player can't change.
+    private func syncLockedGiven() {
+        switch CallComputePlan.lock(for: scenario) {
+        case .velocity(let v):  computeVelocity = v
+        case .theta(let theta): computeTheta = theta
+        case .none:             break
+        }
     }
 
     /// User tapped TRY IT on the reveal — open the compute slider dock.
