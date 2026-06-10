@@ -233,31 +233,38 @@ struct ChapterView: View {
     private func scenarioRow(index: Int, scenarioId: String) -> some View {
         // Only rendered once the lesson is read (see practiceList), so the row
         // is always the live, tappable state — there is no locked variant.
-        Button(action: { onOpenScenario(scenarioId) }) {
+        // Orange = still to do; white + ✓ = completed (mirrors the lesson
+        // row's READ ✓ language). Completed rows stay tappable for replays.
+        let completed = profile.profile.completedScenarios[ScenarioID(scenarioId)]?.firstCompletedAt != nil
+        let tint: Color = completed ? .arclabWhite : .arclabRimOrange
+        return Button(action: { onOpenScenario(scenarioId) }) {
             HStack(spacing: Spacing.sm) {
                 Text(String(format: "%02d", index))
                     .font(.sfMono(size: 13))
-                    .foregroundColor(.arclabRimOrange)
+                    .foregroundColor(tint)
                     .tracking(2.0)
                 Text(scenarioTitle(for: scenarioId))
                     .font(.barlowCondensed(size: 20))
-                    .foregroundColor(.arclabRimOrange)
+                    .foregroundColor(tint)
                 Spacer()
-                Text("→")
+                Text(completed ? "✓" : "→")
                     .font(.sfMono(size: 17, weight: .medium))
-                    .foregroundColor(.arclabRimOrange)
+                    .foregroundColor(tint)
                     .tracking(2.0)
             }
             .padding(.horizontal, Spacing.md)
             .frame(maxWidth: .infinity, minHeight: 66)
             .overlay(
                 RoundedRectangle(cornerRadius: Sizing.pillRadius, style: .continuous)
-                    .stroke(Color.arclabRimOrange, lineWidth: Sizing.borderWidth)
+                    .stroke(completed ? Color.arclabBorderGrey : Color.arclabRimOrange,
+                            lineWidth: Sizing.borderWidth)
             )
             .contentShape(Rectangle())
         }
         .buttonStyle(PressableButtonStyle())
-        .accessibilityLabel("\(scenarioTitle(for: scenarioId)). Tap to play.")
+        .accessibilityLabel(completed
+            ? "\(scenarioTitle(for: scenarioId)). Completed. Tap to play again."
+            : "\(scenarioTitle(for: scenarioId)). Tap to play.")
     }
 
     /// Look up a human-readable archetype title for the scenario. Dispatches
