@@ -86,14 +86,42 @@ final class PlaySceneNode: SKScene {
         min(max(min(size.width, size.height) / 393, 1.0), 2.2)
     }
 
-    init(projectileParams: Projectile2DParams, size: CGSize) {
+    /// Motion policy. SKScenes can't observe AccessibilitySettings, so the
+    /// hosting view seeds this at init and pushes changes via
+    /// `setReduceMotion(_:)` — covering both the system switch and the
+    /// in-app override, live.
+    private(set) var reduceMotionActive: Bool
+
+    init(
+        projectileParams: Projectile2DParams,
+        size: CGSize,
+        reduceMotion: Bool = UIAccessibility.isReduceMotionEnabled
+    ) {
         self.projectileParams = projectileParams
+        self.reduceMotionActive = reduceMotion
         super.init(size: size)
         self.scaleMode = .resizeFill
         self.backgroundColor = .black
         self.anchorPoint = CGPoint(x: 0, y: 0)
         rebuildTransform(for: size)
         buildSceneGraph()
+    }
+
+    /// Live retune — pauses/resumes the idle loops so a mid-session toggle
+    /// takes effect without restarting the scenario.
+    func setReduceMotion(_ on: Bool) {
+        guard on != reduceMotionActive else { return }
+        reduceMotionActive = on
+        if on {
+            pauseIdleDribble()
+            playerSilhouette?.removeAction(forKey: "idleBreathing")
+            playerSilhouette?.alpha = 1.0
+            playerHeadNode?.removeAction(forKey: "idleBreathing")
+            playerHeadNode?.alpha = 1.0
+        } else if !isSimulating && !isShowingOutcome {
+            startIdleBreathing()
+            resumeIdleDribble()
+        }
     }
 
     override func didMove(to view: SKView) {
@@ -437,7 +465,7 @@ final class PlaySceneNode: SKScene {
 
     private func startIdleBreathing() {
         guard let body = playerSilhouette else { return }
-        guard !UIAccessibility.isReduceMotionEnabled else {
+        guard !reduceMotionActive else {
             body.alpha = 1.0
             playerHeadNode?.alpha = 1.0
             return
@@ -457,6 +485,12 @@ final class PlaySceneNode: SKScene {
 
     /// Re-runnable — strips stale actions and attaches fresh ones.
     private func startIdleDribbleIfNeeded() {
+        // Reduce Motion: hold the ball at the hand instead of the looping
+        // arm-swing + bounce (the audit's ungated repeatForever).
+        guard !reduceMotionActive else {
+            pauseIdleDribble()
+            return
+        }
         guard let arm = dribbleArmNode,
               let dribbleBall = dribbleBallShadowNode else { return }
         arm.removeAction(forKey: "dribbleArm")
@@ -604,6 +638,9 @@ final class PlaySceneNode: SKScene {
     }
 
     private func flashSceneForShoot() {
+        // Full-screen luminance flash — exactly the kind of pulse Reduce
+        // Motion users opt out of. The release haptic still marks the beat.
+        guard !reduceMotionActive else { return }
         let flash = SKShapeNode(rectOf: size)
         flash.position = CGPoint(x: size.width / 2, y: size.height / 2)
         flash.fillColor = .white

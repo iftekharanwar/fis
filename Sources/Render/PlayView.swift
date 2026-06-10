@@ -5,6 +5,7 @@ import SpriteKit
 struct PlayView: View {
     @Environment(PlayerProfileStore.self) private var profile
     @Environment(AudioService.self) private var audio
+    @Environment(AccessibilitySettings.self) private var accessibility
     @Environment(\.horizontalSizeClass) private var hSizeClass
 
     let scenario: ScenarioDefinition
@@ -178,7 +179,12 @@ struct PlayView: View {
         .onChange(of: distanceValue) { _, _ in
             updateDribbleForInputState()
         }
+        // Mid-session toggles (Settings or iOS) retune the running scene.
+        .onChange(of: accessibility.reduceMotionActive) { _, on in
+            scene.setReduceMotion(on)
+        }
         .onAppear {
+            scene.setReduceMotion(accessibility.reduceMotionActive)
             // Single-V/single-D modes: show the given θ as a static cue on the court.
             if (scenario.input.mode == .numpadSingleV || scenario.input.mode == .numpadSingleD),
                let givenTheta = givenVariable("theta") {
@@ -277,9 +283,9 @@ struct PlayView: View {
         }
         // Haptic texture: medium thud on SHOOT, .success on swish, .error on miss.
         // Keeps the play loop physically grounded — every key beat has a body cue.
-        .sensoryFeedback(.impact(weight: .medium), trigger: shootHapticCount)
-        .sensoryFeedback(.success, trigger: swishHapticCount)
-        .sensoryFeedback(.error, trigger: missHapticCount)
+        .gameHaptic(.impact(weight: .medium), trigger: shootHapticCount)
+        .gameHaptic(.success, trigger: swishHapticCount)
+        .gameHaptic(.error, trigger: missHapticCount)
     }
 
     private func handleShoot() {

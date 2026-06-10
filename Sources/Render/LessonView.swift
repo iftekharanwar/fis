@@ -253,7 +253,7 @@ struct LessonView: View {
             handleComplete()
         } else {
             withAnimation(.easeOut(duration: 0.22)) { cardIndex += 1 }
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            Haptics.softTick()
             announceCurrentCard()
         }
     }
@@ -262,7 +262,7 @@ struct LessonView: View {
         dismissCoachmarkIfNeeded()
         guard cardIndex > 0 else { return }
         withAnimation(.easeOut(duration: 0.22)) { cardIndex -= 1 }
-        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        Haptics.softTick()
         announceCurrentCard()
     }
 

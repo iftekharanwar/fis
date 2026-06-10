@@ -50,11 +50,11 @@ struct MasteryGateTakeoverView: View {
             tapCount += 1
             onTap()
         }
-        .sensoryFeedback(.impact(weight: .medium), trigger: tapCount)
+        .gameHaptic(.impact(weight: .medium), trigger: tapCount)
         // Mastery moment celebration: fires on first appear when the takeover
         // lands. .success is the same haptic the system uses for completing
         // a tracked workout — perfect for "you just cleared the level type."
-        .sensoryFeedback(.success, trigger: appearHapticCount)
+        .gameHaptic(.success, trigger: appearHapticCount)
         .onAppear { appearHapticCount += 1 }
         .statusBarHidden(true)
         // The whole takeover advances on tap — expose it as one labeled

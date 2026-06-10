@@ -262,7 +262,7 @@ struct LessonReaderOverlay: View {
             close(finished: true)
         } else {
             withAnimation(.easeOut(duration: 0.22)) { cardIndex += 1 }
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            Haptics.softTick()
             announceCurrentCard()
         }
     }
@@ -271,7 +271,7 @@ struct LessonReaderOverlay: View {
         dismissCoachmarkIfNeeded()
         guard cardIndex > 0 else { return }
         withAnimation(.easeOut(duration: 0.22)) { cardIndex -= 1 }
-        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        Haptics.softTick()
         announceCurrentCard()
     }
 
@@ -312,6 +312,8 @@ extension View {
     ) -> some View {
         overlay {
             if isPresented.wrappedValue {
+                // Reduce Motion: the zoom-open collapses to a crossfade.
+                let reduceMotion = AccessibilitySettings.shared.reduceMotionActive
                 LessonReaderOverlay(
                     lesson: lesson,
                     chapterTitle: chapterTitle,
@@ -319,8 +321,10 @@ extension View {
                     onClose: onClose
                 )
                 .transition(
-                    .scale(scale: 0.90, anchor: UnitPoint(x: 0.5, y: 0.72))
-                        .combined(with: .opacity)
+                    reduceMotion
+                        ? AnyTransition.opacity
+                        : AnyTransition.scale(scale: 0.90, anchor: UnitPoint(x: 0.5, y: 0.72))
+                            .combined(with: .opacity)
                 )
                 .zIndex(10)
             }

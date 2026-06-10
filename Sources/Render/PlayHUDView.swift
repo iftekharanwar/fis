@@ -61,7 +61,7 @@ private struct CloseChip: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .light), trigger: tapCount)
+        .gameHaptic(.impact(weight: .light), trigger: tapCount)
         .accessibilityLabel("Close. Return to level select.")
     }
 

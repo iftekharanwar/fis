@@ -82,9 +82,9 @@ struct CelebrationView: View {
             tapCount += 1
             onTap()
         }
-        .sensoryFeedback(.impact(weight: .medium), trigger: tapCount)
+        .gameHaptic(.impact(weight: .medium), trigger: tapCount)
         // First-appear celebration haptic — .success for the milestone moment.
-        .sensoryFeedback(.success, trigger: appearHapticCount)
+        .gameHaptic(.success, trigger: appearHapticCount)
         .onAppear { appearHapticCount += 1 }
         .statusBarHidden(true)
         .accessibilityElement(children: .combine)

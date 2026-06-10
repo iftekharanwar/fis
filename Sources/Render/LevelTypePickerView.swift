@@ -246,8 +246,8 @@ private struct LevelTypeRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .medium), trigger: tapCount, condition: { _, _ in isUnlocked })
-        .sensoryFeedback(.warning, trigger: tapCount, condition: { _, _ in !isUnlocked })
+        .gameHaptic(.impact(weight: .medium), trigger: tapCount, condition: { _, _ in isUnlocked })
+        .gameHaptic(.warning, trigger: tapCount, condition: { _, _ in !isUnlocked })
         .accessibilityLabel("\(levelType.shortLabel). \(levelType.title). \(isUnlocked ? "Unlocked." : "Locked.")")
     }
 

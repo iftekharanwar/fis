@@ -130,8 +130,8 @@ private struct SportRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .medium), trigger: tapCount, condition: { _, _ in sport.isUnlocked })
-        .sensoryFeedback(.warning, trigger: tapCount, condition: { _, _ in !sport.isUnlocked })
+        .gameHaptic(.impact(weight: .medium), trigger: tapCount, condition: { _, _ in sport.isUnlocked })
+        .gameHaptic(.warning, trigger: tapCount, condition: { _, _ in !sport.isUnlocked })
         .accessibilityLabel("\(sport.displayName). \(sport.physicsDomainSubhead). \(sport.isUnlocked ? "Unlocked." : "Locked.")")
     }
 

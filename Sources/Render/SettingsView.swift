@@ -2,22 +2,23 @@ import SwiftUI
 
 /// Settings — player-facing app options, opened from the Home gear chip.
 ///
-/// v1 ships the ACCESSIBILITY section. The HIGH LEGIBILITY TEXT toggle came
-/// from player feedback: mid-grey captions next to white type on the black
-/// background are hard to read with astigmatism (bright-on-dark halation).
-/// Flipping it swaps the text tokens app-wide (see `Color+Tokens.swift`):
-/// brighter mid-grey (#B4B4B4, ~10:1), softened white (#E6E6E6), and more
-/// visible borders. iOS "Increase Contrast" activates the same palette
-/// automatically — when it's on, the toggle shows as locked-on.
+/// Two sections:
+///   ACCESSIBILITY — HIGH LEGIBILITY TEXT (brighter captions + softer white,
+///   cuts astigmatism halation) and REDUCE MOTION (drops decorative motion).
+///   Both mirror an iOS system setting: when the system switch is on, the
+///   in-app toggle shows locked-on rather than lying.
+///   SOUND & HAPTICS — GAME SOUND and HAPTICS master switches.
 ///
-/// The SAMPLE block renders all three text tones live, so the player sees
-/// what the switch does the instant they flip it.
+/// The ACCESSIBILITY card carries a live SAMPLE so the player sees the
+/// legibility change the instant they flip it.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AccessibilitySettings.self) private var accessibility
+    @Environment(AudioService.self) private var audio
 
     var body: some View {
         @Bindable var accessibility = accessibility
+        @Bindable var audio = audio
         return AdaptiveContentContainer(maxWidth: 640) {
             VStack(spacing: 0) {
                 topBar
@@ -26,7 +27,15 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: Spacing.lg) {
                         Spacer().frame(height: Spacing.md)
 
-                        accessibilitySection(toggle: $accessibility.highLegibilityEnabled)
+                        accessibilitySection(
+                            highLegibility: $accessibility.highLegibilityEnabled,
+                            reduceMotion: $accessibility.reduceMotionEnabled
+                        )
+
+                        soundSection(
+                            sound: $audio.masterEnabled,
+                            haptics: $accessibility.hapticsEnabled
+                        )
 
                         Spacer().frame(height: Spacing.xxl)
                     }
@@ -48,44 +57,33 @@ struct SettingsView: View {
 
     // MARK: - Accessibility
 
-    private func accessibilitySection(toggle: Binding<Bool>) -> some View {
-        let systemOn = accessibility.systemIncreaseContrast
-        return VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("ACCESSIBILITY")
-                .font(.sfMono(size: 12))
-                .foregroundColor(.arclabMidGrey)
-                .tracking(2.0)
+    private func accessibilitySection(
+        highLegibility: Binding<Bool>,
+        reduceMotion: Binding<Bool>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            sectionHeader("ACCESSIBILITY")
 
             VStack(alignment: .leading, spacing: Spacing.sm) {
-                // System Increase Contrast wins: the palette is active no
-                // matter what, so show the switch locked-on instead of an
-                // off switch that's lying.
-                Toggle(isOn: systemOn ? .constant(true) : toggle) {
-                    VStack(alignment: .leading, spacing: Spacing.xxs) {
-                        Text("HIGH LEGIBILITY TEXT")
-                            .font(.sfMono(size: 13, weight: .medium))
-                            .foregroundColor(.arclabWhite)
-                            .tracking(1.5)
-                        Text("Brighter captions and a softer white — cuts the glow that makes grey text on black hard to read.")
-                            .font(.barlowCondensed(size: 15, italic: true))
-                            .foregroundColor(.arclabMidGrey)
-                            .lineSpacing(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(.arclabRimOrange)
-                .disabled(systemOn)
+                toggleRow(
+                    title: "HIGH LEGIBILITY TEXT",
+                    blurb: "Brighter captions and a softer white — cuts the glow that makes grey text on black hard to read.",
+                    binding: highLegibility,
+                    systemOn: accessibility.systemIncreaseContrast,
+                    systemNote: "ON VIA iOS INCREASE CONTRAST"
+                )
 
-                if systemOn {
-                    Text("ON VIA iOS INCREASE CONTRAST")
-                        .font(.sfMono(size: 11))
-                        .foregroundColor(.arclabRimOrange)
-                        .tracking(1.5)
-                }
+                divider
 
-                Rectangle()
-                    .fill(Color.arclabBorderGrey)
-                    .frame(height: Sizing.borderWidth)
+                toggleRow(
+                    title: "REDUCE MOTION",
+                    blurb: "Calms decorative animation — entrance slides, the idle bounce, screen flashes. The physics itself still plays.",
+                    binding: reduceMotion,
+                    systemOn: accessibility.systemReduceMotion,
+                    systemNote: "ON VIA iOS REDUCE MOTION"
+                )
+
+                divider
 
                 sample
             }
@@ -104,7 +102,96 @@ struct SettingsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// Live specimen of the three text tones the toggle affects.
+    // MARK: - Sound & haptics
+
+    private func soundSection(
+        sound: Binding<Bool>,
+        haptics: Binding<Bool>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            sectionHeader("SOUND & HAPTICS")
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                toggleRow(
+                    title: "GAME SOUND",
+                    blurb: "Shot results, the bow release, the ball bounce. Every cue also has a visual and a haptic.",
+                    binding: sound,
+                    systemOn: false,
+                    systemNote: ""
+                )
+
+                divider
+
+                toggleRow(
+                    title: "HAPTICS",
+                    blurb: "The taps you feel on a press, a verdict, a release.",
+                    binding: haptics,
+                    systemOn: false,
+                    systemNote: ""
+                )
+            }
+            .padding(Spacing.sm)
+            .overlay(
+                RoundedRectangle(cornerRadius: Sizing.pillRadius, style: .continuous)
+                    .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Building blocks
+
+    private func sectionHeader(_ text: String) -> some View {
+        Text(text)
+            .font(.sfMono(size: 12))
+            .foregroundColor(.arclabMidGrey)
+            .tracking(2.0)
+    }
+
+    private var divider: some View {
+        Rectangle()
+            .fill(Color.arclabBorderGrey)
+            .frame(height: Sizing.borderWidth)
+    }
+
+    /// One labeled toggle. When `systemOn` is true the matching iOS setting
+    /// already forces the behavior, so the switch reads locked-on (rather
+    /// than an off switch that contradicts what the app is doing) and a
+    /// note explains why.
+    private func toggleRow(
+        title: String,
+        blurb: String,
+        binding: Binding<Bool>,
+        systemOn: Bool,
+        systemNote: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            Toggle(isOn: systemOn ? .constant(true) : binding) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(title)
+                        .font(.sfMono(size: 13, weight: .medium))
+                        .foregroundColor(.arclabWhite)
+                        .tracking(1.5)
+                    Text(blurb)
+                        .font(.barlowCondensed(size: 15, italic: true))
+                        .foregroundColor(.arclabMidGrey)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .tint(.arclabRimOrange)
+            .disabled(systemOn)
+
+            if systemOn, !systemNote.isEmpty {
+                Text(systemNote)
+                    .font(.sfMono(size: 11))
+                    .foregroundColor(.arclabRimOrange)
+                    .tracking(1.5)
+            }
+        }
+    }
+
+    /// Live specimen of the three text tones the legibility toggle affects.
     private var sample: some View {
         VStack(alignment: .leading, spacing: Spacing.xxs) {
             Text("SAMPLE")
@@ -128,4 +215,5 @@ struct SettingsView: View {
 #Preview {
     SettingsView()
         .environment(AccessibilitySettings.shared)
+        .environment(AudioService.shared)
 }

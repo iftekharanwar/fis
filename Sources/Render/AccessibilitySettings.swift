@@ -35,21 +35,66 @@ final class AccessibilitySettings: NSObject {
     /// The palette the app actually renders with.
     var highLegibilityActive: Bool { highLegibilityEnabled || systemIncreaseContrast }
 
+    /// In-app Reduce Motion override — persisted. Same contract as High
+    /// Legibility: OR'd with the system switch.
+    var reduceMotionEnabled: Bool {
+        didSet { defaults.set(reduceMotionEnabled, forKey: PersistenceKeys.reduceMotionOverride) }
+    }
+
+    /// Mirrors `UIAccessibility.isReduceMotionEnabled`; notification-fresh.
+    var systemReduceMotion: Bool
+
+    /// The motion policy the app actually renders with. SwiftUI views read
+    /// this live (Observation re-renders them); SpriteKit scenes get it
+    /// pushed via `setReduceMotion(_:)` since SKScenes can't observe.
+    var reduceMotionActive: Bool { reduceMotionEnabled || systemReduceMotion }
+
+    /// Haptics master switch — persisted, default ON. Threaded through
+    /// `PressableButtonStyle` and the `gameHaptic` wrappers (there is no
+    /// app-level kill switch for .sensoryFeedback in SwiftUI).
+    var hapticsEnabled: Bool {
+        didSet { defaults.set(hapticsEnabled, forKey: PersistenceKeys.hapticsEnabled) }
+    }
+
+    /// Mirrors the iOS "Differentiate Without Color" setting. No toggle —
+    /// the audit confirmed redundant cues exist everywhere; this is the
+    /// hook future color-coded features must consult.
+    var systemDifferentiateWithoutColor: Bool
+
     private let defaults: UserDefaults
 
-    /// Tests pass an isolated `UserDefaults` suite and an explicit system flag.
+    /// Tests pass an isolated `UserDefaults` suite and explicit system flags.
     init(
         defaults: UserDefaults = .standard,
-        systemIncreaseContrast: Bool = UIAccessibility.isDarkerSystemColorsEnabled
+        systemIncreaseContrast: Bool = UIAccessibility.isDarkerSystemColorsEnabled,
+        systemReduceMotion: Bool = UIAccessibility.isReduceMotionEnabled,
+        systemDifferentiateWithoutColor: Bool = UIAccessibility.shouldDifferentiateWithoutColor
     ) {
         self.defaults = defaults
         self.highLegibilityEnabled = defaults.bool(forKey: PersistenceKeys.highLegibilityEnabled)
+        self.reduceMotionEnabled = defaults.bool(forKey: PersistenceKeys.reduceMotionOverride)
+        self.hapticsEnabled = (defaults.object(forKey: PersistenceKeys.hapticsEnabled) as? Bool) ?? true
         self.systemIncreaseContrast = systemIncreaseContrast
+        self.systemReduceMotion = systemReduceMotion
+        self.systemDifferentiateWithoutColor = systemDifferentiateWithoutColor
         super.init()
-        NotificationCenter.default.addObserver(
+        let center = NotificationCenter.default
+        center.addObserver(
             self,
             selector: #selector(systemContrastDidChange),
             name: UIAccessibility.darkerSystemColorsStatusDidChangeNotification,
+            object: nil
+        )
+        center.addObserver(
+            self,
+            selector: #selector(systemReduceMotionDidChange),
+            name: UIAccessibility.reduceMotionStatusDidChangeNotification,
+            object: nil
+        )
+        center.addObserver(
+            self,
+            selector: #selector(systemDifferentiateDidChange),
+            name: UIAccessibility.differentiateWithoutColorDidChangeNotification,
             object: nil
         )
     }
@@ -57,5 +102,13 @@ final class AccessibilitySettings: NSObject {
     /// UIAccessibility status notifications post on the main thread.
     @objc private func systemContrastDidChange() {
         systemIncreaseContrast = UIAccessibility.isDarkerSystemColorsEnabled
+    }
+
+    @objc private func systemReduceMotionDidChange() {
+        systemReduceMotion = UIAccessibility.isReduceMotionEnabled
+    }
+
+    @objc private func systemDifferentiateDidChange() {
+        systemDifferentiateWithoutColor = UIAccessibility.shouldDifferentiateWithoutColor
     }
 }

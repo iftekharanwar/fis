@@ -69,8 +69,8 @@ struct PlayInputSingleFieldView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .heavy), trigger: shootTapsCount, condition: { _, _ in isShootEnabled })
-        .sensoryFeedback(.warning, trigger: shootTapsCount, condition: { _, _ in !isShootEnabled })
+        .gameHaptic(.impact(weight: .heavy), trigger: shootTapsCount, condition: { _, _ in isShootEnabled })
+        .gameHaptic(.warning, trigger: shootTapsCount, condition: { _, _ in !isShootEnabled })
         .accessibilityLabel(isShootEnabled ? "Shoot. Commit your answer." : "Shoot, awaiting input. Fill the field.")
     }
 
@@ -217,7 +217,7 @@ private struct NumpadButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .light), trigger: tapCount)
+        .gameHaptic(.impact(weight: .light), trigger: tapCount)
         .accessibilityLabel(accessibilityName)
     }
 

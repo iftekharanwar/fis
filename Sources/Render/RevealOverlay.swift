@@ -78,7 +78,7 @@ struct RevealOverlay: View {
         }
         // Soft tick when the reveal card slides up — like a polished sheet
         // settling into place. Light weight to not compete with the verdict.
-        .sensoryFeedback(.impact(weight: .light), trigger: slideUpHapticCount)
+        .gameHaptic(.impact(weight: .light), trigger: slideUpHapticCount)
     }
 
     // MARK: - Card

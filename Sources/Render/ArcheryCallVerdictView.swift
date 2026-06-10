@@ -57,7 +57,13 @@ struct ArcheryCallVerdictView: View {
         // The verdict swaps in as an in-place ZStack — announce it, posted
         // here so the spoken copy is exactly the on-screen copy.
         .announceOnAppear { "\(verbCopy) \(subheadCopy)" }
+        // Verdict haptic — parity with basketball's CallVerdictView, so deaf
+        // and eyes-free players get the same beat across sports.
+        .gameHaptic(wasCorrect ? .success : .error, trigger: verdictHapticCount)
+        .onAppear { verdictHapticCount += 1 }
     }
+
+    @State private var verdictHapticCount: Int = 0
 
     private var verbCopy: String {
         switch mode {

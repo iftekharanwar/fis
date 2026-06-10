@@ -10,12 +10,17 @@ import UIKit
 /// so the minimum dwell is ~1.25s — long enough for the animation to complete
 /// and breathe before the cross-fade to Home, without dragging.
 struct AppOpenView: View {
+    @Environment(AccessibilitySettings.self) private var accessibility
 
     @State private var loadComplete = false
     @State private var loadFailed = false
     @State private var capReached = false
     /// Drives the staged reveal (wordmark rise, rule grow, glow bloom).
     @State private var revealed = false
+
+    /// Reduce Motion: the splash becomes a pure cross-fade — rise offsets
+    /// and the bloom scale pin to their settled values, opacity fades stay.
+    private var reduceMotion: Bool { accessibility.reduceMotionActive }
 
     @State private var capTask: Task<Void, Never>?
     @State private var loadTask: Task<Void, Never>?
@@ -60,7 +65,7 @@ struct AppOpenView: View {
                     .shadow(color: Color.arclabRimOrange.opacity(revealed ? 0.35 : 0),
                             radius: 22, x: 0, y: 6)
                     .opacity(revealed ? 1 : 0)
-                    .offset(y: revealed ? 0 : 22)
+                    .offset(y: revealed || reduceMotion ? 0 : 22)
                     .animation(.timingCurve(0.16, 0.8, 0.24, 1, duration: 0.72), value: revealed)
 
                 // Thin orange hairline that grows in after the wordmark settles.
@@ -68,7 +73,7 @@ struct AppOpenView: View {
                     colors: [.clear, .arclabRimOrange, .clear],
                     startPoint: .leading, endPoint: .trailing
                 )
-                .frame(width: revealed ? 150 : 0, height: 2)
+                .frame(width: revealed || reduceMotion ? 150 : 0, height: 2)
                 .opacity(revealed ? 1 : 0)
                 .padding(.top, Spacing.lg)
                 .animation(.easeOut(duration: 0.44).delay(0.28), value: revealed)
@@ -110,7 +115,7 @@ struct AppOpenView: View {
                     )
                 )
                 .scaleEffect(x: 1.3, y: 1.0, anchor: .bottom)
-                .scaleEffect(revealed ? 1.0 : 0.9, anchor: .bottom)
+                .scaleEffect(revealed || reduceMotion ? 1.0 : 0.9, anchor: .bottom)
                 .opacity(revealed ? 1 : 0)
                 .animation(.easeOut(duration: 0.68), value: revealed)
         }

@@ -13,6 +13,7 @@ import SpriteKit
 struct CallPlayView: View {
     @Environment(PlayerProfileStore.self) private var profile
     @Environment(AudioService.self) private var audio
+    @Environment(AccessibilitySettings.self) private var accessibility
     @Environment(\.horizontalSizeClass) private var hSizeClass
 
     let scenario: ScenarioDefinition
@@ -200,10 +201,15 @@ struct CallPlayView: View {
         ) {
             onClose?()
         }
-        .sensoryFeedback(.impact(weight: .medium), trigger: releaseHapticCount)
+        .gameHaptic(.impact(weight: .medium), trigger: releaseHapticCount)
         .onAppear {
+            scene.setReduceMotion(accessibility.reduceMotionActive)
             configureScene()
             startAutoplayIfRequested()
+        }
+        // Mid-session toggles (Settings or iOS) retune the running scene.
+        .onChange(of: accessibility.reduceMotionActive) { _, on in
+            scene.setReduceMotion(on)
         }
         .onChange(of: pendingResolution) { _, new in
             // Finalize the verdict here so live SwiftUI state (userCall,

@@ -90,8 +90,8 @@ struct PlayInputView: View {
         }
         .buttonStyle(.plain)
         // Stays enabled in code (not .disabled) so tap-while-invalid fires .warning haptic and stays in VoiceOver tap order.
-        .sensoryFeedback(.impact(weight: .heavy), trigger: shootTapsCount, condition: { _, _ in isShootEnabled })
-        .sensoryFeedback(.warning, trigger: shootTapsCount, condition: { _, _ in !isShootEnabled })
+        .gameHaptic(.impact(weight: .heavy), trigger: shootTapsCount, condition: { _, _ in isShootEnabled })
+        .gameHaptic(.warning, trigger: shootTapsCount, condition: { _, _ in !isShootEnabled })
         .accessibilityLabel(isShootEnabled ? "Shoot. Commit your answer." : "Shoot, awaiting input. Both fields must be filled.")
     }
 
@@ -264,7 +264,7 @@ private struct NumpadButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .light), trigger: tapCount)
+        .gameHaptic(.impact(weight: .light), trigger: tapCount)
         .accessibilityLabel(accessibilityName)
     }
 

@@ -77,6 +77,7 @@
 		56163DA5B104364F082CCA17 /* rim-hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 55657A3022D7E039A18756F4 /* rim-hit.wav */; };
 		57B22CE651A099F8CFBB63F6 /* AccessibilitySettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C6EBC165AA8EFF9AEC833 /* AccessibilitySettingsTests.swift */; };
 		58BC89208219985DCBF66E68 /* PlayerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A53E3D7433F97610E37D8 /* PlayerProfile.swift */; };
+		598C4388CCA0558182C520BA /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67EB44E6C80CFDAED97FA836 /* Haptics.swift */; };
 		5A0CE08400826868FBD6DCC6 /* SwipeBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9D61ABAEB4B270D9F96E21 /* SwipeBack.swift */; };
 		5BC360F3E9CCBC0B5B601ED4 /* bb-c-wing-throw.json in Resources */ = {isa = PBXBuildFile; fileRef = 89E0146E05388213721F8F2D /* bb-c-wing-throw.json */; };
 		5BED9E8FF4136E469B82D48F /* arrow-whoosh.wav in Resources */ = {isa = PBXBuildFile; fileRef = C532B3389C4740D326D4750D /* arrow-whoosh.wav */; };
@@ -170,7 +171,6 @@
 		C225E0568F9F3DAF925CA6DB /* SoccerSceneNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F71F82B3B1C2AF0FDB00A6 /* SoccerSceneNode.swift */; };
 		C244798B1C4B42072C5EC70C /* MasteryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 983D6320CA80974913215A19 /* MasteryService.swift */; };
 		C4D65769C9586AFA5A6604EC /* brand-mark.wav in Resources */ = {isa = PBXBuildFile; fileRef = DAC015AA73E8226960B1022D /* brand-mark.wav */; };
-		C5141DF8A7BF4D58920CCD78 /* MotionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C8711045AAF16CDCB2F433 /* MotionController.swift */; };
 		C5A68FC3335225C1301C28CD /* bb-5-toe-behind.json in Resources */ = {isa = PBXBuildFile; fileRef = 8DDC2806BFA1AD9C2067ADC7 /* bb-5-toe-behind.json */; };
 		C610B815B320DD0136B51A43 /* AudioBundleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11EA3D3ABA9C0ECDF6C1005 /* AudioBundleTests.swift */; };
 		C6BB08DFDE323E6F196E5423 /* bb-b-top-key.json in Resources */ = {isa = PBXBuildFile; fileRef = 3D891B5E79161F49177A4C66 /* bb-b-top-key.json */; };
@@ -333,6 +333,7 @@
 		6212191AC0336BE6E1AE4D24 /* bg-basketball-gym-dusk.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bg-basketball-gym-dusk.png"; sourceTree = "<group>"; };
 		64224DC624A867395EA5AD69 /* NextSituationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextSituationPicker.swift; sourceTree = "<group>"; };
 		679A2C851B1E7799933A233E /* BarlowCondensed-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BarlowCondensed-Italic.ttf"; sourceTree = "<group>"; };
+		67EB44E6C80CFDAED97FA836 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		6817918E6569DF91A1BDCC1F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6B16C63005C492179FECFE8B /* OutcomeDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutcomeDefinition.swift; sourceTree = "<group>"; };
 		6BC8F61703BCD9389E7C4F26 /* glass-bounce.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "glass-bounce.wav"; sourceTree = "<group>"; };
@@ -359,7 +360,6 @@
 		8423C9B12D61CF29072D71B9 /* PlayerProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileStore.swift; sourceTree = "<group>"; };
 		8506F9E112B37E14102862E2 /* bb-c-elbow.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-c-elbow.json"; sourceTree = "<group>"; };
 		85CCC4DD8C3D57AACA7580A0 /* NextSituationPickerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextSituationPickerTests.swift; sourceTree = "<group>"; };
-		86C8711045AAF16CDCB2F433 /* MotionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionController.swift; sourceTree = "<group>"; };
 		87314AE5D3120BC1E36A05C9 /* Sport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sport.swift; sourceTree = "<group>"; };
 		8784D7B135491618522558D7 /* bb-4-wrong-angle.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-4-wrong-angle.json"; sourceTree = "<group>"; };
 		8976CB61A0466434E935514C /* CallPlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallPlayView.swift; sourceTree = "<group>"; };
@@ -528,6 +528,7 @@
 				D753DFE7BF4B1F44E0A40CA1 /* CourtCoordinateTransform.swift */,
 				CB16C4783BA95A4F2AEEE25D /* DailyQuestionView.swift */,
 				4E7FDD3CA85816BDD0744657 /* Font+Tokens.swift */,
+				67EB44E6C80CFDAED97FA836 /* Haptics.swift */,
 				B9DB4D497A148712CD8D41CF /* HomeView.swift */,
 				C801ABCF740236A464FF766F /* IntroView.swift */,
 				57AA5494B48AAE609BFD9F7D /* LayoutContext.swift */,
@@ -793,7 +794,6 @@
 		ECD960A301AC2691CA54126A /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				86C8711045AAF16CDCB2F433 /* MotionController.swift */,
 				A5887B34B2CC453BE544852F /* ScenarioLoader.swift */,
 				61C964E97BDE5CC692C8D0BA /* ScenarioSession.swift */,
 				31D95294BFFD55218FCC5D71 /* SpotterService.swift */,
@@ -1082,6 +1082,7 @@
 				89AF84E679DD0155E122A540 /* DailyQuestionView.swift in Sources */,
 				EAC0D096F5374DF97D82BC11 /* DailyScenarioPicker.swift in Sources */,
 				F055B38FF1A5F577448BFC35 /* Font+Tokens.swift in Sources */,
+				598C4388CCA0558182C520BA /* Haptics.swift in Sources */,
 				D76C91B8317812B6FD546755 /* HintDefinition.swift in Sources */,
 				AFE2269832A071CF72331F0E /* HomeView.swift in Sources */,
 				E31EA62FDBC7F1DB91F95438 /* InputDefinition.swift in Sources */,
@@ -1096,7 +1097,6 @@
 				C244798B1C4B42072C5EC70C /* MasteryService.swift in Sources */,
 				01F651FCB58C68A4E52A2D4C /* MetaDefinition.swift in Sources */,
 				D253BE4153A3E2F7975C19F7 /* MissedView.swift in Sources */,
-				C5141DF8A7BF4D58920CCD78 /* MotionController.swift in Sources */,
 				A2C0315FCC85E5F40DAEDCC4 /* NextSituationPicker.swift in Sources */,
 				FB8A49C0551FAA4C8FB1D441 /* OnboardingView.swift in Sources */,
 				4CA11326E36DD74EFE10803A /* OutcomeDefinition.swift in Sources */,

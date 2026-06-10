@@ -5,8 +5,6 @@ struct PhysicsGameApp: App {
 
     @State private var playerProfile = PlayerProfileStore.shared
 
-    @State private var motion = MotionController()
-
     @State private var spotter = SpotterService()
 
     @State private var subscription = SubscriptionService()
@@ -19,7 +17,6 @@ struct PhysicsGameApp: App {
         WindowGroup {
             RootView()
                 .environment(playerProfile)
-                .environment(motion)
                 .environment(spotter)
                 .environment(subscription)
                 .environment(audio)

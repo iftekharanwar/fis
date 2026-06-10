@@ -44,7 +44,7 @@ struct SolutionView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .sensoryFeedback(.impact(weight: .light), trigger: closeTapCount)
+            .gameHaptic(.impact(weight: .light), trigger: closeTapCount)
             .accessibilityLabel("Close. Return to missed screen.")
 
             Spacer()
@@ -191,7 +191,7 @@ struct SolutionView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .heavy), trigger: bottomTapCount)
+        .gameHaptic(.impact(weight: .heavy), trigger: bottomTapCount)
         .accessibilityLabel("Try this answer. The fields will pre-fill with the canonical answer.")
     }
 

@@ -111,7 +111,7 @@ struct MissedView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .sensoryFeedback(.impact(weight: .heavy), trigger: false)
+            .gameHaptic(.impact(weight: .heavy), trigger: false)
             .frame(maxWidth: .infinity)
 
             // Locked-style on an enabled control so VoiceOver tap order stays intact (HIG pattern).

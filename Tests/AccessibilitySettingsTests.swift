@@ -55,4 +55,40 @@ final class AccessibilitySettingsTests: XCTestCase {
         settings.highLegibilityEnabled = false
         XCTAssertFalse(settings.highLegibilityActive)
     }
+
+    // MARK: - Reduce Motion (same OR-with-system contract as High Legibility)
+
+    func testReduceMotionDefaultsOffAndPersists() {
+        let first = AccessibilitySettings(defaults: defaults, systemReduceMotion: false)
+        XCTAssertFalse(first.reduceMotionActive)
+        first.reduceMotionEnabled = true
+
+        let second = AccessibilitySettings(defaults: defaults, systemReduceMotion: false)
+        XCTAssertTrue(second.reduceMotionEnabled)
+        XCTAssertTrue(second.reduceMotionActive)
+    }
+
+    func testSystemReduceMotionActivatesWithoutToggle() {
+        let settings = AccessibilitySettings(defaults: defaults, systemReduceMotion: true)
+        XCTAssertFalse(settings.reduceMotionEnabled, "system setting must not flip the persisted override")
+        XCTAssertTrue(settings.reduceMotionActive)
+    }
+
+    func testSystemReduceMotionChangeIsLive() {
+        let settings = AccessibilitySettings(defaults: defaults, systemReduceMotion: false)
+        XCTAssertFalse(settings.reduceMotionActive)
+        settings.systemReduceMotion = true
+        XCTAssertTrue(settings.reduceMotionActive)
+    }
+
+    // MARK: - Haptics (default ON, persisted)
+
+    func testHapticsDefaultsOnAndPersists() {
+        let first = AccessibilitySettings(defaults: defaults)
+        XCTAssertTrue(first.hapticsEnabled, "haptics default ON")
+        first.hapticsEnabled = false
+
+        let second = AccessibilitySettings(defaults: defaults)
+        XCTAssertFalse(second.hapticsEnabled)
+    }
 }

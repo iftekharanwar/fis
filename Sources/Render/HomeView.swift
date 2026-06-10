@@ -21,6 +21,7 @@ import SwiftUI
 /// `AdaptiveContentContainer`. iPhone is pass-through.
 struct HomeView: View {
     @Environment(PlayerProfileStore.self) private var profile
+    @Environment(AccessibilitySettings.self) private var accessibility
 
     /// Tap a sport row → that sport's chapter list.
     let onOpenSport: (Sport) -> Void
@@ -41,14 +42,16 @@ struct HomeView: View {
                 header
 
                 ScrollView(.vertical, showsIndicators: false) {
+                    // Reduce Motion: entrance becomes a pure fade (offsets pin).
+                    let rm = accessibility.reduceMotionActive
                     VStack(alignment: .leading, spacing: Spacing.lg) {
                         heroCard
                             .opacity(appeared ? 1 : 0)
-                            .offset(y: appeared ? 0 : 14)
+                            .offset(y: appeared || rm ? 0 : 14)
                             .animation(.easeOut(duration: 0.45), value: appeared)
                         sportsSection
                             .opacity(appeared ? 1 : 0)
-                            .offset(y: appeared ? 0 : 14)
+                            .offset(y: appeared || rm ? 0 : 14)
                             .animation(.easeOut(duration: 0.45).delay(0.1), value: appeared)
                     }
                     .padding(.top, Spacing.md)

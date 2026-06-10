@@ -38,7 +38,7 @@ struct CallVerdictView: View {
         // Verdict haptic — .success when the user read it right (either GOOD
         // CALL or NAILED IT), .error when they read it wrong (MISSED IT, WRONG).
         // Lands ~150ms after the verb appears, syncs with audio cue.
-        .sensoryFeedback(wasCorrect ? .success : .error, trigger: verdictHapticCount)
+        .gameHaptic(wasCorrect ? .success : .error, trigger: verdictHapticCount)
         .onAppear {
             verdictHapticCount += 1
             // The verdict swaps in as an in-place ZStack — announce it, posted
