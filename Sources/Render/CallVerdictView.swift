@@ -39,7 +39,12 @@ struct CallVerdictView: View {
         // CALL or NAILED IT), .error when they read it wrong (MISSED IT, WRONG).
         // Lands ~150ms after the verb appears, syncs with audio cue.
         .sensoryFeedback(wasCorrect ? .success : .error, trigger: verdictHapticCount)
-        .onAppear { verdictHapticCount += 1 }
+        .onAppear {
+            verdictHapticCount += 1
+            // The verdict swaps in as an in-place ZStack — announce it, posted
+            // here so the spoken copy is exactly the on-screen copy.
+            Announce.post("\(verbCopy) \(subheadCopy)")
+        }
     }
 
     // MARK: - Copy

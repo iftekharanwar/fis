@@ -123,8 +123,43 @@ struct LessonView: View {
                     .layoutPriority(1)
                     .clipShape(RoundedRectangle(cornerRadius: Sizing.cardRadius))
                     .padding(.bottom, Spacing.lg)
+                    // Decorative per the lesson style — the card text carries
+                    // the content; never let VoiceOver read an asset name.
+                    .accessibilityHidden(true)
             }
 
+            textBlock
+                // The invisible tap zones are gesture-only, so the card itself
+                // is the screen-reader paging control: one combined element,
+                // adjustable like a page control (swipe up/down = next/back),
+                // with named actions for Voice Control and Switch Control.
+                .accessibilityElement(children: .combine)
+                .accessibilityValue("Card \(cardIndex + 1) of \(lesson.cards.count)")
+                .accessibilityHint("Swipe up or down to change cards.")
+                .accessibilityAdjustableAction { direction in
+                    switch direction {
+                    case .increment: handleAdvance()
+                    case .decrement: handleBack()
+                    @unknown default: break
+                    }
+                }
+                .accessibilityAction(named: "Next card") { handleAdvance() }
+                .accessibilityAction(named: "Previous card") { handleBack() }
+
+            if isLastCard {
+                Spacer().frame(height: Spacing.xl)
+                PrimaryButton(label: "Begin", action: handleComplete)
+            }
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Headline + optional body + optional math — the text content of the
+    /// card, grouped so VoiceOver reads it as one element.
+    private var textBlock: some View {
+        VStack(alignment: .leading, spacing: 0) {
             Text(currentCard.headline)
                 .font(.anton(size: 44))
                 .textCase(.uppercase)   // v3 playtest #PT5: Anton is a display face — always all caps.
@@ -155,13 +190,6 @@ struct LessonView: View {
                     )
                     .fixedSize(horizontal: false, vertical: true)
             }
-
-            if isLastCard {
-                Spacer().frame(height: Spacing.xl)
-                PrimaryButton(label: "Begin", action: handleComplete)
-            }
-
-            Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -183,6 +211,9 @@ struct LessonView: View {
             }
             .frame(height: max(0, geo.size.height - 80))
         }
+        // Gesture-only zones are invisible to assistive tech by nature;
+        // hide them so they never shadow the card's paging actions.
+        .accessibilityHidden(true)
     }
 
     /// One-time onboarding affordance. Sits center-screen, fades out on
@@ -223,6 +254,7 @@ struct LessonView: View {
         } else {
             withAnimation(.easeOut(duration: 0.22)) { cardIndex += 1 }
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            announceCurrentCard()
         }
     }
 
@@ -231,6 +263,16 @@ struct LessonView: View {
         guard cardIndex > 0 else { return }
         withAnimation(.easeOut(duration: 0.22)) { cardIndex -= 1 }
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        announceCurrentCard()
+    }
+
+    /// The card swap is an in-place transition VoiceOver can't see — speak
+    /// the new card's content. Queued so the adjustable "Card N of M" value
+    /// callout lands first.
+    private func announceCurrentCard() {
+        let card = lesson.cards[cardIndex]
+        let body = card.body.map { " \($0)" } ?? ""
+        Announce.post("\(card.headline).\(body)", priority: .queued)
     }
 
     private func handleComplete() {

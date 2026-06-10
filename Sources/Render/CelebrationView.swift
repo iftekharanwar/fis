@@ -89,6 +89,14 @@ struct CelebrationView: View {
         .statusBarHidden(true)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Self.accessibilityLabel(for: celebration, config: config))
+        // The whole takeover advances on tap — expose that as a button so
+        // VoiceOver/Switch Control users aren't stranded on a static screen.
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("Double-tap to continue.")
+        .accessibilityAction {
+            tapCount += 1
+            onTap()
+        }
     }
 
     private struct Config {

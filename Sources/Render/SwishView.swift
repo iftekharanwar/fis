@@ -50,6 +50,15 @@ struct SwishView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack)
         .onAppear {
+            // Announce the final values (never the animated counts) — the
+            // outcome swap is an in-place transition VoiceOver can't see.
+            Announce.post(
+                "\(scenario.voice.success.headlineByFlavor[flavor] ?? flavor). "
+                + "\(scenario.voice.success.subheadByFlavor[flavor] ?? "") "
+                + "\(Int(theta.rounded())) degrees, "
+                + String(format: "%.1f meters per second", velocity)
+                + ", plus \(score) points, plus \(xpGained) XP."
+            )
             guard !UIAccessibility.isReduceMotionEnabled else { return }
             withAnimation(.spring(response: 0.42, dampingFraction: 0.62)) {
                 verbScale = 1.0

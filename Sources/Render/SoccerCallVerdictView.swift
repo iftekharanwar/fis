@@ -36,6 +36,9 @@ struct SoccerCallVerdictView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundTint.ignoresSafeArea())
+        // The verdict swaps in as an in-place ZStack — announce it, posted
+        // here so the spoken copy is exactly the on-screen copy.
+        .announceOnAppear { "\(outcome.verb) \(subheadCopy)" }
     }
 
     private var subheadCopy: String {

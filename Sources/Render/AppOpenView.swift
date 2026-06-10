@@ -86,6 +86,9 @@ struct AppOpenView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { if loadFailed { retry() } }
+        // Only a button while there's actually something to do — the retry.
+        .accessibilityAddTraits(loadFailed ? .isButton : [])
+        .accessibilityAction { if loadFailed { retry() } }
     }
 
     /// Warm amber light rising from below the bottom edge. Widened into a soft

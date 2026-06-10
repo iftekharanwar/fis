@@ -119,6 +119,10 @@ struct DailyQuestionView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 170)
                 .padding(.top, Spacing.md)
+                // Without this VoiceOver reads the raw asset filename. The
+                // question text carries the content; a curated alt-text field
+                // can upgrade this in the vision pass.
+                .accessibilityHidden(true)
         }
     }
 
@@ -212,6 +216,9 @@ struct DailyQuestionView: View {
             .overlay(alignment: .top) {
                 Rectangle().fill(Color.arclabBorderGrey).frame(height: 1)
             }
+        }
+        .announceOnAppear {
+            "\(correct ? "Right." : "Not quite.") \(q.why) Fun fact: \(q.funFact)"
         }
     }
 

@@ -66,6 +66,14 @@ struct RevealOverlay: View {
                 try? await Task.sleep(for: .milliseconds(900))
                 withAnimation(.easeOut(duration: 0.4)) { visible = true }
                 slideUpHapticCount += 1
+                // Queued so it speaks after the verdict announcement finishes.
+                Announce.post(
+                    "\(wasCorrect ? "Right call" : "Wrong call"), "
+                    + "\(outcomeLabelOverride ?? (actualWentIn ? "it went in" : "it missed")). "
+                    + "\(phenomenon). \(explainer) "
+                    + "Buttons below: Try it yourself\(onShowMath != nil ? ", and Show the math" : "").",
+                    priority: .queued
+                )
             }
         }
         // Soft tick when the reveal card slides up — like a polished sheet

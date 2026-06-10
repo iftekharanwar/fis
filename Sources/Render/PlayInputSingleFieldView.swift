@@ -217,6 +217,16 @@ private struct NumpadButton: View {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.impact(weight: .light), trigger: tapCount)
+        .accessibilityLabel(accessibilityName)
+    }
+
+    /// "delete" for the glyph key; digits read themselves ("5", "point").
+    private var accessibilityName: String {
+        switch key {
+        case .digit("."): return "decimal point"
+        case .digit(let d): return d
+        case .backspace: return "delete"
+        }
     }
 
     @ViewBuilder

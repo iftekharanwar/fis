@@ -71,6 +71,10 @@ struct ArcheryCallPlayView: View {
     /// the draw weight.
     @State private var computeSpine: Double = 85.0
 
+    /// Moves VoiceOver to the call prompt when the frozen dock swaps in —
+    /// without it the phase change is silent and focus dies with the old dock.
+    @AccessibilityFocusState private var callPromptFocused: Bool
+
     private let computeMaxAttempts = 5
     private let velocityRange: ClosedRange<Double> = 50...110
     private let spineRange: ClosedRange<Double> = 30...100
@@ -347,25 +351,31 @@ struct ArcheryCallPlayView: View {
     /// with basketball): the user releases first, then predicts while the
     /// arrow hangs frozen.
     private var stanceDock: some View {
-        VStack(spacing: Spacing.sm) {
-            Text("NOCK IT.")
-                .font(.anton(size: 32))
-                .foregroundColor(.arclabWhite)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.md)
-                .fixedSize(horizontal: false, vertical: true)
+        // A real Button (not a bare tap gesture) so VoiceOver, Switch Control
+        // and Voice Control all get an actionable, labeled target — this is
+        // the first beat of every archery scenario.
+        Button(action: handleRelease) {
+            VStack(spacing: Spacing.sm) {
+                Text("NOCK IT.")
+                    .font(.anton(size: 32))
+                    .foregroundColor(.arclabWhite)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.md)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Text("TAP TO LOOSE")
-                .font(.sfMono(size: 11))
-                .foregroundColor(.arclabMidGrey)
-                .tracking(2.0)
+                Text("TAP TO LOOSE")
+                    .font(.sfMono(size: 11))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 220)
+            .padding(.bottom, Spacing.lg)
+            .background(Color.arclabBlack)
+            .contentShape(Rectangle())
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 220)
-        .padding(.bottom, Spacing.lg)
-        .background(Color.arclabBlack)
-        .contentShape(Rectangle())
-        .onTapGesture { handleRelease() }
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel("Loose the arrow. It flies and freezes mid-flight; then you call the outcome.")
         .transition(.opacity)
     }
 
@@ -380,6 +390,11 @@ struct ArcheryCallPlayView: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.7)
                 .fixedSize(horizontal: false, vertical: true)
+                // The dock swaps in silently mid-flight — move VoiceOver here
+                // so the prompt is spoken, two swipes from YES/NO. (Scene
+                // read gets richer in the scene-narration pass.)
+                .accessibilityLabel("\(scenario.stancePrompt) The arrow is frozen mid-flight. Yes and No buttons below.")
+                .accessibilityFocused($callPromptFocused)
 
             HStack(spacing: Spacing.md) {
                 PrimaryButton(label: "Yes", action: { handleCall(yes: true) })
@@ -392,6 +407,7 @@ struct ArcheryCallPlayView: View {
         .padding(.bottom, Spacing.lg)
         .background(Color.arclabBlack)
         .transition(.opacity)
+        .onAppear { callPromptFocused = true }
     }
 
     // MARK: - Compute dock
@@ -419,20 +435,16 @@ struct ArcheryCallPlayView: View {
                     .tracking(2.0)
             }
 
-            sliderRow(
-                label: "HOLDOVER",
-                unit: "cm",
-                value: $computeHoldover,
-                range: 0...100,
-                format: "%.0f"
+            ParameterSliderRow(
+                label: "HOLDOVER", spokenName: "Holdover",
+                unit: "cm", spokenUnit: "centimeters",
+                value: $computeHoldover, range: 0...100, format: "%.0f", step: 1
             )
 
-            sliderRow(
-                label: "POWER",
-                unit: "m/s",
-                value: $computeVelocity,
-                range: velocityRange,
-                format: "%.0f"
+            ParameterSliderRow(
+                label: "POWER", spokenName: "Power",
+                unit: "m/s", spokenUnit: "meters per second",
+                value: $computeVelocity, range: velocityRange, format: "%.0f", step: 1
             )
 
             PrimaryButton(label: "Shoot", action: handleComputeShoot)
@@ -471,12 +483,10 @@ struct ArcheryCallPlayView: View {
                     .foregroundColor(.arclabMidGrey)
             }
 
-            sliderRow(
-                label: "SPINE",
-                unit: "",
-                value: $computeSpine,
-                range: spineRange,
-                format: "%.0f"
+            ParameterSliderRow(
+                label: "SPINE", spokenName: "Arrow spine stiffness",
+                unit: "", spokenUnit: "",
+                value: $computeSpine, range: spineRange, format: "%.0f", step: 5
             )
 
             PrimaryButton(label: "Shoot", action: handleComputeShoot)
@@ -487,34 +497,6 @@ struct ArcheryCallPlayView: View {
         .padding(.bottom, Spacing.lg)
         .frame(maxWidth: .infinity)
         .background(Color.arclabBlack)
-    }
-
-    private func sliderRow(
-        label: String,
-        unit: String,
-        value: Binding<Double>,
-        range: ClosedRange<Double>,
-        format: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            HStack(alignment: .lastTextBaseline) {
-                Text(label)
-                    .font(.sfMono(size: 10))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(2.0)
-                Spacer()
-                HStack(alignment: .lastTextBaseline, spacing: 4) {
-                    Text(String(format: format, value.wrappedValue))
-                        .font(.sfMono(size: 18, weight: .medium))
-                        .foregroundColor(.arclabWhite)
-                    Text(unit)
-                        .font(.sfMono(size: 11))
-                        .foregroundColor(.arclabMidGrey)
-                }
-            }
-            Slider(value: value, in: range)
-                .tint(.arclabWhite)
-        }
     }
 
     // MARK: - Compute verdict view
@@ -573,6 +555,9 @@ struct ArcheryCallPlayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background((success ? Color.arclabBlack : Color.arclabMissTint).ignoresSafeArea())
+        .announceOnAppear {
+            "\(computeVerdictVerb(success: success)) \(computeVerdictSubhead(outcome: outcome, success: success))"
+        }
     }
 
     private func computeVerdictVerb(success: Bool) -> String {

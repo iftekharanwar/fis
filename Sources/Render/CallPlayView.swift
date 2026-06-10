@@ -55,6 +55,10 @@ struct CallPlayView: View {
     /// Medium impact on RELEASE — the physical "ball leaving the hand" beat.
     @State private var releaseHapticCount: Int = 0
 
+    /// Moves VoiceOver to the CALL IT prompt when the frozen dock swaps in —
+    /// without it the phase change is silent and focus dies with the old dock.
+    @AccessibilityFocusState private var callPromptFocused: Bool
+
     /// Max attempts in compute mode before returning to chapter.
     private let computeMaxAttempts = 5
 
@@ -373,25 +377,31 @@ struct CallPlayView: View {
     }
 
     private var stanceDock: some View {
-        VStack(spacing: Spacing.sm) {
-            Text("CALL IT.")
-                .font(.anton(size: 32))
-                .foregroundColor(.arclabWhite)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.md)
-                .fixedSize(horizontal: false, vertical: true)
+        // A real Button (not a bare tap gesture) so VoiceOver, Switch Control
+        // and Voice Control all get an actionable, labeled target — this is
+        // the first beat of every scenario.
+        Button(action: handleRelease) {
+            VStack(spacing: Spacing.sm) {
+                Text("CALL IT.")
+                    .font(.anton(size: 32))
+                    .foregroundColor(.arclabWhite)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.md)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Text("TAP TO RELEASE")
-                .font(.sfMono(size: 11))
-                .foregroundColor(.arclabMidGrey)
-                .tracking(2.0)
+                Text("TAP TO RELEASE")
+                    .font(.sfMono(size: 11))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 220)
+            .padding(.bottom, Spacing.lg)
+            .background(Color.arclabBlack)
+            .contentShape(Rectangle())
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 220)
-        .padding(.bottom, Spacing.lg)
-        .background(Color.arclabBlack)
-        .contentShape(Rectangle())
-        .onTapGesture { handleRelease() }
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel("Release the shot. The ball flies and freezes mid-flight; then you call whether it goes in.")
         .transition(.opacity)
     }
 
@@ -401,6 +411,12 @@ struct CallPlayView: View {
                 .font(.sfMono(size: 11))
                 .foregroundColor(.arclabMidGrey)
                 .tracking(2.0)
+                // The dock swaps in silently mid-flight — move VoiceOver here
+                // so the focus speech delivers the prompt, two swipes from
+                // YES/NO. (The scene read in this label gets richer in the
+                // scene-narration pass.)
+                .accessibilityLabel("Call it. The ball is frozen at the top of its arc. Will it go in? Yes and No buttons below.")
+                .accessibilityFocused($callPromptFocused)
 
             HStack(spacing: Spacing.md) {
                 PrimaryButton(label: "Yes", action: { handleCall(yes: true) })
@@ -413,6 +429,7 @@ struct CallPlayView: View {
         .padding(.bottom, Spacing.lg)
         .background(Color.arclabBlack)
         .transition(.opacity)
+        .onAppear { callPromptFocused = true }
     }
 
     // MARK: - Compute mode (easy)
@@ -434,8 +451,16 @@ struct CallPlayView: View {
                     .tracking(2.0)
             }
 
-            sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
-            sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+            ParameterSliderRow(
+                label: "ANGLE", spokenName: "Launch angle",
+                unit: "°", spokenUnit: "degrees",
+                value: $computeTheta, range: 15...80, format: "%.0f", step: 1
+            )
+            ParameterSliderRow(
+                label: "SPEED", spokenName: "Launch speed",
+                unit: "m/s", spokenUnit: "meters per second",
+                value: $computeVelocity, range: 3...15, format: "%.1f", step: 0.5
+            )
 
             PrimaryButton(label: "Shoot", action: handleComputeShoot)
                 .padding(.top, Spacing.xs)
@@ -445,34 +470,6 @@ struct CallPlayView: View {
         .padding(.bottom, Spacing.lg)
         .frame(maxWidth: .infinity)
         .background(Color.arclabBlack)
-    }
-
-    private func sliderRow(
-        label: String,
-        unit: String,
-        value: Binding<Double>,
-        range: ClosedRange<Double>,
-        format: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            HStack(alignment: .lastTextBaseline) {
-                Text(label)
-                    .font(.sfMono(size: 10))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(2.0)
-                Spacer()
-                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                    Text(String(format: format, value.wrappedValue))
-                        .font(.sfMono(size: 18, weight: .medium))
-                        .foregroundColor(.arclabWhite)
-                    Text(unit)
-                        .font(.sfMono(size: 11))
-                        .foregroundColor(.arclabMidGrey)
-                }
-            }
-            Slider(value: value, in: range)
-                .tint(.arclabWhite)
-        }
     }
 
     /// Compute outcome view — clean call-first-styled verdict for the
@@ -529,6 +526,11 @@ struct CallPlayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background((madeIt ? Color.arclabBlack : Color.arclabMissTint).ignoresSafeArea())
+        .announceOnAppear {
+            madeIt
+                ? "Got it. Your numbers landed the shot."
+                : "Missed, attempt \(attempt) of \(computeMaxAttempts). Buttons below to retry or see the math."
+        }
     }
 
     // MARK: - Formula walkthrough

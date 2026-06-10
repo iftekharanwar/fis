@@ -35,15 +35,26 @@ struct PlayInputView: View {
     private var inputCardsRow: some View {
         HStack(spacing: Spacing.xs) {
             ForEach(Array(scenario.input.fields.enumerated()), id: \.offset) { _, field in
-                InputCard(
-                    field: field,
-                    value: bindingFor(field: field),
-                    isActive: activeFieldForFieldDef(field: field) == activeField
-                )
-                .contentShape(Rectangle())
-                .onTapGesture {
+                let isActive = activeFieldForFieldDef(field: field) == activeField
+                let fieldValue = bindingFor(field: field).wrappedValue
+                // A real Button so field switching works for VoiceOver,
+                // Switch Control and Voice Control — the active/empty state
+                // used to be visual-only (cursor glyph + border color).
+                Button {
                     activeField = activeFieldForFieldDef(field: field)
+                } label: {
+                    InputCard(
+                        field: field,
+                        value: bindingFor(field: field),
+                        isActive: isActive
+                    )
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(field.label) field")
+                .accessibilityValue(fieldValue.isEmpty ? "empty" : "\(fieldValue) \(field.unit)")
+                .accessibilityAddTraits(isActive ? [.isSelected] : [])
+                .accessibilityHint(isActive ? "Active. Use the number pad below." : "Double-tap to type into this field.")
             }
         }
     }
@@ -253,6 +264,16 @@ private struct NumpadButton: View {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.impact(weight: .light), trigger: tapCount)
+        .accessibilityLabel(accessibilityName)
+    }
+
+    /// "delete" for the glyph key; digits read themselves ("5", "point").
+    private var accessibilityName: String {
+        switch key {
+        case .digit("."): return "decimal point"
+        case .digit(let d): return d
+        case .backspace: return "delete"
+        }
     }
 
     /// Backspace gets no border (Apple Calculator modifier-key treatment); digits get the standard chip.

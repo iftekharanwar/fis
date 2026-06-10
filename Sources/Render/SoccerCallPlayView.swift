@@ -305,28 +305,25 @@ struct SoccerCallPlayView: View {
                     .tracking(2.0)
             }
 
-            sliderRow(
-                label: "POWER",
-                unit: "m/s",
-                value: $computeVelocity,
-                range: velocityRange,
-                format: "%.0f"
+            ParameterSliderRow(
+                label: "POWER", spokenName: "Shot power",
+                unit: "m/s", spokenUnit: "meters per second",
+                value: $computeVelocity, range: velocityRange, format: "%.0f", step: 1,
+                tint: .arclabRimOrange
             )
 
-            sliderRow(
-                label: "DIRECTION",
-                unit: directionUnit,
-                value: $computeAimOffset,
-                range: aimRange,
-                format: "%+.2f"
+            ParameterSliderRow(
+                label: "DIRECTION", spokenName: "Aim direction",
+                unit: directionUnit, spokenUnit: spokenDirection,
+                value: $computeAimOffset, range: aimRange, format: "%+.2f", step: 0.05,
+                tint: .arclabRimOrange
             )
 
-            sliderRow(
-                label: "SPIN",
-                unit: spinUnit,
-                value: $computeSpin,
-                range: spinRange,
-                format: "%+.1f"
+            ParameterSliderRow(
+                label: "SPIN", spokenName: "Spin",
+                unit: spinUnit, spokenUnit: spokenSpin,
+                value: $computeSpin, range: spinRange, format: "%+.1f", step: 0.1,
+                tint: .arclabRimOrange
             )
 
             PrimaryButton(label: "Shoot", action: handleComputeShoot)
@@ -354,32 +351,17 @@ struct SoccerCallPlayView: View {
         return "m ·"
     }
 
-    private func sliderRow(
-        label: String,
-        unit: String,
-        value: Binding<Double>,
-        range: ClosedRange<Double>,
-        format: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            HStack(alignment: .lastTextBaseline) {
-                Text(label)
-                    .font(.sfMono(size: 10))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(2.0)
-                Spacer()
-                HStack(alignment: .lastTextBaseline, spacing: 4) {
-                    Text(String(format: format, value.wrappedValue))
-                        .font(.sfMono(size: 18, weight: .medium))
-                        .foregroundColor(.arclabWhite)
-                    Text(unit)
-                        .font(.sfMono(size: 11))
-                        .foregroundColor(.arclabMidGrey)
-                }
-            }
-            Slider(value: value, in: range)
-                .tint(.arclabRimOrange)
-        }
+    /// Spoken equivalents of the arrow hints — VoiceOver can't read "←".
+    private var spokenDirection: String {
+        if computeAimOffset < -0.05 { return "toward the left post" }
+        if computeAimOffset >  0.05 { return "toward the right post" }
+        return "center"
+    }
+
+    private var spokenSpin: String {
+        if computeSpin < -0.05 { return "meters of curve, bending left" }
+        if computeSpin >  0.05 { return "meters of curve, bending right" }
+        return "meters of curve, straight"
     }
 
     // MARK: - Compute verdict view
@@ -422,6 +404,7 @@ struct SoccerCallPlayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background((scored ? Color.arclabBlack : Color.arclabMissTint).ignoresSafeArea())
+        .announceOnAppear { "\(verb) \(computeVerdictSubhead(scored: scored))" }
     }
 
     /// Coaching line based on the resolved scene outcome — points the

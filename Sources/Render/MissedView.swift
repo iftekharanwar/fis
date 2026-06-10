@@ -34,6 +34,15 @@ struct MissedView: View {
             .padding(.horizontal, Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .announceOnAppear {
+            let variants = scenario.outcome.missCategories.first(where: { $0.id == category })?.subheadVariants ?? [:]
+            let key: String = attempt >= 3 ? "3+" : "\(attempt)"
+            let subhead = variants[key] ?? variants["1"] ?? category
+            return "\(scenario.voice.miss.headline). \(category), attempt \(attempt). \(subhead) "
+                + "\(diagnosticLine.map { "\($0) " } ?? "")"
+                + "Buttons below: \(scenario.voice.miss.retryLabel)"
+                + "\(isSolutionUnlocked ? ", and \(scenario.voice.solutionLabel)." : ".")"
+        }
     }
 
     private var backgroundTint: Color {
