@@ -384,7 +384,8 @@ final class ScenarioEngineTests: XCTestCase {
 
     /// The compute dock must lock the given quantity per level type: A
     /// locks the given speed (solve θ), B locks the given angle (solve v),
-    /// C keeps both sliders free. A question needs a real unknown.
+    /// C locks the whole shot (find your range). Only Level D / untyped
+    /// scenarios keep both sliders free. A question needs a real unknown.
     func test_callComputePlan_locksTheGivenPerLevelType() throws {
         XCTAssertEqual(
             CallComputePlan.lock(for: try loadScenario("bb-a-freethrow")),
@@ -396,10 +397,14 @@ final class ScenarioEngineTests: XCTestCase {
         )
         XCTAssertEqual(
             CallComputePlan.lock(for: try loadScenario("bb-c-wing-throw")),
+            .range
+        )
+        XCTAssertEqual(
+            CallComputePlan.lock(for: try loadScenario("bb-1-baseline")),
             .none
         )
-        // Every released A/B seed must resolve a lock — a missing given
-        // would silently degrade the question back to the sandbox.
+        // Every released seed must resolve its lock — a missing given would
+        // silently degrade the question back to the sandbox.
         let chapter = try XCTUnwrap(BasketballCurriculum.chapters.first { $0.id == "bb-ch1-arc" })
         for id in chapter.releasedPracticeSeeds(for: .findTheta) {
             if case .velocity = CallComputePlan.lock(for: try loadScenario(id)) {} else {
@@ -410,6 +415,17 @@ final class ScenarioEngineTests: XCTestCase {
             if case .theta = CallComputePlan.lock(for: try loadScenario(id)) {} else {
                 XCTFail("[\(id)] released Level B seed has no locked angle")
             }
+        }
+        for id in chapter.releasedPracticeSeeds(for: .findD) {
+            let scenario = try loadScenario(id)
+            guard case .range = CallComputePlan.lock(for: scenario) else {
+                XCTFail("[\(id)] released Level C seed does not resolve range mode")
+                continue
+            }
+            // The dealer must produce an answerable round 1 for every seed.
+            var rng = SeededLCG(seed: 11)
+            XCTAssertNotNil(PickSpotChallenge.round(for: scenario, attempt: 1, using: &rng),
+                            "[\(id)] no dealable round 1")
         }
     }
 

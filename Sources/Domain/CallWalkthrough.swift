@@ -113,13 +113,15 @@ struct CallWalkthrough: Equatable, Sendable {
 
 /// Which compute-dock input is locked for a scenario. A question is only a
 /// question if something is fixed: Level A (find θ) locks the given speed,
-/// Level B (find v) locks the given angle. Everything else (Level C/D, no
+/// Level B (find v) locks the given angle, Level C (find d) locks the whole
+/// shot and the player finds their range. Everything else (Level D, no
 /// level type) keeps both sliders free — the feel-the-trade-off sandbox.
 enum CallComputePlan {
     enum Lock: Equatable, Sendable {
         case none
         case theta(Double)      // angle is given — solve for speed
         case velocity(Double)   // speed is given — solve for angle
+        case range              // whole shot is given — stand where it scores
     }
 
     static func lock(for scenario: ScenarioDefinition) -> Lock {
@@ -130,6 +132,10 @@ enum CallComputePlan {
         case .findV:
             guard let theta = given("theta", in: scenario) else { return .none }
             return .theta(theta)
+        case .findD:
+            guard scenario.outcome.ghostArc?.answer["theta"] != nil,
+                  scenario.outcome.ghostArc?.answer["v"] != nil else { return .none }
+            return .range
         default:
             return .none
         }
