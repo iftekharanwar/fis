@@ -17,10 +17,15 @@ struct RevealOverlay: View {
     let actualWentIn: Bool
     let phenomenon: String
     let explainer: String
-    /// v2.1 §4 compute beat: opens slider mode. This is the only CTA on the
-    /// reveal card — the user goes deeper ("See why") or exits via the close
-    /// chrome. There is intentionally no "Continue" that just dismisses.
+    /// v2.1 §4 compute beat: opens slider mode ("Try it yourself"). There is
+    /// intentionally no "Continue" that just dismisses — the user goes deeper
+    /// or exits via the close chrome.
     let onTryCompute: () -> Void
+
+    /// Opens the formula walkthrough directly, skipping the slider beat.
+    /// nil (archery/soccer, which have no walkthrough yet) renders the
+    /// try-it CTA alone.
+    var onShowMath: (() -> Void)? = nil
 
     /// Optional override for the chip's outcome text. nil → fall back to
     /// "IT WENT IN" / "IT MISSED" driven by `actualWentIn`. Used by paradox
@@ -75,7 +80,7 @@ struct RevealOverlay: View {
             callStatusRow
             phenomenonHeadline
             explainerBody
-            seeWhyButton
+            ctaButtons
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.md)
@@ -123,9 +128,16 @@ struct RevealOverlay: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    private var seeWhyButton: some View {
-        AccentButton(label: "See why  →", action: onTryCompute)
-            .padding(.top, Spacing.xs)
+    /// Both paths stay one tap deep: the math is no longer gated behind a
+    /// slider attempt, and the slider beat is labeled as what it is.
+    private var ctaButtons: some View {
+        VStack(spacing: Spacing.xs) {
+            AccentButton(label: "Try it yourself  →", action: onTryCompute)
+            if let onShowMath {
+                SecondaryButton(label: "Show the math  →", action: onShowMath)
+            }
+        }
+        .padding(.top, Spacing.xs)
     }
 }
 

@@ -89,6 +89,22 @@ struct RootView: View {
             DiagnosticLevelTypePickerWrapper(
                 chapter: BasketballCurriculum.chapters[0]
             )
+        case "pickspot":
+            // PROTOTYPE — Level C pick-the-spot beat. ARCLAB_SCENARIO picks
+            // the scenario (defaults to the wing throw).
+            let spotId = ProcessInfo.processInfo.environment["ARCLAB_SCENARIO"] ?? "bb-c-wing-throw"
+            if let scenario = try? ScenarioLoader.load(ScenarioID(spotId)) {
+                PickSpotView(scenario: scenario, onClose: {})
+            } else {
+                Color.arclabBlack
+            }
+        case "chapter-bb1":
+            // Wave verification: Ch 1's chapter screen with its released
+            // practice rows (requires the lesson marked read in the profile).
+            ChapterView(
+                chapter: BasketballCurriculum.chapters[0],
+                onOpenScenario: { _ in }
+            )
         case "chapterlist":
             // v3 diagnostic: the chapter list for Basketball (showing lock states).
             ChapterListView(
@@ -144,8 +160,14 @@ struct RootView: View {
             // The "you called it right and it went in" success path.
             CallVerdictView(wasCorrect: true, ballWentIn: true)
         case "callplay":
-            if let scenario = try? ScenarioLoader.load("bb-1-baseline") {
-                CallPlayView(scenario: scenario, onClose: {})
+            // Optional ARCLAB_SCENARIO picks any bundled scenario so content
+            // releases can be eyeballed on the call surface before shipping.
+            // The chapter is resolved from the scenario's chapterId so the
+            // reveal beat matches what shipping navigation shows.
+            let scenarioId = ProcessInfo.processInfo.environment["ARCLAB_SCENARIO"] ?? "bb-1-baseline"
+            if let scenario = try? ScenarioLoader.load(ScenarioID(scenarioId)) {
+                let chapter = Sport.basketball.chapters.first { $0.id == scenario.meta.chapterId }
+                CallPlayView(scenario: scenario, chapter: chapter, onClose: {})
             } else {
                 Color.arclabBlack
             }

@@ -16,7 +16,6 @@ enum SoundID: String, Sendable, CaseIterable {
     case airball     = "airball"
 
     // Archery
-    case bowRelease   = "bow-release"     // bowstring twang — file pending
     case arrowWhoosh  = "arrow-whoosh"
     case targetThud   = "target-thud"
     case bullseyeHit  = "bullseye-hit"
@@ -40,7 +39,6 @@ enum SoundID: String, Sendable, CaseIterable {
         // sounds (swish/glass) only fire on a make. So the hit/miss are cut to
         // basketball's *typical* per-shot level, not its peaks. Release matches
         // basketball's shoot and is left alone.
-        case .bowRelease:   return 0.35   // punchy release attack (no asset yet)
         case .arrowWhoosh:  return 0.25   // release — matches basketball's shoot
         case .targetThud:   return 0.16   // miss result — every shot, kept low
         case .bullseyeHit:  return 0.15   // hit result — every shot, kept low
@@ -51,7 +49,7 @@ enum SoundID: String, Sendable, CaseIterable {
         switch self {
         case .brandMark, .shoot, .swish, .glass, .rimDrop, .rimHit, .missTone, .airball:
             return "Audio/Basketball"
-        case .bowRelease, .arrowWhoosh, .targetThud, .bullseyeHit:
+        case .arrowWhoosh, .targetThud, .bullseyeHit:
             return "Audio/Archery"
         }
     }

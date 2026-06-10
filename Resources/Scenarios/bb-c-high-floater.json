@@ -24,7 +24,7 @@
     "d"
   ],
   "situation": {
-    "outcome": "Predict where the ball lands at hoop height.",
+    "outcome": "Stand where this shot scores.",
     "questionRevealed": "Find the distance d where the ball crosses hoop height on the descent.",
     "variables": [
       {
@@ -265,7 +265,7 @@
   "voice": {
     "intro": {
       "headline": "HIGH FLOATER.",
-      "subhead": "Soft arc, low pace. Where does it land?"
+      "subhead": "Soft arc, low pace. It falls close. How close?"
     },
     "success": {
       "headlineByFlavor": {

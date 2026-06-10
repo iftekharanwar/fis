@@ -41,11 +41,24 @@ struct CallPlayView: View {
     /// Guards the one profile write for the call beat.
     @State private var outcomeWritten: Bool = false
 
+    /// The shot fired on the CALL beat. Picked once per view instance —
+    /// either the canonical (scores) or a verified perturbed miss — so the
+    /// YES/NO call is a genuine read instead of always-YES.
+    @State private var callShot: ProjectileAnswer? = nil
+
     /// Compute mode — user-chosen θ (degrees) and v (m/s). Initialized
     /// near plausible values on first entry; persist across attempts so a
     /// user tweaking up/down doesn't have to restart from zero.
     @State private var computeTheta: Double = 50.0
     @State private var computeVelocity: Double = 7.0
+
+    /// Find-your-range (Level C): the current dealt round and the player's
+    /// chosen shooter-to-hoop distance. Rounds re-deal per attempt so the
+    /// given speed (and therefore the answer) moves on every retry.
+    @State private var rangeRound: PickSpotChallenge?
+    @State private var rangeD: Double
+    private let rangeBounds: ClosedRange<Double>
+    private let projParams: Projectile2DParams
 
     /// Medium impact on RELEASE — the physical "ball leaving the hand" beat.
     @State private var releaseHapticCount: Int = 0
@@ -93,6 +106,10 @@ struct CallPlayView: View {
         guard case .projectile2D(_, let params) = scenario.simulation else {
             fatalError("CallPlayView currently supports only PROJECTILE_2D scenarios")
         }
+        projParams = params
+        rangeBounds = PickSpotChallenge.playableRange(params: params)
+        let mid = (rangeBounds.lowerBound + rangeBounds.upperBound) / 2
+        _rangeD = State(initialValue: (mid * 20).rounded() / 20)
         let initialSize = CGSize(width: 393, height: 340)
         _scene = State(initialValue: PlaySceneNode(projectileParams: params, size: initialSize))
     }
@@ -150,8 +167,9 @@ struct CallPlayView: View {
                         wasCorrect: wasCorrect,
                         actualWentIn: actualWentIn(resolution),
                         phenomenon: revealPhenomenon,
-                        explainer: revealExplainer,
-                        onTryCompute: handleTryCompute
+                        explainer: revealExplainer(for: resolution),
+                        onTryCompute: handleTryCompute,
+                        onShowMath: handleShowMath
                     )
                     if useSideDock {
                         HStack(spacing: 0) {
@@ -189,6 +207,12 @@ struct CallPlayView: View {
             guard let resolution = new else { return }
             if case .computeAction(let attempt) = phase {
                 // Compute mode finished — user's own shot resolved.
+                if isRangeMode, case .miss = resolution, let round = rangeRound {
+                    // Drop the chevron on the spot that would have worked,
+                    // so the error reads as a distance on the floor.
+                    let correctX = projParams.target.center[0] - round.crossingD
+                    scene.setSpotMarker(distanceMeters: correctX - projParams.releasePosition[0])
+                }
                 phase = .computeVerdict(resolution, attempt: attempt)
             } else if case .bonusAttempt = phase {
                 // Canonical shot played out after the walkthrough. Dwell on
@@ -211,6 +235,9 @@ struct CallPlayView: View {
             }
             pendingResolution = nil
         }
+        .onChange(of: rangeD) { _, _ in
+            moveShooterToRange()
+        }
         .onDisappear { audio.stopLoop(.dribbleLoop) }
     }
 
@@ -227,9 +254,11 @@ struct CallPlayView: View {
             try? await Task.sleep(for: .seconds(3.5))
             handleCall(yes: true)
 
-            // AUTOPLAY=2 — drive into compute mode for capture.
+            // AUTOPLAY=2 — drive into compute mode for capture. The wait
+            // must outlast a missed call shot's full flight (out-of-bounds
+            // resolution lands later than a swish).
             if ProcessInfo.processInfo.environment["ARCLAB_AUTOPLAY_COMPUTE"] == "1" {
-                try? await Task.sleep(for: .seconds(3.0))
+                try? await Task.sleep(for: .seconds(5.5))
                 handleTryCompute()
 
                 // AUTOPLAY=3 — fire compute shoot + drive into walkthrough.
@@ -257,7 +286,12 @@ struct CallPlayView: View {
         // matches v1 OUTCOME; release/finish are full-screen.
         let desiredBottom: CGFloat
         switch phase {
-        case .stance, .frozen, .compute:                          desiredBottom = metrics.bottomReserveIdle
+        case .stance, .frozen:                                    desiredBottom = metrics.bottomReserveIdle
+        // The compute dock carries the givens strip (64pt) + one VStack gap
+        // (16pt) on top of the idle dock, so the scene must cede that much
+        // extra or the shooter/floor get covered. Range mode adds a third
+        // input row (two givens + the range slider) on top of that.
+        case .compute:                                            desiredBottom = metrics.bottomReserveIdle + (isRangeMode ? 150 : 80)
         case .release, .finish, .computeAction, .bonusAttempt:    desiredBottom = metrics.bottomReserveAction
         case .verdict, .computeVerdict, .formulaWalkthrough,
              .replayPrompt:                                       desiredBottom = metrics.bottomReserveOutcome
@@ -368,17 +402,29 @@ struct CallPlayView: View {
 
     private var stanceDock: some View {
         VStack(spacing: Spacing.sm) {
-            Text("CALL IT.")
+            // The scenario's own voice opens the beat — every situation
+            // introduces itself instead of a generic prompt.
+            Text(scenario.voice.intro.headline)
                 .font(.anton(size: 32))
                 .foregroundColor(.arclabWhite)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Spacing.md)
+                .lineLimit(2)
+                .minimumScaleFactor(0.7)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("TAP TO RELEASE")
+            Text(scenario.voice.intro.subhead)
+                .font(.barlowCondensed(size: 16, italic: true))
+                .foregroundColor(.arclabWhite.opacity(0.82))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Spacing.md)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("CALL IT — TAP TO RELEASE")
                 .font(.sfMono(size: 11))
                 .foregroundColor(.arclabMidGrey)
                 .tracking(2.0)
+                .padding(.top, Spacing.xxs)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 220)
@@ -417,7 +463,7 @@ struct CallPlayView: View {
     private func computeDock(attempt: Int) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
-                Text("YOUR SHOT")
+                Text(isRangeMode ? "FIND YOUR RANGE" : "YOUR SHOT")
                     .font(.sfMono(size: 11))
                     .foregroundColor(.arclabMidGrey)
                     .tracking(2.0)
@@ -428,10 +474,33 @@ struct CallPlayView: View {
                     .tracking(2.0)
             }
 
-            sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
-            sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+            // The world the player is shooting into. Without these numbers
+            // the sliders are blind dial-turning; with them, picking θ/v is
+            // informed estimation.
+            VariableStrip(variables: computeGivens)
 
-            PrimaryButton(label: "Shoot", action: handleComputeShoot)
+            // Level A locks the given speed (solve for lift); Level B locks
+            // the given angle (solve for pace); Level C locks the whole shot
+            // and the slider moves the SHOOTER (find your range). The locked
+            // quantities render as fixed givens so the question has a real
+            // unknown.
+            switch CallComputePlan.lock(for: scenario) {
+            case .velocity(let v):
+                sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
+                givenRow(label: "SPEED", unit: "m/s", value: v, format: "%.1f")
+            case .theta(let theta):
+                givenRow(label: "ANGLE", unit: "°", value: theta, format: "%.0f")
+                sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+            case .range:
+                givenRow(label: "ANGLE", unit: "°", value: rangeRound?.answer.thetaDegrees ?? 0, format: "%.0f")
+                givenRow(label: "SPEED", unit: "m/s", value: rangeRound?.answer.velocity ?? 0, format: "%.2f")
+                sliderRow(label: "RANGE", unit: "m", value: $rangeD, range: rangeBounds, format: "%.2f")
+            case .none:
+                sliderRow(label: "ANGLE", unit: "°", value: $computeTheta, range: 15...80, format: "%.0f")
+                sliderRow(label: "SPEED", unit: "m/s", value: $computeVelocity, range: 3...15, format: "%.1f")
+            }
+
+            PrimaryButton(label: isRangeMode ? "Shoot from here" : "Shoot", action: handleComputeShoot)
                 .padding(.top, Spacing.xs)
         }
         .padding(.horizontal, Spacing.md)
@@ -439,6 +508,63 @@ struct CallPlayView: View {
         .padding(.bottom, Spacing.lg)
         .frame(maxWidth: .infinity)
         .background(Color.arclabBlack)
+    }
+
+    /// Environment givens for the compute dock: hoop distance from the sim
+    /// world plus the scenario's situation variables — minus θ and v, which
+    /// the dock controls or shows as locked givens. In range mode distance
+    /// is the unknown, so it never appears here.
+    private var computeGivens: [SituationDefinition.VariableSpec] {
+        var givens: [SituationDefinition.VariableSpec] = []
+        if !isRangeMode,
+           let d = CallWalkthrough.targetDistance(of: scenario),
+           !scenario.situation.variables.contains(where: { $0.symbol == "d" }) {
+            givens.append(.init(symbol: "d", value: d, unit: "m", label: "DIST"))
+        }
+        givens += scenario.situation.variables.filter {
+            $0.symbol != "theta" && $0.symbol != "v" && !(isRangeMode && $0.symbol == "d")
+        }
+        return givens
+    }
+
+    /// A locked given — same header layout as a slider row, but the track
+    /// is a static hairline and the value never moves.
+    private func givenRow(
+        label: String,
+        unit: String,
+        value: Double,
+        format: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            HStack(alignment: .lastTextBaseline) {
+                Text(label)
+                    .font(.sfMono(size: 10))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+                Text("GIVEN")
+                    .font(.sfMono(size: 9))
+                    .foregroundColor(.arclabMidGrey)
+                    .tracking(2.0)
+                    .padding(.horizontal, Spacing.xxs)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 3)
+                            .stroke(Color.arclabBorderGrey, lineWidth: 1)
+                    )
+                Spacer()
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                    Text(String(format: format, value))
+                        .font(.sfMono(size: 18, weight: .medium))
+                        .foregroundColor(.arclabWhite)
+                    Text(unit)
+                        .font(.sfMono(size: 11))
+                        .foregroundColor(.arclabMidGrey)
+                }
+            }
+            Capsule()
+                .fill(Color.arclabBorderGrey)
+                .frame(height: 3)
+                .padding(.vertical, 13)   // match the slider track's vertical footprint
+        }
     }
 
     private func sliderRow(
@@ -482,7 +608,9 @@ struct CallPlayView: View {
         return VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: Spacing.lg)
 
-            Text(madeIt ? "GOT IT." : "MISSED.")
+            Text(madeIt
+                 ? (isRangeMode ? "IN RANGE." : "GOT IT.")
+                 : (isRangeMode ? "OUT OF RANGE." : "MISSED."))
                 .font(.anton(size: 64))
                 .foregroundColor(.arclabWhite)
                 .padding(.horizontal, Spacing.md)
@@ -491,9 +619,7 @@ struct CallPlayView: View {
 
             Spacer().frame(height: Spacing.sm)
 
-            Text(madeIt
-                 ? "Your numbers landed the shot. There's a formula for it too."
-                 : "Close call by feel. There's a formula that nails it every time.")
+            Text(computeVerdictBody(madeIt: madeIt))
                 .font(.barlowCondensed(size: 16, italic: true))
                 .foregroundColor(.arclabMidGrey)
                 .padding(.horizontal, Spacing.md)
@@ -527,20 +653,24 @@ struct CallPlayView: View {
 
     // MARK: - Formula walkthrough
 
-    /// Single-card derivation walkthrough. Five steps, advanced by tapping
-    /// NEXT. Pulls the scenario's actual constants so the math feels
-    /// concrete, not abstract. After the last step, transitions to the
-    /// `.bonusAttempt` phase where the canonical shot plays out.
-    private static let walkthroughStepCount = 5
+    /// Single-card derivation walkthrough, advanced by tapping NEXT. Cards
+    /// are generated from the scenario's authored solution + ghost arc
+    /// (CallWalkthrough), so the math always matches the simulated shot.
+    /// After the last step, transitions to the `.bonusAttempt` phase where
+    /// the canonical shot plays out.
+    private var walkthroughCards: [CallWalkthrough.Card] {
+        CallWalkthrough(scenario: scenario).cards
+    }
 
     private func walkthroughDock(step: Int) -> some View {
-        let card = walkthroughCard(step: step)
-        let isLast = step >= Self.walkthroughStepCount - 1
+        let cards = walkthroughCards
+        let card = cards[min(step, cards.count - 1)]
+        let isLast = step >= cards.count - 1
 
         return VStack(alignment: .leading, spacing: 0) {
             // Step indicator
             HStack {
-                Text("STEP \(step + 1) OF \(Self.walkthroughStepCount)")
+                Text("STEP \(step + 1) OF \(cards.count)")
                     .font(.sfMono(size: 11))
                     .foregroundColor(.arclabMidGrey)
                     .tracking(2.0)
@@ -589,68 +719,6 @@ struct CallPlayView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// The 5-step derivation for BB-01 (projectile free throw). Future
-    /// scenarios with different physics get their own walkthroughs; for
-    /// now this is hardcoded to the only authored scenario.
-    private func walkthroughCard(step: Int) -> WalkthroughCard {
-        let h = String(format: "%.1f", scenarioReleaseHeight)
-        let g = String(format: "%.1f", scenarioGravity)
-        let d = String(format: "%.1f", scenarioDistance)
-        let hh = String(format: "%.2f", hoopHeight)
-
-        switch step {
-        case 0:
-            return WalkthroughCard(
-                headline: "There's a formula for it.",
-                math: "y(t) = h + v · sin(θ) · t − ½ · g · t²",
-                body: "Gravity pulls the ball down. Nothing else acts on it. Every shot is the same shape — and it has one equation."
-            )
-        case 1:
-            return WalkthroughCard(
-                headline: "Plug in what you know.",
-                math: "h = \(h)m   g = \(g) m/s²   d = \(d)m",
-                body: "Your release sits at \(h)m. Gravity is constant. The hoop is \(d)m down the floor. None of that changes — only your angle and speed do."
-            )
-        case 2:
-            return WalkthroughCard(
-                headline: "When does the ball reach the hoop?",
-                math: "t = d / (v · cos(θ))",
-                body: "Horizontally the ball moves at v·cos(θ). To cover \(d)m it takes that many seconds. That's your t at the rim."
-            )
-        case 3:
-            return WalkthroughCard(
-                headline: "Make y equal the rim.",
-                math: "\(hh) = \(h) + v · sin(θ) · t − ½ · \(g) · t²",
-                body: "At the hoop, y should be \(hh)m. One equation, two unknowns (θ and v). Pick a comfortable angle and v drops out."
-            )
-        case 4:
-            return WalkthroughCard(
-                headline: "θ ≈ 52°, v ≈ 7.5 m/s.",
-                math: "",
-                body: "That's the shot. Tap below to watch what the formula calls for — the canonical swish."
-            )
-        default:
-            return WalkthroughCard(headline: "", math: "", body: "")
-        }
-    }
-
-    private struct WalkthroughCard {
-        let headline: String
-        let math: String
-        let body: String
-    }
-
-    // MARK: - Scenario variable lookup (used by walkthrough)
-
-    private var hoopHeight: Double  { scenarioVariable(symbol: "h_h") ?? 3.05 }
-    private var scenarioDistance: Double { scenarioVariable(symbol: "d") ?? 4.6 }
-    private var scenarioReleaseHeight: Double { scenarioVariable(symbol: "h_r") ?? 2.0 }
-    private var scenarioGravity: Double { scenarioVariable(symbol: "g") ?? 9.8 }
-
-    private func scenarioVariable(symbol: String) -> Double? {
-        scenario.situation.variables.first(where: { $0.symbol == symbol })?.value
-    }
-
     @ViewBuilder
     private func verdictOverlay(resolution: Phase.Resolution, wasCorrect: Bool) -> some View {
         switch resolution {
@@ -666,6 +734,17 @@ struct CallPlayView: View {
     // MARK: - Scene wiring
 
     private func configureScene() {
+        if callShot == nil {
+            var rng = SystemRandomNumberGenerator()
+            let pick = CallShotPicker.pick(
+                for: scenario,
+                using: &rng,
+                recentTruths: CallShotPicker.recentTruths
+            )
+            CallShotPicker.recentTruths = Array((CallShotPicker.recentTruths + [pick.goesIn]).suffix(4))
+            callShot = pick.answer
+        }
+        syncLockedGiven()
         scene.audio = audio
         scene.onReachedApex = { [weak scene] in
             Task { @MainActor in
@@ -702,7 +781,7 @@ struct CallPlayView: View {
         phase = .release
         releaseHapticCount += 1   // medium impact — the player launched the ball
         scene.startSimulation(
-            answer: ProjectileAnswer(thetaDegrees: canonicalTheta, velocity: canonicalVelocity),
+            answer: callShot ?? ProjectileAnswer(thetaDegrees: canonicalTheta, velocity: canonicalVelocity),
             pauseAtApex: true
         )
     }
@@ -727,8 +806,58 @@ struct CallPlayView: View {
         // Fresh slider values for a clean run at the challenge.
         computeTheta = 50.0
         computeVelocity = 7.0
+        syncLockedGiven()
         scene.resetForNewShot()
+        if isRangeMode { dealRangeRound(attempt: 1) }
         withAnimation(.easeOut(duration: 0.25)) { phase = .compute(attempt: 1) }
+    }
+
+    /// Pin the locked given into the fired state so SHOOT uses the
+    /// scenario's value, not the slider default the player can't change.
+    private func syncLockedGiven() {
+        switch CallComputePlan.lock(for: scenario) {
+        case .velocity(let v):  computeVelocity = v
+        case .theta(let theta): computeTheta = theta
+        case .range, .none:     break
+        }
+    }
+
+    // MARK: - Find-your-range (Level C)
+
+    private var isRangeMode: Bool {
+        if case .range = CallComputePlan.lock(for: scenario) { return true }
+        return false
+    }
+
+    /// Deal a round (retries perturb the given speed, so the answer moves),
+    /// clear any verdict chevron, and stand the shooter at the slider range.
+    private func dealRangeRound(attempt: Int) {
+        var rng = SystemRandomNumberGenerator()
+        rangeRound = PickSpotChallenge.round(for: scenario, attempt: attempt, using: &rng)
+        scene.setSpotMarker(distanceMeters: nil)
+        moveShooterToRange()
+    }
+
+    private func moveShooterToRange() {
+        guard isRangeMode else { return }
+        let desiredX = projParams.target.center[0] - rangeD
+        scene.setReleaseOffset(desiredX - projParams.releasePosition[0])
+    }
+
+    private func computeVerdictBody(madeIt: Bool) -> String {
+        guard isRangeMode else {
+            return madeIt
+                ? "Your numbers landed the shot. There's a formula for it too."
+                : "Close call by feel. There's a formula that nails it every time."
+        }
+        guard let round = rangeRound else { return "" }
+        if madeIt {
+            return String(format: "That spot is yours. This shot lives at %.2f m.", round.crossingD)
+        }
+        let offBy = rangeD - round.crossingD
+        let direction = offBy > 0 ? "deep" : "close"
+        return String(format: "This shot lives at %.2f m — you stood %.2f m too %@.",
+                      round.crossingD, abs(offBy), direction)
     }
 
     /// User tapped TRY IT on the reveal — open the compute slider dock.
@@ -737,6 +866,7 @@ struct CallPlayView: View {
     /// their last try, or start fresh on first entry).
     private func handleTryCompute() {
         scene.resetForNewShot()
+        if isRangeMode { dealRangeRound(attempt: 1) }
         phase = .compute(attempt: 1)
     }
 
@@ -749,10 +879,11 @@ struct CallPlayView: View {
         else { currentAttempt = 1 }
 
         phase = .computeAction(attempt: currentAttempt)
-        scene.startSimulation(
-            answer: ProjectileAnswer(thetaDegrees: computeTheta, velocity: computeVelocity),
-            pauseAtApex: false
-        )
+        // Range mode fires the dealt given shot from where the player stands;
+        // otherwise the player's slider values fly.
+        let answer = (isRangeMode ? rangeRound?.answer : nil)
+            ?? ProjectileAnswer(thetaDegrees: computeTheta, velocity: computeVelocity)
+        scene.startSimulation(answer: answer, pauseAtApex: false)
     }
 
     /// User tapped RETRY on a missed compute attempt — bump attempt counter
@@ -767,6 +898,7 @@ struct CallPlayView: View {
             return
         }
         scene.resetForNewShot()
+        if isRangeMode { dealRangeRound(attempt: nextAttempt) }
         phase = .compute(attempt: nextAttempt)
     }
 
@@ -785,10 +917,14 @@ struct CallPlayView: View {
     private func handleNextStep() {
         guard case .formulaWalkthrough(let step) = phase else { return }
         let next = step + 1
-        if next >= Self.walkthroughStepCount {
+        if next >= walkthroughCards.count {
             // Fire the canonical shot; bonusAttempt phase suppresses the
-            // dock so user watches the swish play out clean.
+            // dock so user watches the swish play out clean. The shooter
+            // returns to the authored spot — the walkthrough's math
+            // describes that geometry, so the bonus shot must match it.
             scene.resetForNewShot()
+            scene.setReleaseOffset(0)
+            scene.setSpotMarker(distanceMeters: nil)
             phase = .bonusAttempt
             scene.startSimulation(
                 answer: ProjectileAnswer(thetaDegrees: canonicalTheta, velocity: canonicalVelocity),
@@ -823,9 +959,21 @@ struct CallPlayView: View {
         chapter?.lesson.title ?? "Projectile motion."
     }
 
-    /// 2–3 sentence reveal copy. Pulls the chapter lesson's one-liner when
-    /// available; falls back to a generic projectile-motion summary.
-    private var revealExplainer: String {
+    /// Reveal copy for the moment that just happened: the scenario's
+    /// authored coach line for the exact outcome (short-miss diagnosis,
+    /// swish flavor, …) so the card reads differently every time. Falls
+    /// back to the chapter lesson's one-liner, then a generic summary.
+    private func revealExplainer(for resolution: Phase.Resolution) -> String {
+        switch resolution {
+        case .miss(let category):
+            if let line = scenario.voice.miss.diagnosticByCategory[category], !line.isEmpty {
+                return line
+            }
+        case .success(let flavor):
+            if let line = scenario.voice.success.subheadByFlavor[flavor], !line.isEmpty {
+                return line
+            }
+        }
         if let oneLiner = chapter?.lesson.oneLiner, !oneLiner.isEmpty {
             return oneLiner
         }

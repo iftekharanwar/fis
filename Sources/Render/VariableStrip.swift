@@ -13,12 +13,6 @@ struct VariableStrip: View {
     var body: some View {
         HStack(spacing: 0) {
             ForEach(Array(variables.enumerated()), id: \.offset) { index, variable in
-                if index > 0 {
-                    Rectangle()
-                        .fill(Color.arclabBorderGrey)
-                        .frame(width: 1)
-                        .padding(.vertical, Spacing.xxs)
-                }
                 VariableCell(variable: variable)
                     .frame(maxWidth: .infinity)
                     .transition(staggered ? .opacity : .identity)
@@ -49,6 +43,8 @@ struct VariableCell: View {
                 Text(formattedValue)
                     .font(.sfMono(size: 22, weight: .medium))
                     .foregroundColor(.arclabWhite)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
                 Text(variable.unit)
                     .font(.sfMono(size: 10))
                     .foregroundColor(.arclabMidGrey)

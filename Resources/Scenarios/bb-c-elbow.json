@@ -24,7 +24,7 @@
     "d"
   ],
   "situation": {
-    "outcome": "Predict where the ball lands at hoop height.",
+    "outcome": "Stand where this shot scores.",
     "questionRevealed": "Find the distance d where the ball crosses hoop height on the descent.",
     "variables": [
       {
@@ -265,7 +265,7 @@
   "voice": {
     "intro": {
       "headline": "ELBOW DESCENT.",
-      "subhead": "Right elbow release. Where does it land?"
+      "subhead": "Elbow-high release, fixed pace. Read the fall. Plant your feet."
     },
     "success": {
       "headlineByFlavor": {

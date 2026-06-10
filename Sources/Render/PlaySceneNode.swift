@@ -131,6 +131,87 @@ final class PlaySceneNode: SKScene {
         )
     }
 
+    // MARK: - Release offset (find-your-range)
+
+    /// Horizontal shift of the shooter from the authored release position.
+    /// Zero everywhere except the find-your-range prototype, so existing
+    /// flows render and simulate exactly as before.
+    private var releaseXOffset: Double = 0
+
+    /// Authored params with the shooter shifted — the single source for
+    /// shooter-node placement and simulation start.
+    private var effectiveParams: Projectile2DParams {
+        guard releaseXOffset != 0 else { return projectileParams }
+        return Projectile2DParams(
+            gravity: projectileParams.gravity,
+            airResistance: projectileParams.airResistance,
+            releasePosition: [
+                projectileParams.releasePosition[0] + releaseXOffset,
+                projectileParams.releasePosition[1]
+            ],
+            ball: projectileParams.ball,
+            target: projectileParams.target,
+            world: projectileParams.world,
+            integrator: projectileParams.integrator,
+            fixedDtSeconds: projectileParams.fixedDtSeconds
+        )
+    }
+
+    /// Move the shooter `dx` meters from the authored spot and rebuild the
+    /// idle scene. Ignored mid-flight.
+    func setReleaseOffset(_ dx: Double) {
+        guard !isSimulating, dx != releaseXOffset else { return }
+        releaseXOffset = dx
+        guard size != .zero else { return }
+        repositionNodes()
+    }
+
+    // MARK: - Pick-the-spot marker
+
+    private var spotMarkerNode: SKNode?
+    private var spotMarkerDistance: Double?
+
+    /// Place (or move) the player's landing-spot marker: an accent chevron
+    /// on the floor with a hairline rising to hoop height at distance `d`
+    /// from the release point. nil removes it.
+    func setSpotMarker(distanceMeters: Double?) {
+        spotMarkerNode?.removeFromParent()
+        spotMarkerNode = nil
+        spotMarkerDistance = distanceMeters
+        guard let d = distanceMeters, transform != nil else { return }
+
+        let worldX = projectileParams.releasePosition[0] + d
+        let floor = transform.scenePoint(world: CGPoint(x: worldX, y: CGFloat(projectileParams.world.floorY)))
+        let targetHeight = transform.scenePoint(world: CGPoint(x: worldX, y: CGFloat(projectileParams.target.center[1])))
+
+        let container = SKNode()
+
+        let hairline = SKShapeNode()
+        let path = CGMutablePath()
+        path.move(to: floor)
+        path.addLine(to: targetHeight)
+        hairline.path = path
+        hairline.strokeColor = teamAccent.withAlphaComponent(0.45)
+        hairline.lineWidth = 1
+        container.addChild(hairline)
+
+        let chevron = SKShapeNode()
+        let tip = CGMutablePath()
+        let size: CGFloat = 7 * cosmeticScale
+        tip.move(to: CGPoint(x: floor.x - size, y: floor.y - size * 1.4))
+        tip.addLine(to: CGPoint(x: floor.x, y: floor.y))
+        tip.addLine(to: CGPoint(x: floor.x + size, y: floor.y - size * 1.4))
+        tip.closeSubpath()
+        chevron.path = tip
+        chevron.fillColor = teamAccent
+        chevron.strokeColor = .clear
+        container.addChild(chevron)
+
+        container.zPosition = 30
+        addChild(container)
+        spotMarkerNode = container
+    }
+
     /// Push reserved UI bands from SwiftUI. Deferred mid-simulation —
     /// repositionNodes() would tear down the in-flight scene graph.
     func applyUIReserve(top: CGFloat, bottom: CGFloat, safeTop: CGFloat, safeBottom: CGFloat, right: CGFloat = 0) {
@@ -208,8 +289,12 @@ final class PlaySceneNode: SKScene {
     }
 
     private func repositionNodes() {
+        let ballWasVisible = ballNode?.isHidden == false
         removeAllChildren()
         buildSceneGraph()
+        if let distance = spotMarkerDistance {
+            setSpotMarker(distanceMeters: distance)
+        }
         if let degrees = lastAngleDegrees {
             updateAngleIndicator(degrees: degrees)
         }
@@ -222,6 +307,15 @@ final class PlaySceneNode: SKScene {
             if let last = snapshotHistory.last {
                 ballNode?.position = transform.scenePoint(world: last.ballPosition)
             }
+        }
+        // buildSceneGraph recreates the flight ball hidden and can restart
+        // the idle dribble. If a shot was in flight (or at rest after the
+        // outcome), restore that state — otherwise the player sees the trail
+        // drawing while the ball seemingly never leaves the hand.
+        if ballWasVisible {
+            ballNode?.isHidden = false
+            pauseIdleDribble()
+            hideDribbleBall()
         }
     }
 
@@ -241,7 +335,7 @@ final class PlaySceneNode: SKScene {
         addChild(floor)
 
         // Orange free-throw accent under the player's release position only.
-        let release = projectileParams.releasePosition
+        let release = effectiveParams.releasePosition
         let releaseX = transform.scenePoint(world: CGPoint(x: CGFloat(release[0]), y: 0)).x
         let accent = SKShapeNode()
         let accentPath = CGMutablePath()
@@ -343,7 +437,7 @@ final class PlaySceneNode: SKScene {
     }
 
     private func addPlayerSilhouette() {
-        let release = projectileParams.releasePosition
+        let release = effectiveParams.releasePosition
         let releasePoint = transform.scenePoint(world: CGPoint(x: CGFloat(release[0]), y: CGFloat(release[1])))
         let floorY = transform.scenePoint(world: CGPoint(x: 0, y: CGFloat(projectileParams.world.floorY))).y
 
@@ -527,7 +621,7 @@ final class PlaySceneNode: SKScene {
 
     /// Hidden during IDLE — at release height it overlaps the head and its seam reads as a minus sign.
     private func addBall() {
-        let release = projectileParams.releasePosition
+        let release = effectiveParams.releasePosition
         let releasePoint = transform.scenePoint(world: CGPoint(x: CGFloat(release[0]), y: CGFloat(release[1])))
         let ballRadius = transform.sceneDistance(world: projectileParams.ball.radius)
 
@@ -556,7 +650,7 @@ final class PlaySceneNode: SKScene {
     }
 
     func resetBall() {
-        let release = projectileParams.releasePosition
+        let release = effectiveParams.releasePosition
         ballNode?.position = transform.scenePoint(world: CGPoint(x: CGFloat(release[0]), y: CGFloat(release[1])))
     }
 
@@ -567,7 +661,7 @@ final class PlaySceneNode: SKScene {
         resetForNewShot()
         self.pauseAtApex = pauseAtApex
         self.didFreezeAtApex = false
-        currentState = module.initState(params: projectileParams, answer: answer)
+        currentState = module.initState(params: effectiveParams, answer: answer)
         if let s = currentState {
             snapshotHistory = [module.snapshot(state: s)]
         }
@@ -766,7 +860,7 @@ final class PlaySceneNode: SKScene {
         }
 
         // Held-breath rule: keep stepping until resolved AND (settled OR 400ms post-decision).
-        let outcome = module.evaluate(history: snapshotHistory, params: projectileParams)
+        let outcome = module.evaluate(history: snapshotHistory, params: effectiveParams)
         if outcome.isResolved {
             if outcomeSealedAt == nil {
                 outcomeSealedAt = currentTime
@@ -813,8 +907,8 @@ final class PlaySceneNode: SKScene {
 
         let releasePoint = transform.scenePoint(
             world: CGPoint(
-                x: CGFloat(projectileParams.releasePosition[0]),
-                y: CGFloat(projectileParams.releasePosition[1])
+                x: CGFloat(effectiveParams.releasePosition[0]),
+                y: CGFloat(effectiveParams.releasePosition[1])
             )
         )
 

@@ -25,15 +25,26 @@ final class ScenarioEngineTests: XCTestCase {
         XCTAssertEqual(scenario.solution?.workedSteps.count, 3)
     }
 
-    func test_basketballRelease_exposesOnlyDistanceScenario() throws {
+    func test_basketballRelease_manifest() throws {
+        // The public release manifest. Deliberately pinned: growing this
+        // list is a conscious release decision, not a side effect.
         let chapters = BasketballCurriculum.chapters
         let playable = chapters.filter(\.hasPlayablePractice)
 
         XCTAssertEqual(playable.map(\.id), ["bb-ch1-arc"])
 
         let chapter = try XCTUnwrap(chapters.first { $0.id == "bb-ch1-arc" })
-        XCTAssertEqual(chapter.releasedPracticeLevelTypes, [.findD])
-        XCTAssertEqual(chapter.progressScenarioIDs, ["bb-c-wing-throw"])
+        XCTAssertEqual(chapter.releasedPracticeLevelTypes, [.findTheta, .findV, .findD])
+        XCTAssertEqual(chapter.progressScenarioIDs, [
+            "bb-a-freethrow",
+            "bb-a-elbow-r",
+            "bb-b-freethrow",
+            "bb-b-rainbow",
+            "bb-c-wing-throw",
+            "bb-c-freethrow",
+            "bb-c-elbow",
+            "bb-c-high-floater"
+        ])
 
         let locked = chapters.filter { $0.id != "bb-ch1-arc" }
         XCTAssertTrue(locked.allSatisfy { !$0.hasPlayablePractice })
@@ -57,10 +68,13 @@ final class ScenarioEngineTests: XCTestCase {
         XCTAssertNotNil(s.animations.outcome.miss.tintBackgroundHexAirball)
     }
 
-    func test_referenceScenario_voiceLowercaseMS() throws {
+    func test_referenceScenario_velocityStatLabel() throws {
+        // The stat cell's VALUE already carries the unit ("8.2 m/s",
+        // formatted in SwishView), so the label underneath is the quantity
+        // name — matching ANGLE/PTS. The voice doc's lowercase-m/s rule
+        // applies to the unit in the value, not this label.
         let s = try loadReferenceScenario()
-        XCTAssertEqual(s.voice.success.statLabels.v, "m/s",
-                       "Per CONCEPT.md Voice doc, velocity label is lowercase m/s, not 'M / S'.")
+        XCTAssertEqual(s.voice.success.statLabels.v, "SPEED")
     }
 
     // MARK: - (b) Validation error has useful path
@@ -277,5 +291,214 @@ final class ScenarioEngineTests: XCTestCase {
 
     private func answer(from dict: [String: Double]) -> ProjectileAnswer {
         ProjectileAnswer(thetaDegrees: dict["theta"] ?? 0, velocity: dict["v"] ?? 0)
+    }
+
+    // MARK: - (e) Call-surface guards
+
+    /// The walkthrough's answer card must show the ghost-arc values — and
+    /// that answer must actually score. Guards against the math screen
+    /// drifting from the simulated shot (the hardcoded "θ ≈ 52°, v ≈ 7.5"
+    /// regression caught on bb-c-wing-throw).
+    func test_callWalkthrough_answerCard_matchesGhostArc_everyScenario() throws {
+        for scenario in try allBundleScenarios() {
+            guard let ghost = scenario.outcome.ghostArc?.answer,
+                  let theta = ghost["theta"], let v = ghost["v"] else { continue }
+            let stem = scenario.scenarioId.rawValue
+
+            let cards = CallWalkthrough(scenario: scenario).cards
+            let final = try XCTUnwrap(cards.last)
+            XCTAssertTrue(final.math.contains(CallWalkthrough.trim(theta)),
+                          "[\(stem)] answer card must show ghost-arc θ, got: \(final.math)")
+            XCTAssertTrue(final.math.contains(CallWalkthrough.trim(v)),
+                          "[\(stem)] answer card must show ghost-arc v, got: \(final.math)")
+
+            let outcome = runProjectile(scenario, answer: ProjectileAnswer(thetaDegrees: theta, velocity: v))
+            guard case .success = outcome else {
+                XCTFail("[\(stem)] ghost-arc answer misses — the walkthrough would teach a shot that doesn't score")
+                continue
+            }
+        }
+    }
+
+    /// The released Level C scenario asks for d — the walkthrough must lead
+    /// with the real hoop distance from the sim world, not a defaulted
+    /// variable lookup.
+    func test_callWalkthrough_wingThrow_leadsWithRealHoopDistance() throws {
+        let scenario = try loadScenario("bb-c-wing-throw")
+        let d = try XCTUnwrap(CallWalkthrough.targetDistance(of: scenario))
+        XCTAssertEqual(d, 5.82, accuracy: 0.001)
+
+        let final = try XCTUnwrap(CallWalkthrough(scenario: scenario).cards.last)
+        XCTAssertTrue(final.headline.contains("5.82"),
+                      "find-d answer card should lead with d, got: \(final.headline)")
+        XCTAssertFalse(final.headline.contains("52"),
+                       "the hardcoded free-throw answer must be gone, got: \(final.headline)")
+    }
+
+    /// The call beat must be a genuine read: across many picks the shot
+    /// sometimes scores and sometimes misses, `goesIn` always agrees with
+    /// what the simulation resolves, and (with history threaded like the
+    /// view does) the truth never repeats three times in a row.
+    func test_callShotPicker_variesCall_andVerdictMatchesSimulation() throws {
+        let scenario = try loadScenario("bb-c-wing-throw")
+        var rng = SeededLCG(seed: 7)
+        var history: [Bool] = []
+        var truths: [Bool] = []
+
+        for _ in 0..<40 {
+            let pick = CallShotPicker.pick(for: scenario, using: &rng, recentTruths: history)
+            history = Array((history + [pick.goesIn]).suffix(4))
+            truths.append(pick.goesIn)
+            switch runProjectile(scenario, answer: pick.answer) {
+            case .success:
+                XCTAssertTrue(pick.goesIn, "pick claimed a miss but the shot scored")
+            case .miss:
+                XCTAssertFalse(pick.goesIn, "pick claimed a make but the shot missed")
+            case .inFlight:
+                XCTFail("call shot never resolved")
+            }
+        }
+        XCTAssertTrue(truths.contains(true), "expected some call shots to score")
+        XCTAssertTrue(truths.contains(false), "expected some call shots to miss — always-YES regression")
+        for i in 2..<truths.count {
+            XCTAssertFalse(truths[i] == truths[i - 1] && truths[i - 1] == truths[i - 2],
+                           "streak-breaker failed: same truth three times at index \(i)")
+        }
+    }
+
+    /// Streak-breaker edge: two identical truths force the opposite next.
+    func test_callShotPicker_breaksStreaksDeterministically() throws {
+        let scenario = try loadScenario("bb-c-wing-throw")
+        for seed in UInt64(1)...10 {
+            var rng = SeededLCG(seed: seed)
+            XCTAssertFalse(
+                CallShotPicker.pick(for: scenario, using: &rng, recentTruths: [true, true]).goesIn,
+                "after two makes the call shot must miss (seed \(seed))"
+            )
+            XCTAssertTrue(
+                CallShotPicker.pick(for: scenario, using: &rng, recentTruths: [false, false]).goesIn,
+                "after two misses the call shot must score (seed \(seed))"
+            )
+        }
+    }
+
+    /// The compute dock must lock the given quantity per level type: A
+    /// locks the given speed (solve θ), B locks the given angle (solve v),
+    /// C locks the whole shot (find your range). Only Level D / untyped
+    /// scenarios keep both sliders free. A question needs a real unknown.
+    func test_callComputePlan_locksTheGivenPerLevelType() throws {
+        XCTAssertEqual(
+            CallComputePlan.lock(for: try loadScenario("bb-a-freethrow")),
+            .velocity(7.5)
+        )
+        XCTAssertEqual(
+            CallComputePlan.lock(for: try loadScenario("bb-b-rainbow")),
+            .theta(65.0)
+        )
+        XCTAssertEqual(
+            CallComputePlan.lock(for: try loadScenario("bb-c-wing-throw")),
+            .range
+        )
+        XCTAssertEqual(
+            CallComputePlan.lock(for: try loadScenario("bb-1-baseline")),
+            .none
+        )
+        // Every released seed must resolve its lock — a missing given would
+        // silently degrade the question back to the sandbox.
+        let chapter = try XCTUnwrap(BasketballCurriculum.chapters.first { $0.id == "bb-ch1-arc" })
+        for id in chapter.releasedPracticeSeeds(for: .findTheta) {
+            if case .velocity = CallComputePlan.lock(for: try loadScenario(id)) {} else {
+                XCTFail("[\(id)] released Level A seed has no locked speed")
+            }
+        }
+        for id in chapter.releasedPracticeSeeds(for: .findV) {
+            if case .theta = CallComputePlan.lock(for: try loadScenario(id)) {} else {
+                XCTFail("[\(id)] released Level B seed has no locked angle")
+            }
+        }
+        for id in chapter.releasedPracticeSeeds(for: .findD) {
+            let scenario = try loadScenario(id)
+            guard case .range = CallComputePlan.lock(for: scenario) else {
+                XCTFail("[\(id)] released Level C seed does not resolve range mode")
+                continue
+            }
+            // The dealer must produce an answerable round 1 for every seed.
+            var rng = SeededLCG(seed: 11)
+            XCTAssertNotNil(PickSpotChallenge.round(for: scenario, attempt: 1, using: &rng),
+                            "[\(id)] no dealable round 1")
+        }
+    }
+
+    /// Pick-the-spot: the crossing distance must come from the real
+    /// integrator and match the authored answer; round 1 is canonical,
+    /// retries move the answer so the hoop can't be eyeballed.
+    func test_pickSpotChallenge_crossingMatchesAuthoredAnswer() throws {
+        let scenario = try loadScenario("bb-c-wing-throw")
+        guard case .projectile2D(_, let params) = scenario.simulation else {
+            return XCTFail("expected projectile scenario")
+        }
+
+        var rng = SeededLCG(seed: 3)
+        let round1 = try XCTUnwrap(PickSpotChallenge.round(for: scenario, attempt: 1, using: &rng))
+        XCTAssertEqual(round1.answer.thetaDegrees, 48.0)
+        XCTAssertEqual(round1.answer.velocity, 8.2)
+        // Semi-implicit Euler at dt≈8.3ms lands ~5cm short of the closed-form
+        // 5.82 (O(dt) bias ≈ ½·g·dt·t). The rim tolerance (0.225m) absorbs
+        // it, so a player who computes the textbook answer always hits —
+        // asserted below. The crossing itself must match the renderer.
+        XCTAssertEqual(round1.crossingD, 5.82, accuracy: 0.1,
+                       "canonical crossing must track the authored d ≈ 5.82")
+        XCTAssertTrue(PickSpotChallenge.isHit(markerD: 5.82, crossingD: round1.crossingD, params: params),
+                      "the textbook answer must always count as a hit")
+
+        let round2 = try XCTUnwrap(PickSpotChallenge.round(for: scenario, attempt: 2, using: &rng))
+        XCTAssertNotEqual(round2.answer.velocity, round1.answer.velocity,
+                          "retry rounds must perturb the givens")
+        XCTAssertGreaterThan(abs(round2.crossingD - round1.crossingD), 0.05,
+                             "perturbed round must move the crossing point")
+
+        // Every dealt round must be answerable on the slider: 30 retries,
+        // all inside the playable band shared with the range slider.
+        let playable = PickSpotChallenge.playableRange(params: params)
+        for n in 2...30 {
+            let r = try XCTUnwrap(PickSpotChallenge.round(for: scenario, attempt: n, using: &rng))
+            XCTAssertTrue(playable.contains(r.crossingD),
+                          "round \(n) answer \(r.crossingD) is outside the playable band \(playable)")
+        }
+
+        XCTAssertTrue(PickSpotChallenge.isHit(markerD: round1.crossingD + 0.2,
+                                              crossingD: round1.crossingD, params: params))
+        XCTAssertFalse(PickSpotChallenge.isHit(markerD: round1.crossingD + 0.3,
+                                               crossingD: round1.crossingD, params: params))
+    }
+
+    // MARK: - Call-guard helpers
+
+    private func loadScenario(_ stem: String) throws -> ScenarioDefinition {
+        let bundle = Bundle(for: type(of: self))
+        let url = try XCTUnwrap(bundle.url(forResource: stem, withExtension: "json"),
+                                "\(stem).json not found in test bundle")
+        return try ScenarioLoader.decode(Data(contentsOf: url), scenarioId: ScenarioID(stem))
+    }
+
+    private func allBundleScenarios() throws -> [ScenarioDefinition] {
+        let bundle = Bundle(for: type(of: self))
+        let urls = (bundle.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? [])
+            .filter { $0.lastPathComponent.hasPrefix("bb-") }
+        XCTAssertGreaterThan(urls.count, 1, "Expected multiple scenarios in bundle.")
+        return try urls.map { url in
+            let stem = url.deletingPathExtension().lastPathComponent
+            return try ScenarioLoader.decode(Data(contentsOf: url), scenarioId: ScenarioID(stem))
+        }
+    }
+}
+
+/// Deterministic RNG for the picker test.
+private struct SeededLCG: RandomNumberGenerator {
+    private var state: UInt64
+    init(seed: UInt64) { self.state = seed }
+    mutating func next() -> UInt64 {
+        state = state &* 6364136223846793005 &+ 1442695040888963407
+        return state
     }
 }

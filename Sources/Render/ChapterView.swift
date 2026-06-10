@@ -80,21 +80,33 @@ struct ChapterView: View {
                 VStack(spacing: 0) {
                     topBar
 
-                    Spacer().frame(height: Spacing.xxl)
+                    // Scrolls only when the practice list outgrows the
+                    // screen (8+ released rows); minHeight pins short
+                    // chapters to the original bottom-anchored layout.
+                    GeometryReader { geo in
+                        ScrollView(.vertical, showsIndicators: false) {
+                            VStack(spacing: 0) {
+                                Spacer().frame(height: Spacing.xxl)
 
-                    heading
+                                heading
 
-                    Spacer().frame(height: Spacing.sm)
+                                Spacer().frame(height: Spacing.sm)
 
-                    subhead
+                                subhead
 
-                    Spacer()
+                                Spacer()
 
-                    lessonRow
+                                lessonRow
 
-                    Spacer().frame(height: Spacing.md)
+                                Spacer().frame(height: Spacing.md)
 
-                    practiceList
+                                practiceList
+
+                                Spacer().frame(height: Spacing.md)
+                            }
+                            .frame(minHeight: geo.size.height)
+                        }
+                    }
                 }
                 .padding(.horizontal, Spacing.md)
             }

@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		01E93814446E06408185D735 /* DailyQuestionPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01EDE0F612890EE3C325314C /* DailyQuestionPicker.swift */; };
+		C1A7E10000000000000000A1 /* CallWalkthrough.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A7E10000000000000000B1 /* CallWalkthrough.swift */; };
+		C1A7E10000000000000000A2 /* CallShotPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A7E10000000000000000B2 /* CallShotPicker.swift */; };
+		C1A7E10000000000000000A3 /* PickSpotChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A7E10000000000000000B3 /* PickSpotChallenge.swift */; };
+		C1A7E10000000000000000A4 /* PickSpotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A7E10000000000000000B4 /* PickSpotView.swift */; };
 		01F651FCB58C68A4E52A2D4C /* MetaDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56B5C1B3A9978E9FDD773CB /* MetaDefinition.swift */; };
 		028E6B8341BB4EA43B45EB02 /* bb-a-short-guard.json in Resources */ = {isa = PBXBuildFile; fileRef = 3226FAEA735FC3B5CF9A0215 /* bb-a-short-guard.json */; };
 		05537DF0A39466EB9DA0E7E1 /* bb-a-tiptoe-corner.json in Resources */ = {isa = PBXBuildFile; fileRef = 0EFBC84E8A123822C56AC138 /* bb-a-tiptoe-corner.json */; };
@@ -255,6 +259,10 @@
 /* Begin PBXFileReference section */
 		015DA48DF98011DFBA83D806 /* PlayInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayInputView.swift; sourceTree = "<group>"; };
 		01EDE0F612890EE3C325314C /* DailyQuestionPicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DailyQuestionPicker.swift; sourceTree = "<group>"; };
+		C1A7E10000000000000000B1 /* CallWalkthrough.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CallWalkthrough.swift; sourceTree = "<group>"; };
+		C1A7E10000000000000000B2 /* CallShotPicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CallShotPicker.swift; sourceTree = "<group>"; };
+		C1A7E10000000000000000B3 /* PickSpotChallenge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PickSpotChallenge.swift; sourceTree = "<group>"; };
+		C1A7E10000000000000000B4 /* PickSpotView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PickSpotView.swift; sourceTree = "<group>"; };
 		057D1055BF0763AA15795726 /* miss-tone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "miss-tone.wav"; sourceTree = "<group>"; };
 		07EF9C90BFBFEEC9EE121655 /* PlaySceneNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaySceneNode.swift; sourceTree = "<group>"; };
 		08331D43606F118E4724D75E /* AppOpenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppOpenView.swift; sourceTree = "<group>"; };
@@ -270,7 +278,7 @@
 		21B6B10987B09CE527846D9F /* SwishView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwishView.swift; sourceTree = "<group>"; };
 		28676422AE85F34C1F4D603A /* ScenarioPreviewCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioPreviewCard.swift; sourceTree = "<group>"; };
 		2A5833299255849F9E9838E4 /* bb-a-tall-release.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-tall-release.json"; sourceTree = "<group>"; };
-		2D02EF98AD8477BD0CE70809 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		2D02EF98AD8477BD0CE70809 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2FEA2FE05CD12743E19DB4D8 /* SportsIQTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsIQTier.swift; sourceTree = "<group>"; };
 		31D95294BFFD55218FCC5D71 /* SpotterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotterService.swift; sourceTree = "<group>"; };
 		31ED030B4882D6F73E500D91 /* bb-a-logo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-logo.json"; sourceTree = "<group>"; };
@@ -519,6 +527,7 @@
 				A1C23C70E3942EDABBECD3F8 /* PlayLayoutMetrics.swift */,
 				07EF9C90BFBFEEC9EE121655 /* PlaySceneNode.swift */,
 				D809C6C8FE75C3FEFFFC81C4 /* PlayView.swift */,
+				C1A7E10000000000000000B4 /* PickSpotView.swift */,
 				7A6EEBEA5AE6782EFF0F876A /* PostSplashRouterView.swift */,
 				AA9DEAE11EE63EE5C4441CC7 /* ProfileView.swift */,
 				CA5EED439BB982658A419DC0 /* RevealOverlay.swift */,
@@ -573,7 +582,10 @@
 				D83C03738E0CC6197761A680 /* ArcheryScenario.swift */,
 				CCC452B0CF9F334B5356C504 /* ArcheryScenarioCatalog.swift */,
 				B4A5C734491464E15B339129 /* BasketballCurriculum.swift */,
+				C1A7E10000000000000000B2 /* CallShotPicker.swift */,
+				C1A7E10000000000000000B1 /* CallWalkthrough.swift */,
 				F0290C1763D1502D323C308D /* Chapter.swift */,
+				C1A7E10000000000000000B3 /* PickSpotChallenge.swift */,
 				D3D5DCBB3126C265F5C05E07 /* DailyScenarioPicker.swift */,
 				427C77A0D7014BDC06B454DF /* LessonContent.swift */,
 				64224DC624A867395EA5AD69 /* NextSituationPicker.swift */,
@@ -1018,6 +1030,10 @@
 				769D66F6B595C2EE68905096 /* AppOpenView.swift in Sources */,
 				512D4B5312DC506848EFB94B /* ArcheryCallPlayView.swift in Sources */,
 				E6EED7791BDFBEE5D8AB6450 /* ArcheryCallVerdictView.swift in Sources */,
+				C1A7E10000000000000000A2 /* CallShotPicker.swift in Sources */,
+				C1A7E10000000000000000A1 /* CallWalkthrough.swift in Sources */,
+				C1A7E10000000000000000A3 /* PickSpotChallenge.swift in Sources */,
+				C1A7E10000000000000000A4 /* PickSpotView.swift in Sources */,
 				6AB9D4E7DDE781EB83088665 /* ArcheryCurriculum.swift in Sources */,
 				C1C82D6E0147F149944D34CF /* ArcheryScenario.swift in Sources */,
 				CA7350E21FC8DB49C1E37791 /* ArcheryScenarioCatalog.swift in Sources */,
