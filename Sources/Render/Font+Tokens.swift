@@ -48,13 +48,18 @@ extension Font {
 
     // MARK: - Barlow Condensed (prose, italic flavor)
 
+    @MainActor
     static func barlowCondensed(size: CGFloat, italic: Bool = false, relativeTo: Font.TextStyle = .body) -> Font {
         let name = italic ? "BarlowCondensed-Italic" : "BarlowCondensed-Regular"
-        return Font.custom(name, size: max(size, TypeScale.minProse) * TypeScale.bodyBoost, relativeTo: relativeTo)
+        let font = Font.custom(name, size: max(size, TypeScale.minProse) * TypeScale.bodyBoost, relativeTo: relativeTo)
+        // Bold Text: no bold Barlow face is bundled, so SwiftUI synthesizes
+        // the heavier weight (iOS 16+ applies weight to custom fonts).
+        return AccessibilitySettings.shared.boldTextActive ? font.weight(.bold) : font
     }
 
     /// Barlow Condensed scaled by a `LayoutContext.typeScale` for subheads/prose
     /// that should grow on a regular-width canvas. Scale 1.0 = unchanged.
+    @MainActor
     static func barlowCondensed(size: CGFloat, scale: CGFloat, italic: Bool = false, relativeTo: Font.TextStyle = .body) -> Font {
         barlowCondensed(size: size * scale, italic: italic, relativeTo: relativeTo)
     }
@@ -66,8 +71,12 @@ extension Font {
     /// the font. We build a concrete monospaced `UIFont` and scale it through
     /// `UIFontMetrics`, because a plain `Font.system(size:)` is frozen and
     /// ignores the user's accessibility text-size setting.
+    @MainActor
     static func sfMono(size: CGFloat, weight: Font.Weight = .regular, relativeTo textStyle: Font.TextStyle = .body) -> Font {
-        let base = UIFont.monospacedSystemFont(ofSize: max(size, TypeScale.minMono) * TypeScale.bodyBoost, weight: weight.uiKitWeight)
+        // Bold Text bumps every mono readout one weight step (real faces —
+        // SF Mono ships the full weight axis).
+        let effective = AccessibilitySettings.shared.boldTextActive ? weight.boldTextBumped : weight
+        let base = UIFont.monospacedSystemFont(ofSize: max(size, TypeScale.minMono) * TypeScale.bodyBoost, weight: effective.uiKitWeight)
         let scaled = UIFontMetrics(forTextStyle: textStyle.uiKitTextStyle).scaledFont(for: base)
         return Font(scaled)
     }
@@ -91,6 +100,21 @@ private enum TypeScale {
 // MARK: - SwiftUI → UIKit bridges (for UIFontMetrics scaling)
 
 private extension Font.Weight {
+    /// One step heavier, for the Bold Text setting. Caps at .heavy so
+    /// already-bold readouts still gain a visible step.
+    var boldTextBumped: Font.Weight {
+        switch self {
+        case .ultraLight: return .light
+        case .thin: return .regular
+        case .light: return .medium
+        case .regular: return .semibold
+        case .medium: return .bold
+        case .semibold: return .bold
+        case .bold: return .heavy
+        default: return .heavy
+        }
+    }
+
     /// The UIKit weight matching this SwiftUI weight, so we can build a
     /// concrete `UIFont` for `UIFontMetrics` to scale.
     var uiKitWeight: UIFont.Weight {

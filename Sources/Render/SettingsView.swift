@@ -29,6 +29,7 @@ struct SettingsView: View {
 
                         accessibilitySection(
                             highLegibility: $accessibility.highLegibilityEnabled,
+                            boldText: $accessibility.boldTextEnabled,
                             reduceMotion: $accessibility.reduceMotionEnabled
                         )
 
@@ -59,6 +60,7 @@ struct SettingsView: View {
 
     private func accessibilitySection(
         highLegibility: Binding<Bool>,
+        boldText: Binding<Bool>,
         reduceMotion: Binding<Bool>
     ) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -71,6 +73,16 @@ struct SettingsView: View {
                     binding: highLegibility,
                     systemOn: accessibility.systemIncreaseContrast,
                     systemNote: "ON VIA iOS INCREASE CONTRAST"
+                )
+
+                divider
+
+                toggleRow(
+                    title: "BOLD TEXT",
+                    blurb: "Heavier prose and readouts. Display titles already carry full weight.",
+                    binding: boldText,
+                    systemOn: accessibility.systemBoldText,
+                    systemNote: "ON VIA iOS BOLD TEXT"
                 )
 
                 divider

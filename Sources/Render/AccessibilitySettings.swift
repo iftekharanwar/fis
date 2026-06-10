@@ -49,6 +49,21 @@ final class AccessibilitySettings: NSObject {
     /// pushed via `setReduceMotion(_:)` since SKScenes can't observe.
     var reduceMotionActive: Bool { reduceMotionEnabled || systemReduceMotion }
 
+    /// In-app Bold Text override — persisted. Same contract as High
+    /// Legibility: OR'd with the system switch. Exists because the bundled
+    /// custom faces don't respond to iOS Bold Text on their own — the font
+    /// tokens consult `boldTextActive` and bolden explicitly.
+    var boldTextEnabled: Bool {
+        didSet { defaults.set(boldTextEnabled, forKey: PersistenceKeys.boldTextEnabled) }
+    }
+
+    /// Mirrors `UIAccessibility.isBoldTextEnabled` (iOS Settings →
+    /// Accessibility → Display & Text Size → Bold Text); notification-fresh.
+    var systemBoldText: Bool
+
+    /// The weight policy the app actually renders with.
+    var boldTextActive: Bool { boldTextEnabled || systemBoldText }
+
     /// Haptics master switch — persisted, default ON. Threaded through
     /// `PressableButtonStyle` and the `gameHaptic` wrappers (there is no
     /// app-level kill switch for .sensoryFeedback in SwiftUI).
@@ -68,10 +83,13 @@ final class AccessibilitySettings: NSObject {
         defaults: UserDefaults = .standard,
         systemIncreaseContrast: Bool = UIAccessibility.isDarkerSystemColorsEnabled,
         systemReduceMotion: Bool = UIAccessibility.isReduceMotionEnabled,
-        systemDifferentiateWithoutColor: Bool = UIAccessibility.shouldDifferentiateWithoutColor
+        systemDifferentiateWithoutColor: Bool = UIAccessibility.shouldDifferentiateWithoutColor,
+        systemBoldText: Bool = UIAccessibility.isBoldTextEnabled
     ) {
         self.defaults = defaults
         self.highLegibilityEnabled = defaults.bool(forKey: PersistenceKeys.highLegibilityEnabled)
+        self.boldTextEnabled = defaults.bool(forKey: PersistenceKeys.boldTextEnabled)
+        self.systemBoldText = systemBoldText
         self.reduceMotionEnabled = defaults.bool(forKey: PersistenceKeys.reduceMotionOverride)
         self.hapticsEnabled = (defaults.object(forKey: PersistenceKeys.hapticsEnabled) as? Bool) ?? true
         self.systemIncreaseContrast = systemIncreaseContrast
@@ -97,6 +115,12 @@ final class AccessibilitySettings: NSObject {
             name: UIAccessibility.differentiateWithoutColorDidChangeNotification,
             object: nil
         )
+        center.addObserver(
+            self,
+            selector: #selector(systemBoldTextDidChange),
+            name: UIAccessibility.boldTextStatusDidChangeNotification,
+            object: nil
+        )
     }
 
     /// UIAccessibility status notifications post on the main thread.
@@ -110,5 +134,9 @@ final class AccessibilitySettings: NSObject {
 
     @objc private func systemDifferentiateDidChange() {
         systemDifferentiateWithoutColor = UIAccessibility.shouldDifferentiateWithoutColor
+    }
+
+    @objc private func systemBoldTextDidChange() {
+        systemBoldText = UIAccessibility.isBoldTextEnabled
     }
 }

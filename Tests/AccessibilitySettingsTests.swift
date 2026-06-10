@@ -56,6 +56,36 @@ final class AccessibilitySettingsTests: XCTestCase {
         XCTAssertFalse(settings.highLegibilityActive)
     }
 
+    // MARK: - Bold Text (same OR-with-system contract as High Legibility)
+
+    func testBoldTextDefaultsOff() {
+        let settings = AccessibilitySettings(defaults: defaults, systemBoldText: false)
+        XCTAssertFalse(settings.boldTextEnabled)
+        XCTAssertFalse(settings.boldTextActive)
+    }
+
+    func testBoldTextTogglePersistsAcrossInstances() {
+        let first = AccessibilitySettings(defaults: defaults, systemBoldText: false)
+        first.boldTextEnabled = true
+
+        let second = AccessibilitySettings(defaults: defaults, systemBoldText: false)
+        XCTAssertTrue(second.boldTextEnabled)
+        XCTAssertTrue(second.boldTextActive)
+    }
+
+    func testSystemBoldTextActivatesWithoutToggle() {
+        let settings = AccessibilitySettings(defaults: defaults, systemBoldText: true)
+        XCTAssertFalse(settings.boldTextEnabled, "system Bold Text must not flip the persisted user override")
+        XCTAssertTrue(settings.boldTextActive)
+    }
+
+    func testSystemBoldTextChangeIsLive() {
+        let settings = AccessibilitySettings(defaults: defaults, systemBoldText: false)
+        XCTAssertFalse(settings.boldTextActive)
+        settings.systemBoldText = true
+        XCTAssertTrue(settings.boldTextActive)
+    }
+
     // MARK: - Reduce Motion (same OR-with-system contract as High Legibility)
 
     func testReduceMotionDefaultsOffAndPersists() {
