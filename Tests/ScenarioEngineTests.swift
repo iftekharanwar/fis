@@ -35,15 +35,12 @@ final class ScenarioEngineTests: XCTestCase {
 
         let chapter = try XCTUnwrap(chapters.first { $0.id == "bb-ch1-arc" })
         XCTAssertEqual(chapter.releasedPracticeLevelTypes, [.findTheta, .findV, .findD])
+        // One scenario per question type — each calculation once (team
+        // decision); distinct venues 4.6 / 7.5 / 5.8 m.
         XCTAssertEqual(chapter.progressScenarioIDs, [
             "bb-a-freethrow",
-            "bb-a-elbow-r",
-            "bb-b-freethrow",
-            "bb-b-rainbow",
-            "bb-c-wing-throw",
-            "bb-c-freethrow",
-            "bb-c-elbow",
-            "bb-c-high-floater"
+            "bb-b-stepback",
+            "bb-c-wing-throw"
         ])
 
         let locked = chapters.filter { $0.id != "bb-ch1-arc" }

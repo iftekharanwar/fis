@@ -103,28 +103,17 @@ enum BasketballCurriculum {
         )
     ]
 
-    /// Current basketball release: Ch 1 practice across three level types.
-    /// Wave 1 grew Level C to four seeds; Wave 2 opens Level A (find θ) and
-    /// Level B (find v) — including the same free-throw asked for a
-    /// different unknown, so the player feels the equation's two handles.
-    /// All seeds are smoke-tested and ghost-arc-verified in CI. The broader
-    /// pools remain authored above for diagnostics and future waves.
+    /// Current basketball release: exactly one scenario per question type —
+    /// each calculation appears once, no repeated venues (team decision:
+    /// repetition in a small pool reads as redundancy, not practice).
+    /// Venues spread 4.6 / 7.5 / 5.8 m. The broader pools stay authored
+    /// above for diagnostics and future waves when the pool is large
+    /// enough for spaced repetition.
     static let releasedPracticeSeedsByChapter: [String: [LevelTypeID: [String]]] = [
         "bb-ch1-arc": [
-            .findTheta: [
-                "bb-a-freethrow",
-                "bb-a-elbow-r"
-            ],
-            .findV: [
-                "bb-b-freethrow",
-                "bb-b-rainbow"
-            ],
-            .findD: [
-                "bb-c-wing-throw",
-                "bb-c-freethrow",
-                "bb-c-elbow",
-                "bb-c-high-floater"
-            ]
+            .findTheta: ["bb-a-freethrow"],
+            .findV: ["bb-b-stepback"],
+            .findD: ["bb-c-wing-throw"]
         ]
     ]
 
