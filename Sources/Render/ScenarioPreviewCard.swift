@@ -54,6 +54,9 @@ struct ScenarioPreviewCard: View {
                 placeholder
             }
         }
+        // Decorative — the card's combined label already names the scenario;
+        // keep Smart Invert from negating the illustration.
+        .accessibilityIgnoresInvertColors()
     }
 
     /// Quiet placeholder shown when the AI-generated illustration is missing.

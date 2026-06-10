@@ -3,7 +3,6 @@ import SwiftUI
 /// Scenario INTRO screen.
 struct IntroView: View {
     @Environment(PlayerProfileStore.self) private var profile
-    @Environment(MotionController.self) private var motion
     @Environment(\.dismiss) private var dismiss
 
     let scenario: ScenarioDefinition
@@ -31,7 +30,6 @@ struct IntroView: View {
         .padding(.horizontal, Spacing.md)
         .background(ScenarioBackgroundView(opacity: 0.40))
         .onAppear {
-            motion.pause()
             if isFirstRun {
                 Task {
                     try? await Task.sleep(for: .milliseconds(200))
@@ -41,7 +39,6 @@ struct IntroView: View {
                 verbVisible = true
             }
         }
-        .onDisappear { motion.resume() }
     }
 
     private var topZone: some View {

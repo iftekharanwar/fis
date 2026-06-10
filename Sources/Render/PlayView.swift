@@ -5,6 +5,7 @@ import SpriteKit
 struct PlayView: View {
     @Environment(PlayerProfileStore.self) private var profile
     @Environment(AudioService.self) private var audio
+    @Environment(AccessibilitySettings.self) private var accessibility
     @Environment(\.horizontalSizeClass) private var hSizeClass
 
     let scenario: ScenarioDefinition
@@ -16,6 +17,10 @@ struct PlayView: View {
     /// single-scenario release. Both default to popping back to the picker.
     var onClose: (() -> Void)? = nil
     var onRequestNext: (() -> Void)? = nil
+
+    /// Kept from init so VoiceOver scene narration can describe the court at
+    /// the view layer (the scene itself is invisible to the accessibility tree).
+    private let projectileParams: Projectile2DParams
 
     /// @State so the scene isn't recreated on every SwiftUI re-render.
     @State private var scene: PlaySceneNode
@@ -38,6 +43,11 @@ struct PlayView: View {
     @State private var pendingCelebrations: [Celebration] = []
 
     @State private var phase: Phase = .idle
+
+    /// Measured intrinsic height of the dock content — drives the dock band
+    /// and the scene's bottom reserve so input grows with Dynamic Type
+    /// instead of overlapping the court (the verified AX-size blocker).
+    @State private var measuredDockContentHeight: CGFloat? = nil
 
     @State private var attemptCounter: Int = 1
 
@@ -76,9 +86,24 @@ struct PlayView: View {
         guard case .projectile2D(_, let params) = scenario.simulation else {
             fatalError("PlayView currently supports only PROJECTILE_2D scenarios")
         }
+        self.projectileParams = params
         // SpriteView resizes via didChangeSize once the SwiftUI layout pass settles.
         let initialSize = CGSize(width: 393, height: 340)
         _scene = State(initialValue: PlaySceneNode(projectileParams: params, size: initialSize))
+    }
+
+    /// The live scene description VoiceOver reads off the court canvas.
+    private var sceneAccessibilityValue: String {
+        switch phase {
+        case .idle:
+            return "Shooter at the line, waiting on your numbers."
+        case .action:
+            return "Ball in flight."
+        case .outcome(.success):
+            return "Ball went through the net."
+        case .outcome(.miss):
+            return "Shot missed."
+        }
     }
 
     var body: some View {
@@ -103,6 +128,12 @@ struct PlayView: View {
                 SpriteView(scene: scene, preferredFramesPerSecond: 60)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)  // input overlays own taps
+                    // SKScene content never reaches the accessibility tree —
+                    // narrate the court so the numpad inputs have context.
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(SceneNarration.basketballLabel(params: projectileParams))
+                    .accessibilityValue(sceneAccessibilityValue)
+                    .accessibilityIgnoresInvertColors()
 
                 // HUD overlay (top). Spacer is non-hit-testing so it doesn't
                 // swallow taps belonging to the bottom overlay or the scene.
@@ -125,7 +156,7 @@ struct PlayView: View {
                         sideDock(width: AdaptiveMetrics.sideDockWidth(for: geometry.size.width),
                                  topReserve: metrics.topReserve)
                     } else {
-                        bottomDock()
+                        bottomDock(surfaceHeight: geometry.size.height)
                     }
                 }
             }
@@ -136,6 +167,9 @@ struct PlayView: View {
                 propagateLayout(ctx: ctx, metrics: metrics, phase: newPhase)
             }
             .onChange(of: geometry.size) { _, _ in
+                propagateLayout(ctx: ctx, metrics: metrics, phase: phase)
+            }
+            .onChange(of: measuredDockContentHeight) { _, _ in
                 propagateLayout(ctx: ctx, metrics: metrics, phase: phase)
             }
         }
@@ -153,7 +187,12 @@ struct PlayView: View {
         .onChange(of: distanceValue) { _, _ in
             updateDribbleForInputState()
         }
+        // Mid-session toggles (Settings or iOS) retune the running scene.
+        .onChange(of: accessibility.reduceMotionActive) { _, on in
+            scene.setReduceMotion(on)
+        }
         .onAppear {
+            scene.setReduceMotion(accessibility.reduceMotionActive)
             // Single-V/single-D modes: show the given θ as a static cue on the court.
             if (scenario.input.mode == .numpadSingleV || scenario.input.mode == .numpadSingleD),
                let givenTheta = givenVariable("theta") {
@@ -252,9 +291,9 @@ struct PlayView: View {
         }
         // Haptic texture: medium thud on SHOOT, .success on swish, .error on miss.
         // Keeps the play loop physically grounded — every key beat has a body cue.
-        .sensoryFeedback(.impact(weight: .medium), trigger: shootHapticCount)
-        .sensoryFeedback(.success, trigger: swishHapticCount)
-        .sensoryFeedback(.error, trigger: missHapticCount)
+        .gameHaptic(.impact(weight: .medium), trigger: shootHapticCount)
+        .gameHaptic(.success, trigger: swishHapticCount)
+        .gameHaptic(.error, trigger: missHapticCount)
     }
 
     private func handleShoot() {
@@ -328,11 +367,13 @@ struct PlayView: View {
     /// right-side column (rightReserve); elsewhere it occludes a bottom band.
     /// In .action the dock is hidden, so the court reclaims the full canvas.
     private func propagateLayout(ctx: LayoutContext, metrics: PlayLayoutMetrics, phase: Phase) {
+        // Bottom reserve tracks the measured dock band so the court reframes
+        // above whatever height the input grew to (the design floor below).
         let desiredBottom: CGFloat
         switch phase {
-        case .idle:    desiredBottom = metrics.bottomReserveIdle
+        case .idle:    desiredBottom = ctx.safeArea.bottom + resolvedDockHeight(floor: 330, surfaceHeight: ctx.size.height)
         case .action:  desiredBottom = metrics.bottomReserveAction
-        case .outcome: desiredBottom = metrics.bottomReserveOutcome
+        case .outcome: desiredBottom = ctx.safeArea.bottom + resolvedDockHeight(floor: 480, surfaceHeight: ctx.size.height)
         }
         let am = AdaptiveMetrics.compute(
             ctx: ctx,
@@ -386,17 +427,52 @@ struct PlayView: View {
         }
     }
 
-    /// Legacy bottom-pinned dock (iPhone + iPad portrait). Unchanged heights.
-    private func bottomDock() -> some View {
-        let height: CGFloat = { if case .outcome = phase { return 480 } else { return 330 } }()
+    /// Bottom-pinned dock (iPhone + iPad portrait). Height grows with Dynamic
+    /// Type: the design floor (330 idle / 480 outcome) is the minimum, but the
+    /// dock takes the input column's measured intrinsic height when that's
+    /// taller (AX sizes), capped at 62% of the surface. At default sizes the
+    /// input measures ≤330 → no change anywhere; the outcome views fill their
+    /// proposed height → measure == floor → unchanged too.
+    private func bottomDock(surfaceHeight: CGFloat) -> some View {
+        let floor: CGFloat = { if case .outcome = phase { return 480 } else { return 330 } }()
+        let height = resolvedDockHeight(floor: floor, surfaceHeight: surfaceHeight)
+        let isIdle: Bool = { if case .idle = phase { return true } else { return false } }()
         return VStack(spacing: 0) {
             Spacer().allowsHitTesting(false)
-            dockContent()
+            dockBody(isIdle: isIdle)
+                // Measure the content's intrinsic height (the fixed-row input
+                // VStack reports its true size even inside the frame below;
+                // outcome views stretch and report the floor).
+                .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { measured in
+                    if measuredDockContentHeight.map({ abs($0 - measured) > 0.5 }) ?? true {
+                        measuredDockContentHeight = measured
+                    }
+                }
                 .frame(height: height)
                 .background(Color.arclabBlack)
                 .transition(.opacity)
         }
         .animation(.easeOut(duration: 0.25), value: phase)
+    }
+
+    /// Idle input scrolls when it exceeds the cap (AX4-5) so SHOOT stays
+    /// reachable; below the cap the ScrollView is inert. Outcome composition
+    /// is unchanged.
+    @ViewBuilder
+    private func dockBody(isIdle: Bool) -> some View {
+        if isIdle {
+            ScrollView(.vertical) { dockContent() }
+                .scrollBounceBehavior(.basedOnSize)
+        } else {
+            dockContent()
+        }
+    }
+
+    /// max(design floor, measured intrinsic), capped at 62% of the surface so
+    /// the dock can never swallow the court.
+    private func resolvedDockHeight(floor: CGFloat, surfaceHeight: CGFloat) -> CGFloat {
+        let cap = surfaceHeight * 0.62
+        return min(max(floor, measuredDockContentHeight ?? floor), cap)
     }
 
     /// iPad landscape: dock as a trailing column spanning below the HUD to the

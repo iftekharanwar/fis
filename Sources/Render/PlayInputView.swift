@@ -35,15 +35,26 @@ struct PlayInputView: View {
     private var inputCardsRow: some View {
         HStack(spacing: Spacing.xs) {
             ForEach(Array(scenario.input.fields.enumerated()), id: \.offset) { _, field in
-                InputCard(
-                    field: field,
-                    value: bindingFor(field: field),
-                    isActive: activeFieldForFieldDef(field: field) == activeField
-                )
-                .contentShape(Rectangle())
-                .onTapGesture {
+                let isActive = activeFieldForFieldDef(field: field) == activeField
+                let fieldValue = bindingFor(field: field).wrappedValue
+                // A real Button so field switching works for VoiceOver,
+                // Switch Control and Voice Control — the active/empty state
+                // used to be visual-only (cursor glyph + border color).
+                Button {
                     activeField = activeFieldForFieldDef(field: field)
+                } label: {
+                    InputCard(
+                        field: field,
+                        value: bindingFor(field: field),
+                        isActive: isActive
+                    )
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(field.label) field")
+                .accessibilityValue(fieldValue.isEmpty ? "empty" : "\(fieldValue) \(field.unit)")
+                .accessibilityAddTraits(isActive ? [.isSelected] : [])
+                .accessibilityHint(isActive ? "Active. Use the number pad below." : "Double-tap to type into this field.")
             }
         }
     }
@@ -61,25 +72,26 @@ struct PlayInputView: View {
     }
 
     private var shootButton: some View {
+        // Audit fix: the 0.3-opacity disabled treatment fell to ~1:1 —
+        // invisible to low vision. White-vs-grey text carries the state at
+        // full contrast; the border stays printed.
         Button(action: handleShoot) {
             Text(scenario.input.submitLabel)
                 .font(.sfMono(size: 16, weight: .medium))
-                .foregroundColor(.arclabWhite)
-                .opacity(isShootEnabled ? 1.0 : 0.3)
+                .foregroundColor(isShootEnabled ? .arclabWhite : .arclabMidGrey)
                 .tracking(3.2)
                 .frame(maxWidth: .infinity)
                 .frame(height: Sizing.pillButtonHeight)
                 .overlay(
                     RoundedRectangle(cornerRadius: Sizing.cornerRadius)
-                        .stroke(Color.arclabBorderGrey.opacity(isShootEnabled ? 1.0 : 0.3),
-                                lineWidth: Sizing.borderWidth)
+                        .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
                 )
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         // Stays enabled in code (not .disabled) so tap-while-invalid fires .warning haptic and stays in VoiceOver tap order.
-        .sensoryFeedback(.impact(weight: .heavy), trigger: shootTapsCount, condition: { _, _ in isShootEnabled })
-        .sensoryFeedback(.warning, trigger: shootTapsCount, condition: { _, _ in !isShootEnabled })
+        .gameHaptic(.impact(weight: .heavy), trigger: shootTapsCount, condition: { _, _ in isShootEnabled })
+        .gameHaptic(.warning, trigger: shootTapsCount, condition: { _, _ in !isShootEnabled })
         .accessibilityLabel(isShootEnabled ? "Shoot. Commit your answer." : "Shoot, awaiting input. Both fields must be filled.")
     }
 
@@ -246,13 +258,23 @@ private struct NumpadButton: View {
         } label: {
             label
                 .frame(maxWidth: .infinity)
-                .frame(height: 44)
+                .frame(minHeight: 44)
                 .overlay(borderOverlay)
                 // Entire 44pt frame tappable, meets HIG minimum touch target.
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .light), trigger: tapCount)
+        .gameHaptic(.impact(weight: .light), trigger: tapCount)
+        .accessibilityLabel(accessibilityName)
+    }
+
+    /// "delete" for the glyph key; digits read themselves ("5", "point").
+    private var accessibilityName: String {
+        switch key {
+        case .digit("."): return "decimal point"
+        case .digit(let d): return d
+        case .backspace: return "delete"
+        }
     }
 
     /// Backspace gets no border (Apple Calculator modifier-key treatment); digits get the standard chip.

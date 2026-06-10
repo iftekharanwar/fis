@@ -114,6 +114,13 @@ struct SoccerCallPlayView: View {
                 SpriteView(scene: scene, preferredFramesPerSecond: 60)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+                    // SKScene content never reaches the accessibility tree —
+                    // narrate it. Soccer's call happens at stance, so the
+                    // stance read carries the full evidence (aim/spin/curve).
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(SceneNarration.soccerLabel(scenario, keeperOffset: keeperOffset))
+                    .accessibilityValue(sceneAccessibilityValue)
+                    .accessibilityIgnoresInvertColors()
 
                 VStack(spacing: 0) {
                     CallHUD(onClose: shouldShowClose ? onClose : nil)
@@ -265,6 +272,22 @@ struct SoccerCallPlayView: View {
         }
     }
 
+    /// The live scene description VoiceOver reads off the pitch canvas.
+    private var sceneAccessibilityValue: String {
+        switch phase {
+        case .stance:
+            return SceneNarration.soccerStanceRead(scenario)
+        case .release:
+            return "Ball in flight."
+        case .verdict:
+            return "Strike resolved."
+        case .compute, .computeAction:
+            return "Your strike is set on the sliders below."
+        case .computeVerdict:
+            return "Your strike resolved."
+        }
+    }
+
     private var stanceDock: some View {
         VStack(spacing: Spacing.sm) {
             Text(scenario.stancePrompt)
@@ -275,6 +298,10 @@ struct SoccerCallPlayView: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.7)
                 .fixedSize(horizontal: false, vertical: true)
+                // Soccer's call happens here at stance — fold the kick read
+                // into the prompt so the evidence is one element away from
+                // the YES/NO buttons.
+                .accessibilityLabel("\(scenario.stancePrompt) \(SceneNarration.soccerStanceRead(scenario)) Yes and No buttons below.")
 
             HStack(spacing: Spacing.md) {
                 PrimaryButton(label: "Yes", action: { handleCall(yes: true) })
@@ -305,28 +332,25 @@ struct SoccerCallPlayView: View {
                     .tracking(2.0)
             }
 
-            sliderRow(
-                label: "POWER",
-                unit: "m/s",
-                value: $computeVelocity,
-                range: velocityRange,
-                format: "%.0f"
+            ParameterSliderRow(
+                label: "POWER", spokenName: "Shot power",
+                unit: "m/s", spokenUnit: "meters per second",
+                value: $computeVelocity, range: velocityRange, format: "%.0f", step: 1,
+                tint: .arclabRimOrange
             )
 
-            sliderRow(
-                label: "DIRECTION",
-                unit: directionUnit,
-                value: $computeAimOffset,
-                range: aimRange,
-                format: "%+.2f"
+            ParameterSliderRow(
+                label: "DIRECTION", spokenName: "Aim direction",
+                unit: directionUnit, spokenUnit: spokenDirection,
+                value: $computeAimOffset, range: aimRange, format: "%+.2f", step: 0.05,
+                tint: .arclabRimOrange
             )
 
-            sliderRow(
-                label: "SPIN",
-                unit: spinUnit,
-                value: $computeSpin,
-                range: spinRange,
-                format: "%+.1f"
+            ParameterSliderRow(
+                label: "SPIN", spokenName: "Spin",
+                unit: spinUnit, spokenUnit: spokenSpin,
+                value: $computeSpin, range: spinRange, format: "%+.1f", step: 0.1,
+                tint: .arclabRimOrange
             )
 
             PrimaryButton(label: "Shoot", action: handleComputeShoot)
@@ -354,32 +378,17 @@ struct SoccerCallPlayView: View {
         return "m ·"
     }
 
-    private func sliderRow(
-        label: String,
-        unit: String,
-        value: Binding<Double>,
-        range: ClosedRange<Double>,
-        format: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            HStack(alignment: .lastTextBaseline) {
-                Text(label)
-                    .font(.sfMono(size: 10))
-                    .foregroundColor(.arclabMidGrey)
-                    .tracking(2.0)
-                Spacer()
-                HStack(alignment: .lastTextBaseline, spacing: 4) {
-                    Text(String(format: format, value.wrappedValue))
-                        .font(.sfMono(size: 18, weight: .medium))
-                        .foregroundColor(.arclabWhite)
-                    Text(unit)
-                        .font(.sfMono(size: 11))
-                        .foregroundColor(.arclabMidGrey)
-                }
-            }
-            Slider(value: value, in: range)
-                .tint(.arclabRimOrange)
-        }
+    /// Spoken equivalents of the arrow hints — VoiceOver can't read "←".
+    private var spokenDirection: String {
+        if computeAimOffset < -0.05 { return "toward the left post" }
+        if computeAimOffset >  0.05 { return "toward the right post" }
+        return "center"
+    }
+
+    private var spokenSpin: String {
+        if computeSpin < -0.05 { return "meters of curve, bending left" }
+        if computeSpin >  0.05 { return "meters of curve, bending right" }
+        return "meters of curve, straight"
     }
 
     // MARK: - Compute verdict view
@@ -422,6 +431,7 @@ struct SoccerCallPlayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background((scored ? Color.arclabBlack : Color.arclabMissTint).ignoresSafeArea())
+        .announceOnAppear { "\(verb) \(computeVerdictSubhead(scored: scored))" }
     }
 
     /// Coaching line based on the resolved scene outcome — points the

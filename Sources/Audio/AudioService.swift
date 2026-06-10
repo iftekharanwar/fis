@@ -25,9 +25,18 @@ final class AudioService {
     private var loopBuffers: [LoopID: AVAudioPCMBuffer] = [:]
     private var loopsRunning: Set<LoopID> = []
 
-    var masterEnabled: Bool = true
+    /// Game-sound master switch — persisted, default ON. Wired to the
+    /// SOUND toggle in Settings. `play`/`startLoop` already guard on it;
+    /// flipping it off also kills anything already sounding (the dribble loop).
+    var masterEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(masterEnabled, forKey: PersistenceKeys.soundEnabled)
+            if !masterEnabled { stopAll() }
+        }
+    }
 
     private init() {
+        self.masterEnabled = (UserDefaults.standard.object(forKey: PersistenceKeys.soundEnabled) as? Bool) ?? true
         configureSession()
         attachMixer()
         preloadOneShots()

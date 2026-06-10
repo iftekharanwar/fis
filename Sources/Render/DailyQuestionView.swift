@@ -9,6 +9,7 @@ import UIKit
 /// Reached as a push from the Home "DAILY" card — not a tab.
 struct DailyQuestionView: View {
     @Environment(PlayerProfileStore.self) private var profile
+    @Environment(AccessibilitySettings.self) private var accessibility
 
     var onClose: (() -> Void)? = nil
 
@@ -50,8 +51,8 @@ struct DailyQuestionView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
-        .dynamicTypeSize(.large ... .accessibility2)
-        .sensoryFeedback(trigger: answerHaptic) { _, _ in
+        .dynamicTypeSize(.large ... .accessibility5)
+        .gameHaptic(trigger: answerHaptic) { _, _ in
             guard let pick, let question else { return .impact(weight: .light) }
             return question.isDisplayPickCorrect(pick) ? .success : .warning
         }
@@ -119,6 +120,12 @@ struct DailyQuestionView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 170)
                 .padding(.top, Spacing.md)
+                // Curated alt text when the art informs; hidden otherwise —
+                // VoiceOver must never read the raw asset filename. Keep
+                // Smart Invert from negating the illustration either way.
+                .accessibilityLabel(q.imageAlt ?? "")
+                .accessibilityHidden(q.imageAlt == nil)
+                .accessibilityIgnoresInvertColors()
         }
     }
 
@@ -185,7 +192,8 @@ struct DailyQuestionView: View {
                         .foregroundColor(.arclabRimOrange)
                         .tracking(1.0)
                         .opacity(showGain ? 1 : 0)
-                        .offset(y: showGain ? 0 : 12)
+                        // Reduce Motion: fade only, no rise.
+                        .offset(y: showGain || accessibility.reduceMotionActive ? 0 : 12)
                 }
             }
 
@@ -212,6 +220,9 @@ struct DailyQuestionView: View {
             .overlay(alignment: .top) {
                 Rectangle().fill(Color.arclabBorderGrey).frame(height: 1)
             }
+        }
+        .announceOnAppear {
+            "\(correct ? "Right." : "Not quite.") \(q.why) Fun fact: \(q.funFact)"
         }
     }
 

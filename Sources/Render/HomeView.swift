@@ -4,8 +4,10 @@ import SwiftUI
 ///
 /// Direction: "Continue + Sports". A scrolling surface that fills the screen
 /// and surfaces what matters:
-/// 1. System header — ARCLAB identity (left) + a progress pill (rank + streak)
-///    that opens the profile (right). Identity/momentum is visible up front,
+/// 1. System header — a progress pill (rank + streak) that opens the profile
+///    (left) + a settings gear (right). The pill moved off the right edge in
+///    the accessibility pass: the right slot now opens Settings, where the
+///    legibility options live. Identity/momentum stays visible up front,
 ///    not hidden behind a bare PROFILE chip.
 /// 2. CONTINUE hero — the user's next unplayed scenario as a full poster card
 ///    (chapter background image + scrim when available; a typographic surface
@@ -19,6 +21,7 @@ import SwiftUI
 /// `AdaptiveContentContainer`. iPhone is pass-through.
 struct HomeView: View {
     @Environment(PlayerProfileStore.self) private var profile
+    @Environment(AccessibilitySettings.self) private var accessibility
 
     /// Tap a sport row → that sport's chapter list.
     let onOpenSport: (Sport) -> Void
@@ -26,6 +29,9 @@ struct HomeView: View {
     /// Tap the DAILY card → push the Daily Question. Optional so existing
     /// call sites and previews stay valid.
     var onOpenDaily: () -> Void = {}
+    /// Tap the gear → Settings (accessibility + app options). Optional for
+    /// the same reason as `onOpenDaily`.
+    var onOpenSettings: () -> Void = {}
 
     /// Drives the one-shot entrance animation (fade + rise) when Home appears.
     @State private var appeared = false
@@ -36,14 +42,16 @@ struct HomeView: View {
                 header
 
                 ScrollView(.vertical, showsIndicators: false) {
+                    // Reduce Motion: entrance becomes a pure fade (offsets pin).
+                    let rm = accessibility.reduceMotionActive
                     VStack(alignment: .leading, spacing: Spacing.lg) {
                         heroCard
                             .opacity(appeared ? 1 : 0)
-                            .offset(y: appeared ? 0 : 14)
+                            .offset(y: appeared || rm ? 0 : 14)
                             .animation(.easeOut(duration: 0.45), value: appeared)
                         sportsSection
                             .opacity(appeared ? 1 : 0)
-                            .offset(y: appeared ? 0 : 14)
+                            .offset(y: appeared || rm ? 0 : 14)
                             .animation(.easeOut(duration: 0.45).delay(0.1), value: appeared)
                     }
                     .padding(.top, Spacing.md)
@@ -61,10 +69,29 @@ struct HomeView: View {
 
     private var header: some View {
         HStack(alignment: .center) {
-            Spacer()
             progressPill
+            Spacer()
+            settingsButton
         }
         .frame(minHeight: 44)
+    }
+
+    /// Gear chip — same bordered-chip language as the progress pill, icon-only
+    /// per the design direction (symbol, not a SETTINGS label).
+    private var settingsButton: some View {
+        Button(action: onOpenSettings) {
+            Image(systemName: "gearshape")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(.arclabWhite)
+                .frame(width: Sizing.minTapTarget, height: Sizing.minTapTarget)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Sizing.cornerRadius)
+                        .stroke(Color.arclabBorderGrey, lineWidth: Sizing.borderWidth)
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel("Settings. Accessibility and app options.")
     }
 
     private var progressPill: some View {

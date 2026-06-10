@@ -113,8 +113,11 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Text(item.copy)
+                // Raised from 0.72: over the rising photo the old value dipped
+                // to ~3.7:1. 0.88 keeps the copy visually secondary to the
+                // white title while clearing the AA floor even on the backdrop.
                 .font(.barlowCondensed(size: 18, italic: true))
-                .foregroundColor(.arclabWhite.opacity(0.72))
+                .foregroundColor(.arclabWhite.opacity(0.88))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.78)
@@ -263,6 +266,8 @@ private struct OnboardingBackdropImage: View {
         .background(Color.arclabBlack)
         .ignoresSafeArea()
         .accessibilityHidden(true)
+        // Decorative photo — Smart Invert would render it as a negative.
+        .accessibilityIgnoresInvertColors()
     }
 }
 

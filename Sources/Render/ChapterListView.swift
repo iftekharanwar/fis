@@ -46,10 +46,9 @@ struct ChapterListView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.arclabBlack.ignoresSafeArea())
         }
-        // The Anton display titles can't grow without bound on this dense list;
-        // cap the largest accessibility steps so the layout scales and scrolls
-        // instead of breaking. Text still grows substantially up to the cap.
-        .dynamicTypeSize(.large ... .accessibility2)
+        // The list scrolls, so text can grow across the full accessibility
+        // range; rows reflow and the column scrolls instead of clipping.
+        .dynamicTypeSize(.large ... .accessibility5)
     }
 
     /// The active key window's top safe-area inset — i.e. the true status-bar
