@@ -270,6 +270,9 @@ struct ChapterView: View {
         if scenarioId.hasPrefix("soc-") {
             return SoccerScenarioCatalog.title(for: scenarioId)
         }
+        if scenarioId.hasPrefix("f1-") {
+            return F1ScenarioCatalog.title(for: scenarioId)
+        }
         if let scenario = try? ScenarioLoader.load(ScenarioID(scenarioId)) {
             return scenario.meta.title
         }

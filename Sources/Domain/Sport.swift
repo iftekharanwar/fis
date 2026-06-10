@@ -5,6 +5,7 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
     case basketball
     case soccer
     case archery
+    case formula1
     case pool
 
     var id: String { rawValue }
@@ -14,6 +15,7 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         case .basketball: return "BASKETBALL"
         case .soccer:     return "SOCCER"
         case .archery:    return "ARCHERY"
+        case .formula1:   return "FORMULA 1"
         case .pool:       return "POOL"
         }
     }
@@ -26,6 +28,7 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         case .basketball: return "THE ARC"
         case .soccer:     return "THE CURVE"
         case .archery:    return "THE DISTANCE"
+        case .formula1:   return "THE LIMIT"
         case .pool:       return "THE BREAK"
         }
     }
@@ -35,6 +38,7 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         case .basketball: return "basketball.fill"
         case .soccer:     return "soccerball"
         case .archery:    return "target"
+        case .formula1:   return "flag.checkered"
         case .pool:       return "8.circle.fill"
         }
     }
@@ -44,8 +48,8 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
     /// rather than a tappable row that leads to a dead end.
     var isUnlocked: Bool {
         switch self {
-        case .basketball, .archery, .soccer: return true
-        case .pool:                          return false
+        case .basketball, .archery, .soccer, .formula1: return true
+        case .pool:                                     return false
         }
     }
 
@@ -61,6 +65,7 @@ enum Sport: String, Sendable, CaseIterable, Identifiable, Codable {
         case .basketball: return BasketballCurriculum.chapters
         case .archery:    return ArcheryCurriculum.chapters
         case .soccer:     return SoccerCurriculum.chapters
+        case .formula1:   return F1Curriculum.chapters
         case .pool:       return []
         }
     }

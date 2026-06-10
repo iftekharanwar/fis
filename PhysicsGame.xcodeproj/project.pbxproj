@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		01E93814446E06408185D735 /* DailyQuestionPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01EDE0F612890EE3C325314C /* DailyQuestionPicker.swift */; };
-		C1A7E10000000000000000A3 /* PickSpotChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A7E10000000000000000B3 /* PickSpotChallenge.swift */; };
-		C1A7E10000000000000000A4 /* PickSpotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A7E10000000000000000B4 /* PickSpotView.swift */; };
 		01F651FCB58C68A4E52A2D4C /* MetaDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56B5C1B3A9978E9FDD773CB /* MetaDefinition.swift */; };
 		028E6B8341BB4EA43B45EB02 /* bb-a-short-guard.json in Resources */ = {isa = PBXBuildFile; fileRef = 3226FAEA735FC3B5CF9A0215 /* bb-a-short-guard.json */; };
 		05537DF0A39466EB9DA0E7E1 /* bb-a-tiptoe-corner.json in Resources */ = {isa = PBXBuildFile; fileRef = 0EFBC84E8A123822C56AC138 /* bb-a-tiptoe-corner.json */; };
@@ -40,6 +37,7 @@
 		255AD4BD76D76ACC8419414A /* PhysicsGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B704667D4D5BCBF27C131789 /* PhysicsGameApp.swift */; };
 		267AC0A42436762F81C39B95 /* bb-1-flat.json in Resources */ = {isa = PBXBuildFile; fileRef = D841EBE22B4C6B0FE2AC197D /* bb-1-flat.json */; };
 		26C9CC49060744D0646517FA /* shoot-release.wav in Resources */ = {isa = PBXBuildFile; fileRef = ECB6681874AA39461B8FBAD0 /* shoot-release.wav */; };
+		273E7C2AB7C99F042B1C3995 /* F1Scenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 916E9145E0CA49BF7544C920 /* F1Scenario.swift */; };
 		2775B87C22AC233CDC66D388 /* SwishView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B6B10987B09CE527846D9F /* SwishView.swift */; };
 		27DAD4619272FE3B2FB8B54F /* bb-b-corner-3.json in Resources */ = {isa = PBXBuildFile; fileRef = 8374B82C301C3C8B83D401C6 /* bb-b-corner-3.json */; };
 		28BC1105C13C6CFAAAE1C94C /* PlayInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 015DA48DF98011DFBA83D806 /* PlayInputView.swift */; };
@@ -52,6 +50,7 @@
 		34A70CFDF20FB44C6DD87C1E /* target-thud.wav in Resources */ = {isa = PBXBuildFile; fileRef = A41E94A98B384BA64BFB2F8A /* target-thud.wav */; };
 		3504E06BDE871ECEF939E529 /* SportPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D146A709617A400713985CD1 /* SportPickerView.swift */; };
 		3721462579BA6C98995789D6 /* SmokeTestDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EDD39579F7F214B9EA9F12 /* SmokeTestDefinition.swift */; };
+		375572AF40BB6C4F1A95FBD6 /* F1Curriculum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B5397FB593477E2E1B7DD6 /* F1Curriculum.swift */; };
 		38F9D71F84AF34ECA5526E37 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6817918E6569DF91A1BDCC1F /* SettingsView.swift */; };
 		3B00612D2F6948708D5922A9 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B710ED1104FC20788AF86564 /* Buttons.swift */; };
 		3C530CA3266970F9C2F27A53 /* BarlowCondensed-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 679A2C851B1E7799933A233E /* BarlowCondensed-Italic.ttf */; };
@@ -149,6 +148,7 @@
 		A6D1EAC74A881EF854C55FF0 /* NextSituationPickerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CCC4DD8C3D57AACA7580A0 /* NextSituationPickerTests.swift */; };
 		A88D693CFD619C074EDF76FB /* bb-2-shooters-roll.json in Resources */ = {isa = PBXBuildFile; fileRef = 4A41D30A7C1FD02E674EC87D /* bb-2-shooters-roll.json */; };
 		AA25C5017A57BB4C92F1BF1C /* bb-1-logo-three.json in Resources */ = {isa = PBXBuildFile; fileRef = 3F21B6D504DF51012F795E95 /* bb-1-logo-three.json */; };
+		AA54415E71F3091DA0A72642 /* F1ScenarioCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7382DD66185453E3A82683E5 /* F1ScenarioCatalog.swift */; };
 		AAD7375D99BE871F531A9DF2 /* bb-1-baseline.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FF571A6760A0E4E463D989A /* bb-1-baseline.json */; };
 		AB8D38F20F21416334FB2C8E /* bb-5-corner-pocket.json in Resources */ = {isa = PBXBuildFile; fileRef = FBE4EBA8500C2A2EC9D42570 /* bb-5-corner-pocket.json */; };
 		AE3C567716ADBBC2BD5075FE /* bb-a-elbow-r.json in Resources */ = {isa = PBXBuildFile; fileRef = 39ECC6A2231361EEE944B4FE /* bb-a-elbow-r.json */; };
@@ -170,6 +170,8 @@
 		BE07AAB32AC82C29B5EBB02D /* rim-hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 55657A3022D7E039A18756F4 /* rim-hit.wav */; };
 		BE2EA15E7C555A41B3FD13CC /* bb-3-slight-fade.json in Resources */ = {isa = PBXBuildFile; fileRef = 94A27A94B3EF7D0667604349 /* bb-3-slight-fade.json */; };
 		C1556CB9FC3EDFD1B1DC6BF8 /* bb-a-half-court.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D45C4DDAB9A3833396DEFF9 /* bb-a-half-court.json */; };
+		C1A7E10000000000000000A3 /* PickSpotChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A7E10000000000000000B3 /* PickSpotChallenge.swift */; };
+		C1A7E10000000000000000A4 /* PickSpotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A7E10000000000000000B4 /* PickSpotView.swift */; };
 		C1C82D6E0147F149944D34CF /* ArcheryScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83C03738E0CC6197761A680 /* ArcheryScenario.swift */; };
 		C225E0568F9F3DAF925CA6DB /* SoccerSceneNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F71F82B3B1C2AF0FDB00A6 /* SoccerSceneNode.swift */; };
 		C244798B1C4B42072C5EC70C /* MasteryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 983D6320CA80974913215A19 /* MasteryService.swift */; };
@@ -267,9 +269,6 @@
 
 /* Begin PBXFileReference section */
 		015DA48DF98011DFBA83D806 /* PlayInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayInputView.swift; sourceTree = "<group>"; };
-		01EDE0F612890EE3C325314C /* DailyQuestionPicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DailyQuestionPicker.swift; sourceTree = "<group>"; };
-		C1A7E10000000000000000B3 /* PickSpotChallenge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PickSpotChallenge.swift; sourceTree = "<group>"; };
-		C1A7E10000000000000000B4 /* PickSpotView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PickSpotView.swift; sourceTree = "<group>"; };
 		057D1055BF0763AA15795726 /* miss-tone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "miss-tone.wav"; sourceTree = "<group>"; };
 		07EF9C90BFBFEEC9EE121655 /* PlaySceneNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaySceneNode.swift; sourceTree = "<group>"; };
 		08331D43606F118E4724D75E /* AppOpenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppOpenView.swift; sourceTree = "<group>"; };
@@ -296,7 +295,7 @@
 		33CBC61BF6F5D7B7EB6C594C /* HintDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HintDefinition.swift; sourceTree = "<group>"; };
 		347168285791808919BD9FD1 /* TopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopBar.swift; sourceTree = "<group>"; };
 		34869B1BC84C0691328F5BB5 /* LessonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonView.swift; sourceTree = "<group>"; };
-		37376D982861679D8C01BD9A /* PhysicsGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PhysicsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		37376D982861679D8C01BD9A /* PhysicsGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhysicsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		396DE9EA2962ACF13E476F99 /* AnimationsDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationsDefinition.swift; sourceTree = "<group>"; };
 		39ECC6A2231361EEE944B4FE /* bb-a-elbow-r.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-a-elbow-r.json"; sourceTree = "<group>"; };
 		39F47C329819449D28A0239A /* bb-3-one-legged.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-3-one-legged.json"; sourceTree = "<group>"; };
@@ -334,6 +333,7 @@
 		5D3F54FA0153860F91E91A3A /* SoccerCallVerdictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoccerCallVerdictView.swift; sourceTree = "<group>"; };
 		5D7CFB1A528CD7007DF960A2 /* swish-net.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "swish-net.wav"; sourceTree = "<group>"; };
 		600FF17AE0E433530E691868 /* ScenarioEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioEngineTests.swift; sourceTree = "<group>"; };
+		61B5397FB593477E2E1B7DD6 /* F1Curriculum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F1Curriculum.swift; sourceTree = "<group>"; };
 		61C964E97BDE5CC692C8D0BA /* ScenarioSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioSession.swift; sourceTree = "<group>"; };
 		61CE2A33E8DD01D1176406D0 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		6212191AC0336BE6E1AE4D24 /* bg-basketball-gym-dusk.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bg-basketball-gym-dusk.png"; sourceTree = "<group>"; };
@@ -349,6 +349,7 @@
 		6E18DFCC8141F0EF72A1DEA0 /* MasteryGateTakeoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasteryGateTakeoverView.swift; sourceTree = "<group>"; };
 		7082582A2CC100C96C4CB550 /* CallWalkthrough.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallWalkthrough.swift; sourceTree = "<group>"; };
 		71CEF348BD01D03D3223B02C /* SimulationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationConfig.swift; sourceTree = "<group>"; };
+		7382DD66185453E3A82683E5 /* F1ScenarioCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F1ScenarioCatalog.swift; sourceTree = "<group>"; };
 		75A2BAA226603248EAC26CA2 /* ArcheryCallPlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcheryCallPlayView.swift; sourceTree = "<group>"; };
 		761C6EBC165AA8EFF9AEC833 /* AccessibilitySettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilitySettingsTests.swift; sourceTree = "<group>"; };
 		765243C5C2D983166D8DC344 /* ScenarioBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioBackgroundView.swift; sourceTree = "<group>"; };
@@ -372,6 +373,7 @@
 		89E0146E05388213721F8F2D /* bb-c-wing-throw.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-c-wing-throw.json"; sourceTree = "<group>"; };
 		8DDC2806BFA1AD9C2067ADC7 /* bb-5-toe-behind.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-5-toe-behind.json"; sourceTree = "<group>"; };
 		8E892AEFA12F7C8D2A0AB255 /* scenario_bb-01-freethrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "scenario_bb-01-freethrow.png"; sourceTree = "<group>"; };
+		916E9145E0CA49BF7544C920 /* F1Scenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F1Scenario.swift; sourceTree = "<group>"; };
 		933DBF40155D5D21E717871F /* ScenarioRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioRecord.swift; sourceTree = "<group>"; };
 		94A27A94B3EF7D0667604349 /* bb-3-slight-fade.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bb-3-slight-fade.json"; sourceTree = "<group>"; };
 		950762B9300C1A37D87CD83C /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
@@ -404,6 +406,8 @@
 		BC75BC73EFAC1C00733BFD2B /* VoiceDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceDefinition.swift; sourceTree = "<group>"; };
 		BFF506D6F1A792B76FB0816D /* dribble-loop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "dribble-loop.wav"; sourceTree = "<group>"; };
 		C11EA3D3ABA9C0ECDF6C1005 /* AudioBundleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioBundleTests.swift; sourceTree = "<group>"; };
+		C1A7E10000000000000000B3 /* PickSpotChallenge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PickSpotChallenge.swift; sourceTree = "<group>"; };
+		C1A7E10000000000000000B4 /* PickSpotView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PickSpotView.swift; sourceTree = "<group>"; };
 		C4135AD3FFE28EC94268834B /* Rank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rank.swift; sourceTree = "<group>"; };
 		C532B3389C4740D326D4750D /* arrow-whoosh.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "arrow-whoosh.wav"; sourceTree = "<group>"; };
 		C66ECF622E9E7DFFF9DE9F07 /* CallVerdictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallVerdictView.swift; sourceTree = "<group>"; };
@@ -614,6 +618,9 @@
 				0F3EAA46BAE9247BBFD2D9E0 /* DailyQuestionCatalog.swift */,
 				76A55DBE84178827B8A8D23F /* DailyQuestionPicker.swift */,
 				D3D5DCBB3126C265F5C05E07 /* DailyScenarioPicker.swift */,
+				61B5397FB593477E2E1B7DD6 /* F1Curriculum.swift */,
+				916E9145E0CA49BF7544C920 /* F1Scenario.swift */,
+				7382DD66185453E3A82683E5 /* F1ScenarioCatalog.swift */,
 				427C77A0D7014BDC06B454DF /* LessonContent.swift */,
 				64224DC624A867395EA5AD69 /* NextSituationPicker.swift */,
 				C4135AD3FFE28EC94268834B /* Rank.swift */,
@@ -864,7 +871,6 @@
 						ProvisioningStyle = Automatic;
 					};
 					86875897627E9CD73CA2F4BC = {
-						DevelopmentTeam = T993T6534U;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -1091,6 +1097,9 @@
 				F8BD8653F7FABD97EB2403E9 /* DailyQuestionPicker.swift in Sources */,
 				89AF84E679DD0155E122A540 /* DailyQuestionView.swift in Sources */,
 				EAC0D096F5374DF97D82BC11 /* DailyScenarioPicker.swift in Sources */,
+				375572AF40BB6C4F1A95FBD6 /* F1Curriculum.swift in Sources */,
+				273E7C2AB7C99F042B1C3995 /* F1Scenario.swift in Sources */,
+				AA54415E71F3091DA0A72642 /* F1ScenarioCatalog.swift in Sources */,
 				F055B38FF1A5F577448BFC35 /* Font+Tokens.swift in Sources */,
 				598C4388CCA0558182C520BA /* Haptics.swift in Sources */,
 				D76C91B8317812B6FD546755 /* HintDefinition.swift in Sources */,
@@ -1250,6 +1259,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = R54QH2958C;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -1348,6 +1358,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = R54QH2958C;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
