@@ -212,7 +212,7 @@ private struct NumpadButton: View {
         } label: {
             label
                 .frame(maxWidth: .infinity)
-                .frame(height: 44)
+                .frame(minHeight: 44)
                 .overlay(borderOverlay)
                 .contentShape(Rectangle())
         }

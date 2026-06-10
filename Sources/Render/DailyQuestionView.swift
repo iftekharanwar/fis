@@ -50,7 +50,7 @@ struct DailyQuestionView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arclabBlack.ignoresSafeArea())
-        .dynamicTypeSize(.large ... .accessibility2)
+        .dynamicTypeSize(.large ... .accessibility5)
         .gameHaptic(trigger: answerHaptic) { _, _ in
             guard let pick, let question else { return .impact(weight: .light) }
             return question.isDisplayPickCorrect(pick) ? .success : .warning

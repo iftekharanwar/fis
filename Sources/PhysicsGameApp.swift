@@ -21,7 +21,10 @@ struct PhysicsGameApp: App {
                 .environment(subscription)
                 .environment(audio)
                 .environment(accessibility)
-                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                // Support the full accessibility range (AX1–AX5). Reading
+                // surfaces scroll; play/outcome surfaces cap themselves where
+                // fixed-frame layout demands it.
+                .dynamicTypeSize(...DynamicTypeSize.accessibility5)
         }
     }
 }

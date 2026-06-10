@@ -258,7 +258,7 @@ private struct NumpadButton: View {
         } label: {
             label
                 .frame(maxWidth: .infinity)
-                .frame(height: 44)
+                .frame(minHeight: 44)
                 .overlay(borderOverlay)
                 // Entire 44pt frame tappable, meets HIG minimum touch target.
                 .contentShape(Rectangle())

@@ -44,6 +44,11 @@ struct PlayView: View {
 
     @State private var phase: Phase = .idle
 
+    /// Measured intrinsic height of the dock content — drives the dock band
+    /// and the scene's bottom reserve so input grows with Dynamic Type
+    /// instead of overlapping the court (the verified AX-size blocker).
+    @State private var measuredDockContentHeight: CGFloat? = nil
+
     @State private var attemptCounter: Int = 1
 
     @State private var solutionPresented: Bool = false
@@ -151,7 +156,7 @@ struct PlayView: View {
                         sideDock(width: AdaptiveMetrics.sideDockWidth(for: geometry.size.width),
                                  topReserve: metrics.topReserve)
                     } else {
-                        bottomDock()
+                        bottomDock(surfaceHeight: geometry.size.height)
                     }
                 }
             }
@@ -162,6 +167,9 @@ struct PlayView: View {
                 propagateLayout(ctx: ctx, metrics: metrics, phase: newPhase)
             }
             .onChange(of: geometry.size) { _, _ in
+                propagateLayout(ctx: ctx, metrics: metrics, phase: phase)
+            }
+            .onChange(of: measuredDockContentHeight) { _, _ in
                 propagateLayout(ctx: ctx, metrics: metrics, phase: phase)
             }
         }
@@ -359,11 +367,13 @@ struct PlayView: View {
     /// right-side column (rightReserve); elsewhere it occludes a bottom band.
     /// In .action the dock is hidden, so the court reclaims the full canvas.
     private func propagateLayout(ctx: LayoutContext, metrics: PlayLayoutMetrics, phase: Phase) {
+        // Bottom reserve tracks the measured dock band so the court reframes
+        // above whatever height the input grew to (the design floor below).
         let desiredBottom: CGFloat
         switch phase {
-        case .idle:    desiredBottom = metrics.bottomReserveIdle
+        case .idle:    desiredBottom = ctx.safeArea.bottom + resolvedDockHeight(floor: 330, surfaceHeight: ctx.size.height)
         case .action:  desiredBottom = metrics.bottomReserveAction
-        case .outcome: desiredBottom = metrics.bottomReserveOutcome
+        case .outcome: desiredBottom = ctx.safeArea.bottom + resolvedDockHeight(floor: 480, surfaceHeight: ctx.size.height)
         }
         let am = AdaptiveMetrics.compute(
             ctx: ctx,
@@ -417,17 +427,52 @@ struct PlayView: View {
         }
     }
 
-    /// Legacy bottom-pinned dock (iPhone + iPad portrait). Unchanged heights.
-    private func bottomDock() -> some View {
-        let height: CGFloat = { if case .outcome = phase { return 480 } else { return 330 } }()
+    /// Bottom-pinned dock (iPhone + iPad portrait). Height grows with Dynamic
+    /// Type: the design floor (330 idle / 480 outcome) is the minimum, but the
+    /// dock takes the input column's measured intrinsic height when that's
+    /// taller (AX sizes), capped at 62% of the surface. At default sizes the
+    /// input measures ≤330 → no change anywhere; the outcome views fill their
+    /// proposed height → measure == floor → unchanged too.
+    private func bottomDock(surfaceHeight: CGFloat) -> some View {
+        let floor: CGFloat = { if case .outcome = phase { return 480 } else { return 330 } }()
+        let height = resolvedDockHeight(floor: floor, surfaceHeight: surfaceHeight)
+        let isIdle: Bool = { if case .idle = phase { return true } else { return false } }()
         return VStack(spacing: 0) {
             Spacer().allowsHitTesting(false)
-            dockContent()
+            dockBody(isIdle: isIdle)
+                // Measure the content's intrinsic height (the fixed-row input
+                // VStack reports its true size even inside the frame below;
+                // outcome views stretch and report the floor).
+                .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { measured in
+                    if measuredDockContentHeight.map({ abs($0 - measured) > 0.5 }) ?? true {
+                        measuredDockContentHeight = measured
+                    }
+                }
                 .frame(height: height)
                 .background(Color.arclabBlack)
                 .transition(.opacity)
         }
         .animation(.easeOut(duration: 0.25), value: phase)
+    }
+
+    /// Idle input scrolls when it exceeds the cap (AX4-5) so SHOOT stays
+    /// reachable; below the cap the ScrollView is inert. Outcome composition
+    /// is unchanged.
+    @ViewBuilder
+    private func dockBody(isIdle: Bool) -> some View {
+        if isIdle {
+            ScrollView(.vertical) { dockContent() }
+                .scrollBounceBehavior(.basedOnSize)
+        } else {
+            dockContent()
+        }
+    }
+
+    /// max(design floor, measured intrinsic), capped at 62% of the surface so
+    /// the dock can never swallow the court.
+    private func resolvedDockHeight(floor: CGFloat, surfaceHeight: CGFloat) -> CGFloat {
+        let cap = surfaceHeight * 0.62
+        return min(max(floor, measuredDockContentHeight ?? floor), cap)
     }
 
     /// iPad landscape: dock as a trailing column spanning below the HUD to the
