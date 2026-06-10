@@ -89,6 +89,15 @@ struct RootView: View {
             DiagnosticLevelTypePickerWrapper(
                 chapter: BasketballCurriculum.chapters[0]
             )
+        case "pickspot":
+            // PROTOTYPE — Level C pick-the-spot beat. ARCLAB_SCENARIO picks
+            // the scenario (defaults to the wing throw).
+            let spotId = ProcessInfo.processInfo.environment["ARCLAB_SCENARIO"] ?? "bb-c-wing-throw"
+            if let scenario = try? ScenarioLoader.load(ScenarioID(spotId)) {
+                PickSpotView(scenario: scenario, onClose: {})
+            } else {
+                Color.arclabBlack
+            }
         case "chapter-bb1":
             // Wave verification: Ch 1's chapter screen with its released
             // practice rows (requires the lesson marked read in the profile).

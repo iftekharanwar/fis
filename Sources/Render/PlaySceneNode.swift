@@ -131,6 +131,52 @@ final class PlaySceneNode: SKScene {
         )
     }
 
+    // MARK: - Pick-the-spot marker
+
+    private var spotMarkerNode: SKNode?
+    private var spotMarkerDistance: Double?
+
+    /// Place (or move) the player's landing-spot marker: an accent chevron
+    /// on the floor with a hairline rising to hoop height at distance `d`
+    /// from the release point. nil removes it.
+    func setSpotMarker(distanceMeters: Double?) {
+        spotMarkerNode?.removeFromParent()
+        spotMarkerNode = nil
+        spotMarkerDistance = distanceMeters
+        guard let d = distanceMeters, transform != nil else { return }
+
+        let worldX = projectileParams.releasePosition[0] + d
+        let floor = transform.scenePoint(world: CGPoint(x: worldX, y: CGFloat(projectileParams.world.floorY)))
+        let targetHeight = transform.scenePoint(world: CGPoint(x: worldX, y: CGFloat(projectileParams.target.center[1])))
+
+        let container = SKNode()
+
+        let hairline = SKShapeNode()
+        let path = CGMutablePath()
+        path.move(to: floor)
+        path.addLine(to: targetHeight)
+        hairline.path = path
+        hairline.strokeColor = teamAccent.withAlphaComponent(0.45)
+        hairline.lineWidth = 1
+        container.addChild(hairline)
+
+        let chevron = SKShapeNode()
+        let tip = CGMutablePath()
+        let size: CGFloat = 7 * cosmeticScale
+        tip.move(to: CGPoint(x: floor.x - size, y: floor.y - size * 1.4))
+        tip.addLine(to: CGPoint(x: floor.x, y: floor.y))
+        tip.addLine(to: CGPoint(x: floor.x + size, y: floor.y - size * 1.4))
+        tip.closeSubpath()
+        chevron.path = tip
+        chevron.fillColor = teamAccent
+        chevron.strokeColor = .clear
+        container.addChild(chevron)
+
+        container.zPosition = 30
+        addChild(container)
+        spotMarkerNode = container
+    }
+
     /// Push reserved UI bands from SwiftUI. Deferred mid-simulation —
     /// repositionNodes() would tear down the in-flight scene graph.
     func applyUIReserve(top: CGFloat, bottom: CGFloat, safeTop: CGFloat, safeBottom: CGFloat, right: CGFloat = 0) {
@@ -210,6 +256,9 @@ final class PlaySceneNode: SKScene {
     private func repositionNodes() {
         removeAllChildren()
         buildSceneGraph()
+        if let distance = spotMarkerDistance {
+            setSpotMarker(distanceMeters: distance)
+        }
         if let degrees = lastAngleDegrees {
             updateAngleIndicator(degrees: degrees)
         }

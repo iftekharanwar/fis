@@ -413,6 +413,40 @@ final class ScenarioEngineTests: XCTestCase {
         }
     }
 
+    /// Pick-the-spot: the crossing distance must come from the real
+    /// integrator and match the authored answer; round 1 is canonical,
+    /// retries move the answer so the hoop can't be eyeballed.
+    func test_pickSpotChallenge_crossingMatchesAuthoredAnswer() throws {
+        let scenario = try loadScenario("bb-c-wing-throw")
+        guard case .projectile2D(_, let params) = scenario.simulation else {
+            return XCTFail("expected projectile scenario")
+        }
+
+        var rng = SeededLCG(seed: 3)
+        let round1 = try XCTUnwrap(PickSpotChallenge.round(for: scenario, attempt: 1, using: &rng))
+        XCTAssertEqual(round1.answer.thetaDegrees, 48.0)
+        XCTAssertEqual(round1.answer.velocity, 8.2)
+        // Semi-implicit Euler at dt≈8.3ms lands ~5cm short of the closed-form
+        // 5.82 (O(dt) bias ≈ ½·g·dt·t). The rim tolerance (0.225m) absorbs
+        // it, so a player who computes the textbook answer always hits —
+        // asserted below. The crossing itself must match the renderer.
+        XCTAssertEqual(round1.crossingD, 5.82, accuracy: 0.1,
+                       "canonical crossing must track the authored d ≈ 5.82")
+        XCTAssertTrue(PickSpotChallenge.isHit(markerD: 5.82, crossingD: round1.crossingD, params: params),
+                      "the textbook answer must always count as a hit")
+
+        let round2 = try XCTUnwrap(PickSpotChallenge.round(for: scenario, attempt: 2, using: &rng))
+        XCTAssertNotEqual(round2.answer.velocity, round1.answer.velocity,
+                          "retry rounds must perturb the givens")
+        XCTAssertGreaterThan(abs(round2.crossingD - round1.crossingD), 0.05,
+                             "perturbed round must move the crossing point")
+
+        XCTAssertTrue(PickSpotChallenge.isHit(markerD: round1.crossingD + 0.2,
+                                              crossingD: round1.crossingD, params: params))
+        XCTAssertFalse(PickSpotChallenge.isHit(markerD: round1.crossingD + 0.3,
+                                               crossingD: round1.crossingD, params: params))
+    }
+
     // MARK: - Call-guard helpers
 
     private func loadScenario(_ stem: String) throws -> ScenarioDefinition {
