@@ -32,6 +32,7 @@ struct RevealOverlay: View {
     /// scenarios (Ch2) to show "IT FLEW CLEAN" / "IT WOBBLED" instead.
     var outcomeLabelOverride: String? = nil
 
+    @Environment(AccessibilitySettings.self) private var accessibility
     @State private var visible: Bool = false
     @State private var slideUpHapticCount: Int = 0
 
@@ -41,7 +42,8 @@ struct RevealOverlay: View {
 
             card
                 .padding(.horizontal, Spacing.md)
-                .offset(y: visible ? 0 : 40)
+                // Reduce Motion: drop the rise, keep the fade.
+                .offset(y: visible || accessibility.reduceMotionActive ? 0 : 40)
                 .opacity(visible ? 1 : 0)
                 .padding(.bottom, Spacing.md)
         }

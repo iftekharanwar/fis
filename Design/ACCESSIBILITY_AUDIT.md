@@ -8,6 +8,33 @@ Severity rubric — **blocker**: a user group cannot complete the core loop
 (open app → pick sport → play a scenario → read result); **major**: severely
 degraded; **minor**: polish.
 
+## Status (Phases 1–4 + minors pass — all shipped on branch `Accessibility`)
+
+All 21 confirmed blocker/major findings are **resolved**. Of the 18 minors,
+the accessibility-relevant ones are resolved too:
+
+- Done in Phases 1–4: verdict-haptic parity, splash/flash/entrance/zoom motion
+  gates, lesson close-chip 44pt, splash-retry button trait, lesson/daily art
+  hidden, SpriteKit-canvas invert exemption.
+- Done in the minors pass: Smart Invert exemption on every photo/illustration
+  surface (scenario bg, chapter poster, scenario preview, lesson art, daily art,
+  onboarding photo); onboarding body copy 0.72→0.88; stat-strip/HUD VoiceOver
+  grouping (VariableStrip, PlayHUDView, SwishView); remaining decorative-motion
+  gates (RevealOverlay rise, daily +IQ rise, profile IQ count-up).
+
+Deliberately **not** changed (with reason):
+- **Audio scenePhase/interruption lifecycle** — engine-robustness, not
+  accessibility; the proper fix (engine restart + loop resume) carries audio
+  regression risk best verified on device. Deferred.
+- **IntroView ScrollView + VariableStrip fixed height** — both are unreachable
+  in the current call-first flow (no call sites). Moot.
+- **Crimson MISS metadata line** — deliberate brand semantic; the MISS state is
+  already text-led, so no information is color-only.
+- **`accessibilityDifferentiateWithoutColor` reads** — the observer hook exists
+  (`AccessibilitySettings`); redundant cues already exist everywhere, so there's
+  nothing to branch on yet. Hook guards against regression.
+- **`brandMark` dead sound asset** — code cleanliness, not accessibility.
+
 ## Confirmed findings (verified)
 
 ### [BLOCKER] Lesson reader pages only via invisible tap zones — and lessons gate all practice scenarios, blocking the core loop

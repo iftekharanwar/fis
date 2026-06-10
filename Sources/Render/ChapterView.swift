@@ -55,6 +55,10 @@ struct ChapterView: View {
                         .frame(maxWidth: .infinity, alignment: .top)
                 }
                 .ignoresSafeArea(edges: .top)
+                // Decorative chapter poster — out of the a11y tree and exempt
+                // from Smart Invert (a flipped photo reads as noise).
+                .accessibilityHidden(true)
+                .accessibilityIgnoresInvertColors()
 
                 // Top scrim — fades the very top of the image to near-
                 // black so the TopBar's back button + chapter label don't

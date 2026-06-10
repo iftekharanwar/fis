@@ -136,6 +136,9 @@ struct SwishView: View {
                 .tracking(1.1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        // Read "<value> <label>" as one phrase, not two stops. (The full
+        // outcome is also announced on appear; this is for scrub-back.)
+        .accessibilityElement(children: .combine)
     }
 
     private var divider: some View {

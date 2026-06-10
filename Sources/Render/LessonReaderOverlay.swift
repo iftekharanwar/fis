@@ -136,8 +136,10 @@ struct LessonReaderOverlay: View {
                     .clipShape(RoundedRectangle(cornerRadius: Sizing.cardRadius))
                     .padding(.bottom, Spacing.lg)
                     // Decorative per the lesson style — the card text carries
-                    // the content; never let VoiceOver read an asset name.
+                    // the content; never let VoiceOver read an asset name,
+                    // and keep Smart Invert from negating the artwork.
                     .accessibilityHidden(true)
+                    .accessibilityIgnoresInvertColors()
             }
 
             textBlock
