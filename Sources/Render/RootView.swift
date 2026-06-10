@@ -162,9 +162,12 @@ struct RootView: View {
         case "callplay":
             // Optional ARCLAB_SCENARIO picks any bundled scenario so content
             // releases can be eyeballed on the call surface before shipping.
+            // The chapter is resolved from the scenario's chapterId so the
+            // reveal beat matches what shipping navigation shows.
             let scenarioId = ProcessInfo.processInfo.environment["ARCLAB_SCENARIO"] ?? "bb-1-baseline"
             if let scenario = try? ScenarioLoader.load(ScenarioID(scenarioId)) {
-                CallPlayView(scenario: scenario, onClose: {})
+                let chapter = Sport.basketball.chapters.first { $0.id == scenario.meta.chapterId }
+                CallPlayView(scenario: scenario, chapter: chapter, onClose: {})
             } else {
                 Color.arclabBlack
             }

@@ -167,7 +167,7 @@ struct CallPlayView: View {
                         wasCorrect: wasCorrect,
                         actualWentIn: actualWentIn(resolution),
                         phenomenon: revealPhenomenon,
-                        explainer: revealExplainer,
+                        explainer: revealExplainer(for: resolution),
                         onTryCompute: handleTryCompute,
                         onShowMath: handleShowMath
                     )
@@ -959,9 +959,21 @@ struct CallPlayView: View {
         chapter?.lesson.title ?? "Projectile motion."
     }
 
-    /// 2–3 sentence reveal copy. Pulls the chapter lesson's one-liner when
-    /// available; falls back to a generic projectile-motion summary.
-    private var revealExplainer: String {
+    /// Reveal copy for the moment that just happened: the scenario's
+    /// authored coach line for the exact outcome (short-miss diagnosis,
+    /// swish flavor, …) so the card reads differently every time. Falls
+    /// back to the chapter lesson's one-liner, then a generic summary.
+    private func revealExplainer(for resolution: Phase.Resolution) -> String {
+        switch resolution {
+        case .miss(let category):
+            if let line = scenario.voice.miss.diagnosticByCategory[category], !line.isEmpty {
+                return line
+            }
+        case .success(let flavor):
+            if let line = scenario.voice.success.subheadByFlavor[flavor], !line.isEmpty {
+                return line
+            }
+        }
         if let oneLiner = chapter?.lesson.oneLiner, !oneLiner.isEmpty {
             return oneLiner
         }
